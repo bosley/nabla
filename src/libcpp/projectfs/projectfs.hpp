@@ -12,6 +12,7 @@ namespace NABLA
 {
     class ProjectFS
     {
+<<<<<<< HEAD
     public:
 
         enum class ProjectType
@@ -28,6 +29,28 @@ namespace NABLA
 
         bool projectLoaded;
         ProjectType projectType;
+=======
+        public:
+
+            enum class ProjectType
+            {
+                UNKNOWN,
+                LIBRARY,
+                PROJECT
+            };
+
+            enum class LoadReturn
+            {
+                
+            };
+
+            ProjectFS();
+            ~ProjectFS();
+
+
+
+        private:
+>>>>>>> Started project lib dir work
     };
 }
 
