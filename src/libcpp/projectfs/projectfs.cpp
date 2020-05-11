@@ -2,7 +2,8 @@
 
 namespace NABLA
 {
-    ProjectFS::ProjectFS()
+    ProjectFS::ProjectFS() : projectLoaded(false),
+                             projectType(ProjectFS::ProjectType::UNKNOWN)
     {
 
     }
