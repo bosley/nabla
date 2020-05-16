@@ -10,9 +10,9 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-8
+            - g++-7
       env:
-        - MATRIX_EVAL="CXX_COMPILER=g++-8"
+        - MATRIX_EVAL="CXX_COMPILER=g++-7"
     
 before_install:
   - eval "${MATRIX_EVAL}"
@@ -27,6 +27,8 @@ before_install:
 install:
 
 script:
+  - export CC=gcc-7
+  - export CXX=g++-7
 
   - cd $PARENTDIR/build
   - cmake $PARENTDIR/src -DCMAKE_BUILD_TYPE=Debug
