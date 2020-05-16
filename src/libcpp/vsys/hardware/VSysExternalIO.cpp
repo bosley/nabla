@@ -195,7 +195,8 @@ namespace EXTERNAL
                     {
                         bytesReadIn++;
 
-                        assert( vm->global_memory.push_8(currentByte) );
+                        bool res = vm->global_memory.push_8(currentByte);
+                        assert(res);
                     }
 
                 } // End for loop
