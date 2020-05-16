@@ -29,9 +29,9 @@ install:
 script:
 
   - cd $PARENTDIR/build
-  - cmake $PARENTDIR/src
+  - cmake $PARENTDIR/src -DCMAKE_BUILD_TYPE=Debug
   - make -j9
 
   - cd $PARENTDIR/build-release
-  - cmake $PARENTDIR/src --config Release
+  - cmake $PARENTDIR/src -DCMAKE_BUILD_TYPE=Release
   - make -j9
