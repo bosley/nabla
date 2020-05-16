@@ -132,7 +132,6 @@ TEST(NablaPushPopTests, pushPopIns)
         // Step 1 instruction (should be push)
         vm.step(1);
 
-#ifndef NABLA_VIRTUAL_MACHINE_RELEASE_MODE
         // Depending on the stack, get the value that should have been pushed
         uint8_t val = vm.getGlobalByte(0);
 
@@ -143,6 +142,5 @@ TEST(NablaPushPopTests, pushPopIns)
 
         // See if correct val is stored
         CHECK_EQUAL(val, vm.getActiveReg(popReg));
-#endif
     }
 }
