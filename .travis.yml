@@ -7,7 +7,7 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - g++-8
+      - g++-9
     
 before_install:
   - eval "${MATRIX_EVAL}"
@@ -22,8 +22,8 @@ before_install:
 install:
 
 script:
-  - export CC=gcc-8
-  - export CXX=g++-8
+  - export CC=gcc-9
+  - export CXX=g++-9
 
   - cd $PARENTDIR/build
   - cmake $PARENTDIR/src -DCMAKE_BUILD_TYPE=Debug
