@@ -1,5 +1,5 @@
 language: cpp
-dist: xenial
+dist: bionic
 
 # More builds expected in the future
 matrix:
