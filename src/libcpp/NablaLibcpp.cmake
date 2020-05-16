@@ -15,6 +15,8 @@ set(NABLA_LIBCPP_HEADERS
     ${CMAKE_SOURCE_DIR}/libcpp/bytegen/bytegen.hpp
     ${CMAKE_SOURCE_DIR}/libcpp/scopetree/scopetree.hpp
     ${CMAKE_SOURCE_DIR}/libcpp/projectfs/projectfs.hpp
+    ${CMAKE_SOURCE_DIR}/libcpp/projectfs/projecttype.hpp
+    ${CMAKE_SOURCE_DIR}/libcpp/projectfs/projectstructure.hpp
     ${CMAKE_SOURCE_DIR}/libcpp/vsys/VSysExecutionContext.hpp
     ${CMAKE_SOURCE_DIR}/libcpp/vsys/VSysExecutionReturns.hpp
     ${CMAKE_SOURCE_DIR}/libcpp/vsys/VSysMachine.hpp
@@ -31,6 +33,7 @@ set(NABLA_LIBCPP_SOURCES
     ${CMAKE_SOURCE_DIR}/libcpp/bytegen/bytegen.cpp
     ${CMAKE_SOURCE_DIR}/libcpp/scopetree/scopetree.cpp
     ${CMAKE_SOURCE_DIR}/libcpp/projectfs/projectfs.cpp
+    ${CMAKE_SOURCE_DIR}/libcpp/projectfs/projectstructure.cpp
     ${CMAKE_SOURCE_DIR}/libcpp/vsys/VSysExecutionContext.cpp
     ${CMAKE_SOURCE_DIR}/libcpp/vsys/VSysMachine.cpp
     ${CMAKE_SOURCE_DIR}/libcpp/vsys/VSysLoadableMachine.cpp
