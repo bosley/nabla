@@ -137,12 +137,14 @@ namespace TEST
             return v;
         }
 
+#ifndef NABLA_VIRTUAL_MACHINE_RELEASE_MODE
         uint8_t getGlobalByte(uint64_t addr)
         {
             uint8_t v = 0;
             assert(this->global_memory.get_8(addr, v));
             return v;
         }
+#endif 
 
     private:
         TestContext test_context;
