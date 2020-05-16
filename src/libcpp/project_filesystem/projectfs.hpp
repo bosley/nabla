@@ -17,7 +17,6 @@ namespace NABLA
     //! Project File Structure loader
     class ProjectFS
     {
-
     public:
 
         static constexpr char MODULE_ENTRY_FILE[]      = "mod.n";   //! Name for the entry file of a module
@@ -61,33 +60,9 @@ namespace NABLA
 
         bool projectLoaded;
 
-        ProjectType projectType;
-
-        public:
-
-            enum class ProjectType
-            {
-                UNKNOWN,
-                LIBRARY,
-                PROJECT
-            };
-
-            enum class LoadReturn
-            {
-                
-            };
-
-            ProjectFS();
-            ~ProjectFS();
-
-
-
-        private:
-
         std::string project_location;
         ProjectStructure original_structure;
         ProjectStructure relative_structure;
-
     };
 
 }
