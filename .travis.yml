@@ -20,6 +20,7 @@ before_install:
   - PARENTDIR=$(pwd)
   
   - mkdir $PARENTDIR/build
+  - mkdir $PARENTDIR/build-release
 
   - bash install_cpputest.sh
 
@@ -29,4 +30,8 @@ script:
 
   - cd $PARENTDIR/build
   - cmake $PARENTDIR/src
-  - make -j2
+  - make -j9
+
+  - cd $PARENTDIR/build-release
+  - cmake $PARENTDIR/src --config Release
+  - make -j9
