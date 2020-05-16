@@ -27,8 +27,8 @@ script:
 
   - cd $PARENTDIR/build
   - cmake $PARENTDIR/src -DCMAKE_BUILD_TYPE=Debug
-  - make -j9
+  - make
 
   - cd $PARENTDIR/build-release
   - cmake $PARENTDIR/src -DCMAKE_BUILD_TYPE=Release
-  - make -j9
+  - make
