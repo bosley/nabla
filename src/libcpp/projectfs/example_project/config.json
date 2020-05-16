@@ -1,0 +1,8 @@
+{
+    "author": "Name",
+    "description": "An example application",
+    "project_type": "app",
+    "modules": [
+      "module_one"
+      ]
+  }

@@ -8,6 +8,8 @@
 #ifndef NABLA_PROJECT_FS_HPP
 #define NABLA_PROJECT_FS_HPP
 
+#include "json.hpp"
+
 namespace NABLA
 {
     class ProjectFS
@@ -21,8 +23,19 @@ namespace NABLA
             APPLICATION
         };
 
+        enum class LoadResultCodes
+        {
+            OKAY,
+            ERROR_GIVEN_PATH_NOT_DIRECTORY,
+            ERROR_FAILED_TO_OPEN_CONFIG,
+            ERROR_FAILED_TO_LOAD_CONFIG,
+            ERROR_NO_CONFIG_FOUND
+        };
+
         ProjectFS();
         ~ProjectFS();
+
+        LoadResultCodes load(std::string location);
 
     private:
 
