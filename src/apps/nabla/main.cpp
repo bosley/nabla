@@ -164,10 +164,6 @@ int handle_interpretation_project(std::string project_dir)
         case NABLA::ProjectFS::LoadResultCodes::ERROR_FAILED_TO_LOAD_CONFIG:
             std::cerr << "Unable to load config.json" << std::endl;
             return 1;
-
-        case NABLA::ProjectFS::LoadResultCodes::ERROR_NO_CONFIG_FOUND:
-            std::cerr << "[" << project_dir << "] Did not contain a configuration file" << std::endl;
-            return 1; 
     }
 
     return 0;
