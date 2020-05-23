@@ -20,6 +20,15 @@
 
 TEST_GROUP(NHLLParserTests)
 {   
+    void setup()
+    {
+        MemoryLeakWarningPlugin::turnOffNewDeleteOverloads();
+    }
+
+    void teardown()
+    {
+        MemoryLeakWarningPlugin::turnOnNewDeleteOverloads();
+    }
 };
 
 // ---------------------------------------------------------------
@@ -39,7 +48,13 @@ TEST(NHLLParserTests, allTests)
 */
 
     // Note: With the compiler, the actual use-case will be to hand it a file and it will call the parser. 
+
+    
     parser.parseLine("let a = 3");
-    parser.parseLine("let a = 4;");
-    parser.parseLine("let a = 5; let a = 6");
+    //parser.parseLine("use(\"some.mod\")");    
+    //parser.parseLine("use(\"some.mod\", \"mod\")");  
+    //parser.parseLine("set(var, var1)");
+    //parser.parseLine("set(var, 3+3)");
+    //parser.parseLine("set(var, \"Some String\")");
+
 }

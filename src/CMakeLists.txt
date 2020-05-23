@@ -22,6 +22,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(libnabla REQUIRED)
 
+find_package(Threads)
+
 include_directories(${LIBNABLA_INCLUDE_DIRS})
 
 #-------------------------------------------------
@@ -48,4 +50,5 @@ add_executable(nabla
 target_link_libraries(nabla
     PRIVATE 
         ${NABLA_APP_SOURCES}
+        Threads::Threads
 )

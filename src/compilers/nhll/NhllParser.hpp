@@ -3,10 +3,10 @@
 
 #include "NhllLanguageIf.hpp"
 #include "CompilerError.hpp"
+#include "NhllVisitor.hpp"
 
 #include <string>
 #include <vector>
-#include <regex>
 
 namespace NABLA
 {
@@ -21,27 +21,15 @@ namespace COMPILERS
         void parseLine(std::string line);
 
     private:
-
+    
         uint64_t line_number;
+        uint16_t line_index;
+
         NhllLanguageIf * language_iface;
+        
 
-        void process_line();
+        void throwCompilerError(std::string error, uint16_t line_idx, std::vector<std::string> suggestions = {});
 
-        std::vector<std::string> current_line;
-
-        struct MatchCall
-        {
-            std::regex reg;
-            std::function<void()> call;
-        };
-
-        std::vector<MatchCall> parserMethods;
-        std::vector<std::string> keywords;
-
-
-
-        void parse_use();
-        void parse_let();
     };
 }
 }

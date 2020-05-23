@@ -8,7 +8,10 @@ add_executable(nhllTests
         main.cpp
 )
 
+
 target_link_libraries(nhllTests 
-                      ${CPPUTEST_LDFLAGS})
+                      ${CPPUTEST_LDFLAGS}
+                      Threads::Threads
+)
 
 add_custom_command(TARGET nhllTests COMMAND ./nhllTests POST_BUILD)

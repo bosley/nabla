@@ -8,9 +8,10 @@ set(NABLA_COMPILERS_INCLUDE_DIRS
 )
 
 #
-#   Build the sources for the BASIC compiler
+#   Build the sources for the NHLL compiler
 #
-set(NABLA_COMPILER_SOURCES_BASIC
+set(NABLA_COMPILER_NHLL
+    ${NABLA_COMPILERS_DIR}/nhll/NhllVisitor.cpp
     ${NABLA_COMPILERS_DIR}/nhll/NhllParser.cpp
     ${NABLA_COMPILERS_DIR}/nhll/NhllCompiler.cpp
 )
@@ -19,7 +20,7 @@ set(NABLA_COMPILER_SOURCES_BASIC
 #   Add sources for all compilers 
 #
 set(NABLA_COMPILERS_SOURCES
-    ${NABLA_COMPILER_SOURCES_BASIC}
+    ${NABLA_COMPILER_NHLL}
 
     ${NABLA_COMPILERS_DIR}/CompiledPackage.cpp
 )
