@@ -30,6 +30,7 @@
    #include <iostream>
    #include <cstdlib>
    #include <fstream>
+   #include <stdint.h>
    
    /* include for all driver functions */
    #include "nhll_driver.hpp"
@@ -41,37 +42,54 @@
 %define api.value.type variant
 %define parse.assert
 
+%token FUNC_DECL
+
+%token <std::string> USE
+%token <std::string> STRING_LITERAL
+%token <std::string> INTEGER_LITERAL
+%token <std::string> REAL_LITERAL
+%token <std::string> IDENTIFIER
+
 %token               END    0     "end of file"
-%token               UPPER
-%token               LOWER
-%token <std::string> WORD
-%token               NEWLINE
-%token               CHAR
 
 %locations
 
 %%
 
-list_option : END | list END;
+prog_option
+   :  stmt | function_stmt | END;
 
-list
-  : item
-  | list item
-  ;
+stmt
+   : stmt stmt
+   | use_stmt
+   ;
 
-item
-  : UPPER   { driver.add_upper(); }
-  | LOWER   { driver.add_lower(); }
-  | WORD    { driver.add_word( $1 ); }
-  | NEWLINE { driver.add_newline(); }
-  | CHAR    { driver.add_char(); }
-  ;
+function_stmt
+   : function_stmt function_stmt
+   | function_decl
+   ;
+
+use_stmt
+   : USE '(' STRING_LITERAL ')'                    { /* Make a 'use' struct, populate, and add to a list*/ }
+   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' { /* Make a 'use' struct, populate, and add to a list*/ }
+   ;
+
+block 
+   : '{' stmt '}' { /* std::cout << "BLOCK\n"; */ } ;
+
+recv_paramaters 
+   : IDENTIFIER                     { /* std::cout << "ID : " << $1 << std::endl; */}
+   | IDENTIFIER ',' recv_paramaters { /* std::cout << "ID : " << $1 << std::endl; */}
+   ;
+
+function_decl
+   : FUNC_DECL '(' IDENTIFIER ',' '[' ']' ',' block ')'                 { /* Function Decl */ }
+   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { /* Function Decl */ }
+   ;
 
 %%
 
-
-void 
-NHLL::NHLL_Parser::error( const location_type &l, const std::string &err_message )
+void NHLL::NHLL_Parser::error( const location_type &l, const std::string &err_message )
 {
    std::cerr << "Error: " << err_message << " at " << l << "\n";
 }

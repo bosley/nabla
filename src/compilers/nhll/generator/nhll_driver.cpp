@@ -1,7 +1,7 @@
 #include <cctype>
 #include <fstream>
 #include <cassert>
-
+#include <iostream>
 #include "nhll_driver.hpp"
 
 NHLL::NHLL_Driver::~NHLL_Driver()
@@ -12,8 +12,7 @@ NHLL::NHLL_Driver::~NHLL_Driver()
    parser = nullptr;
 }
 
-void 
-NHLL::NHLL_Driver::parse( const char * const filename )
+void NHLL::NHLL_Driver::parse( const char * const filename )
 {
    assert( filename != nullptr );
    std::ifstream in_file( filename );
@@ -25,8 +24,7 @@ NHLL::NHLL_Driver::parse( const char * const filename )
    return;
 }
 
-void
-NHLL::NHLL_Driver::parse( std::istream &stream )
+void NHLL::NHLL_Driver::parse( std::istream &stream )
 {
    if( ! stream.good()  && stream.eof() )
    {
@@ -38,10 +36,8 @@ NHLL::NHLL_Driver::parse( std::istream &stream )
 }
 
 
-void 
-NHLL::NHLL_Driver::parse_helper( std::istream &stream )
+void  NHLL::NHLL_Driver::parse_helper( std::istream &stream )
 {
-   
    delete(scanner);
    try
    {
@@ -53,12 +49,12 @@ NHLL::NHLL_Driver::parse_helper( std::istream &stream )
          ba.what() << "), exiting!!\n";
       exit( EXIT_FAILURE );
    }
-   
+
    delete(parser); 
    try
    {
       parser = new NHLL::NHLL_Parser( (*scanner) /* scanner */, 
-                                  (*this) /* driver */ );
+                                    (*this) /* driver */ );
    }
    catch( std::bad_alloc &ba )
    {
@@ -74,61 +70,8 @@ NHLL::NHLL_Driver::parse_helper( std::istream &stream )
    return;
 }
 
-void 
-NHLL::NHLL_Driver::add_upper()
-{ 
-   uppercase++; 
-   chars++; 
-   words++; 
-}
-
-void 
-NHLL::NHLL_Driver::add_lower()
-{ 
-   lowercase++; 
-   chars++; 
-   words++; 
-}
-
-void 
-NHLL::NHLL_Driver::add_word( const std::string &word )
+std::ostream& NHLL::NHLL_Driver::print( std::ostream &stream )
 {
-   words++; 
-   chars += word.length();
-   for(const char &c : word ){
-      if( islower( c ) )
-      { 
-         lowercase++; 
-      }
-      else if ( isupper( c ) ) 
-      { 
-         uppercase++; 
-      }
-   }
-}
-
-void 
-NHLL::NHLL_Driver::add_newline()
-{ 
-   lines++; 
-   chars++; 
-}
-
-void 
-NHLL::NHLL_Driver::add_char()
-{ 
-   chars++; 
-}
-
-
-std::ostream& 
-NHLL::NHLL_Driver::print( std::ostream &stream )
-{
-   stream << red  << "Results: " << norm << "\n";
-   stream << blue << "Uppercase: " << norm << uppercase << "\n";
-   stream << blue << "Lowercase: " << norm << lowercase << "\n";
-   stream << blue << "Lines: " << norm << lines << "\n";
-   stream << blue << "Words: " << norm << words << "\n";
-   stream << blue << "Characters: " << norm << chars << "\n";
+   stream << "done" << "\n";
    return(stream);
 }

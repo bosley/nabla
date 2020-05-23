@@ -1,6 +1,7 @@
 %{
 /* C++ string header, for string ops below */
 #include <string>
+#include <iostream>
 
 /* Implementation of yyFlexScanner */ 
 #include "nhll_scanner.hpp"
@@ -28,32 +29,43 @@ using token = NHLL::NHLL_Parser::token;
 %option c++
 
 %%
+
 %{          /** Code executed at the beginning of yylex **/
             yylval = lval;
 %}
 
-[a-z]       {
-               return( token::LOWER );
-            }
-
-[A-Z]       {
-               return( token::UPPER );
-            }
-
-[a-zA-Z]+   {
+"use"       {
                yylval->build< std::string >( yytext );
-               return( token::WORD );
+               return( token::USE );
             }
 
-\n          {
-               // Update line number
-               loc->lines();
-               return( token::NEWLINE );
+"function"  { return( token::FUNC_DECL ); }
+
+[ \t]+      { /* Eat WS */  }
+
+[\n]+       { loc->lines(); }
+
+\"[^\"]*\"  {
+               yylval->build< std::string >( yytext );
+               return( token::STRING_LITERAL );
             }
 
-.           {
-               return( token::CHAR );
+[a-zA-Z_]+  { 
+               yylval->build< std::string >( yytext );
+               return( token::IDENTIFIER ); 
             }
+
+-?[0-9]+    {
+               yylval->build< std::string >( yytext );
+               return ( token::INTEGER_LITERAL );
+            }
+
+-?[0-9]+\.[0-9]+ {
+               yylval->build< std::string >( yytext );
+               return ( token::REAL_LITERAL );
+            }
+
+.           { /* Allow chars to slip in  */ return yytext[0]; } 
 %%
 
 
