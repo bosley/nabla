@@ -35,6 +35,19 @@
    /* include for all driver functions */
    #include "nhll_driver.hpp"
 
+   std::vector<std::string> expression_builder;
+
+   std::string pullExpr()
+   {
+      std::string a = "";
+      for(auto & i : expression_builder)
+      {
+         a  = a + i;
+      }
+      expression_builder.clear();
+      return a;
+   }
+
 #undef yylex
 #define yylex scanner.yylex
 }
@@ -42,9 +55,13 @@
 %define api.value.type variant
 %define parse.assert
 
-%token FUNC_DECL
+%type<std::string> expression;
+%type<std::string> term;
+%type<std::string> factor;
+%type<std::string> primary;
 
-%token <std::string> USE
+%token FUNC_DECL USE SET
+
 %token <std::string> STRING_LITERAL
 %token <std::string> INTEGER_LITERAL
 %token <std::string> REAL_LITERAL
@@ -59,9 +76,36 @@
 prog_option
    :  stmt | function_stmt | END;
 
+expression
+    : term                 { /* All of these need to be put into a tree so we can parse the expression */ }
+    | expression '+' term  { }
+    | expression '-' term  { }
+    ;
+
+term
+    : factor               { }
+    | term '*' factor      { }
+    | term '/' factor      { }
+    | term '%' factor      { }
+    ;
+
+factor
+    : primary              { }
+    | '-' factor           { }
+    | '+' factor           { }
+    ;
+
+primary
+    : IDENTIFIER           { }
+    | INTEGER_LITERAL      { }
+    | REAL_LITERAL         { }
+    | '(' expression ')'   { }
+    ;
+
 stmt
    : stmt stmt
    | use_stmt
+   | set_stmt
    ;
 
 function_stmt
@@ -74,18 +118,24 @@ use_stmt
    | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' { /* Make a 'use' struct, populate, and add to a list*/ }
    ;
 
+set_stmt
+   : SET '(' IDENTIFIER ',' expression ')'         { std::cout << "set " << $3 << " to " << pullExpr() << std::endl; }
+   ;
+
 block 
-   : '{' stmt '}' { /* std::cout << "BLOCK\n"; */ } ;
+   : '{' stmt '}' { /* std::cout << "BLOCK\n"; */ } 
+   ;
 
 recv_paramaters 
-   : IDENTIFIER                     { /* std::cout << "ID : " << $1 << std::endl; */}
-   | IDENTIFIER ',' recv_paramaters { /* std::cout << "ID : " << $1 << std::endl; */}
+   : IDENTIFIER                                    { /* std::cout << "ID : " << $1 << std::endl; */}
+   | IDENTIFIER ',' recv_paramaters                { /* std::cout << "ID : " << $1 << std::endl; */}
    ;
 
 function_decl
    : FUNC_DECL '(' IDENTIFIER ',' '[' ']' ',' block ')'                 { /* Function Decl */ }
    | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { /* Function Decl */ }
    ;
+
 
 %%
 

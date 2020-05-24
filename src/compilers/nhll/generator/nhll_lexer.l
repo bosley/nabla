@@ -34,11 +34,8 @@ using token = NHLL::NHLL_Parser::token;
             yylval = lval;
 %}
 
-"use"       {
-               yylval->build< std::string >( yytext );
-               return( token::USE );
-            }
-
+"set"       { return( token::SET );  }
+"use"       { return( token::USE );  }
 "function"  { return( token::FUNC_DECL ); }
 
 [ \t]+      { /* Eat WS */  }
