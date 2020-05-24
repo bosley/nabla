@@ -35,19 +35,6 @@
    /* include for all driver functions */
    #include "nhll_driver.hpp"
 
-   std::vector<std::string> expression_builder;
-
-   std::string pullExpr()
-   {
-      std::string a = "";
-      for(auto & i : expression_builder)
-      {
-         a  = a + i;
-      }
-      expression_builder.clear();
-      return a;
-   }
-
 #undef yylex
 #define yylex scanner.yylex
 }
@@ -56,11 +43,11 @@
 %define parse.assert
 
 %type<std::string> expression;
-%type<std::string> term;
-%type<std::string> factor;
+%type<std::string> ope;
 %type<std::string> primary;
+%type<std::string> identifiers;
 
-%token FUNC_DECL USE SET
+%token FUNC_DECL USE SET CALL PCALL
 
 %token <std::string> STRING_LITERAL
 %token <std::string> INTEGER_LITERAL
@@ -74,38 +61,42 @@
 %%
 
 prog_option
-   :  stmt | function_stmt | END;
+   :  stmt 
+   | function_stmt 
+   | END
+   ;
+
+identifiers
+   :  IDENTIFIER                 { $$ = $1;      } 
+   |  IDENTIFIER '.' identifiers { $$ = $1 + "." + $3; }
+   ;
 
 expression
-    : term                 { /* All of these need to be put into a tree so we can parse the expression */ }
-    | expression '+' term  { }
-    | expression '-' term  { }
+    : primary                    { $$ = $1; }
+    | expression ope expression  { $$ = std::string( $1 + $2 + $3); }
+    | ope primary                { $$ = std::string( $1 + $2); }
     ;
 
-term
-    : factor               { }
-    | term '*' factor      { }
-    | term '/' factor      { }
-    | term '%' factor      { }
-    ;
-
-factor
-    : primary              { }
-    | '-' factor           { }
-    | '+' factor           { }
-    ;
+ope
+   : '+' { $$ = "+"; }
+   | '*' { $$ = "*"; }
+   | '-' { $$ = "-"; }
+   | '/' { $$ = "/"; }
+   | '^' { $$ = "^"; }
+   ;
 
 primary
-    : IDENTIFIER           { }
-    | INTEGER_LITERAL      { }
-    | REAL_LITERAL         { }
-    | '(' expression ')'   { }
+    : IDENTIFIER           { $$ = $1; }
+    | INTEGER_LITERAL      { $$ = $1; }
+    | REAL_LITERAL         { $$ = $1; }
+    | '(' expression ')'   { $$ = std::string( "(" + $2 + ")"); }
     ;
 
 stmt
    : stmt stmt
    | use_stmt
    | set_stmt
+   | call_stmt
    ;
 
 function_stmt
@@ -114,12 +105,19 @@ function_stmt
    ;
 
 use_stmt
-   : USE '(' STRING_LITERAL ')'                    { /* Make a 'use' struct, populate, and add to a list*/ }
-   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' { /* Make a 'use' struct, populate, and add to a list*/ }
+   : USE '(' STRING_LITERAL ')'                    { /* Make a 'use' struct, populate, and add to a list*/ std::cout << "use "     << std::endl; }
+   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' { /* Make a 'use' struct, populate, and add to a list*/ std::cout << "use as " << std::endl; }
    ;
 
 set_stmt
-   : SET '(' IDENTIFIER ',' expression ')'         { std::cout << "set " << $3 << " to " << pullExpr() << std::endl; }
+   : SET '(' identifiers ',' expression ')'         { std::cout << "set " << $3 << " to expr: " << $5 << std::endl; }
+   ;
+
+call_stmt
+   : CALL '(' identifiers ')'                              { std::cout << "Empty  call"  << std::endl; }
+   | CALL '(' identifiers ',' '[' send_paramaters ']' ')'  { std::cout << "Filled call"  << std::endl; }
+   | PCALL '(' identifiers ')'                             { std::cout << "Empty  pcall" << std::endl; }
+   | PCALL '(' identifiers ',' '[' send_paramaters ']' ')' { std::cout << "Filled pcall" << std::endl; }
    ;
 
 block 
@@ -131,9 +129,14 @@ recv_paramaters
    | IDENTIFIER ',' recv_paramaters                { /* std::cout << "ID : " << $1 << std::endl; */}
    ;
 
+send_paramaters 
+   : identifiers                                    { /* std::cout << "ID : " << $1 << std::endl; */}
+   | identifiers ',' send_paramaters                { /* std::cout << "ID : " << $1 << std::endl; */}
+   ;
+
 function_decl
-   : FUNC_DECL '(' IDENTIFIER ',' '[' ']' ',' block ')'                 { /* Function Decl */ }
-   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { /* Function Decl */ }
+   : FUNC_DECL '(' IDENTIFIER ',' block ')'                             { /* Function Decl */ std::cout << "FUNC DECL: NO PARAM" << std::endl;}
+   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { /* Function Decl */ std::cout << "FUNC DECL: PARAMS"   << std::endl;}
    ;
 
 

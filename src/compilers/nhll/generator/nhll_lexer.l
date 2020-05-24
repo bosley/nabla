@@ -5,6 +5,7 @@
 
 /* Implementation of yyFlexScanner */ 
 #include "nhll_scanner.hpp"
+
 #undef  YY_DECL
 #define YY_DECL int NHLL::NHLL_Scanner::yylex( NHLL::NHLL_Parser::semantic_type * const lval, NHLL::NHLL_Parser::location_type *loc )
 
@@ -37,6 +38,8 @@ using token = NHLL::NHLL_Parser::token;
 "set"       { return( token::SET );  }
 "use"       { return( token::USE );  }
 "function"  { return( token::FUNC_DECL ); }
+"call"      { return( token::CALL  ); }
+"pcall"     { return( token::PCALL ); }
 
 [ \t]+      { /* Eat WS */  }
 
@@ -52,7 +55,7 @@ using token = NHLL::NHLL_Parser::token;
                return( token::IDENTIFIER ); 
             }
 
--?[0-9]+    {
+[0-9]+    {
                yylval->build< std::string >( yytext );
                return ( token::INTEGER_LITERAL );
             }
