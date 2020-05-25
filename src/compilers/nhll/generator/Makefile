@@ -14,7 +14,7 @@ CFLAGS = -Wno-deprecated-register -O0  $(CDEBUG) $(CSTD)
 CXXFLAGS = -Wno-deprecated-register -O0  $(CXXDEBUG) $(CXXSTD)
 
 
-CPPOBJ = main nhll_driver
+CPPOBJ = main nhll_driver nhll
 SOBJ =  parser lexer
 
 FILES = $(addsuffix .cpp, $(CPPOBJ))

@@ -10,6 +10,7 @@
    namespace NHLL {
       class NHLL_Driver;
       class NHLL_Scanner;
+      class NhllFunction;
    }
 
 // The following definitions is missing when %locations isn't used
@@ -32,8 +33,10 @@
    #include <fstream>
    #include <stdint.h>
    
-   /* include for all driver functions */
+   #include "nhll.hpp"
    #include "nhll_driver.hpp"
+
+   std::vector<std::string> recv_params;
 
 #undef yylex
 #define yylex scanner.yylex
@@ -46,13 +49,17 @@
 %type<std::string> ope;
 %type<std::string> primary;
 %type<std::string> identifiers;
+%type<std::string> condexpr;
+%type<std::string> conditional;
 
-%token FUNC_DECL USE SET CALL PCALL
+%token FUNC_DECL USE SET CALL PCALL WHILE
+%token LTE GTE LT GT EQ NE 
 
 %token <std::string> STRING_LITERAL
 %token <std::string> INTEGER_LITERAL
 %token <std::string> REAL_LITERAL
 %token <std::string> IDENTIFIER
+
 
 %token               END    0     "end of file"
 
@@ -61,9 +68,15 @@
 %%
 
 prog_option
-   :  stmt 
-   | function_stmt 
+   : input
    | END
+   ;
+
+input
+   : function_stmt               {  }
+   | input function_stmt         {  }
+   | multiple_statements         { driver.end_of_statement(); }
+   | input multiple_statements   {  }
    ;
 
 identifiers
@@ -85,32 +98,48 @@ ope
    | '^' { $$ = "^"; }
    ;
 
+conditional
+   : LTE { $$ = ""; }
+   | GTE { $$ = ""; }
+   | GT  { $$ = ""; }
+   | LT  { $$ = ""; }
+   | EQ  { $$ = ""; }
+   | NE  { $$ = ""; }
+   ;
+
+condexpr
+   : IDENTIFIER                           { $$ = ""; }
+   | INTEGER_LITERAL                      { $$ = ""; }
+   | REAL_LITERAL                         { $$ = ""; }
+   | expression conditional expression    { $$ = ""; }
+   ;
+
 primary
-    : IDENTIFIER           { $$ = $1; }
-    | INTEGER_LITERAL      { $$ = $1; }
-    | REAL_LITERAL         { $$ = $1; }
-    | '(' expression ')'   { $$ = std::string( "(" + $2 + ")"); }
+    : IDENTIFIER                          { $$ = $1; }
+    | INTEGER_LITERAL                     { $$ = $1; }
+    | REAL_LITERAL                        { $$ = $1; }
+    | '(' expression ')'                  { $$ = std::string( "(" + $2 + ")"); }
     ;
 
 stmt
-   : stmt stmt
-   | use_stmt
+   : use_stmt
    | set_stmt
    | call_stmt
+   | while_stmt
    ;
 
 function_stmt
    : function_stmt function_stmt
-   | function_decl
+   | function_decl         { }
    ;
 
 use_stmt
-   : USE '(' STRING_LITERAL ')'                    { /* Make a 'use' struct, populate, and add to a list*/ std::cout << "use "     << std::endl; }
-   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' { /* Make a 'use' struct, populate, and add to a list*/ std::cout << "use as " << std::endl; }
+   : USE '(' STRING_LITERAL ')'                    { driver.statement_use($3);     }
+   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' { driver.statement_use($3, $5); }
    ;
 
 set_stmt
-   : SET '(' identifiers ',' expression ')'         { std::cout << "set " << $3 << " to expr: " << $5 << std::endl; }
+   : SET '(' identifiers ',' expression ')'         { driver.statement_set($3, $5); }
    ;
 
 call_stmt
@@ -120,13 +149,23 @@ call_stmt
    | PCALL '(' identifiers ',' '[' send_paramaters ']' ')' { std::cout << "Filled pcall" << std::endl; }
    ;
 
+while_stmt
+   :  WHILE '(' condexpr ',' block ')'              { std::cout << "While" << std::endl;}
+   |  WHILE '(' condexpr ',' '{' '}' ')'            { std::cout << "Empty While" << std::endl;}
+   ;
+
+multiple_statements 
+   : stmt
+   | multiple_statements stmt 
+   ;
+
 block 
-   : '{' stmt '}' { /* std::cout << "BLOCK\n"; */ } 
+   : '{' multiple_statements '}'
    ;
 
 recv_paramaters 
-   : IDENTIFIER                                    { /* std::cout << "ID : " << $1 << std::endl; */}
-   | IDENTIFIER ',' recv_paramaters                { /* std::cout << "ID : " << $1 << std::endl; */}
+   : IDENTIFIER                                    { recv_params.push_back($1); }
+   | IDENTIFIER ',' recv_paramaters                { recv_params.push_back($1); }
    ;
 
 send_paramaters 
@@ -135,8 +174,8 @@ send_paramaters
    ;
 
 function_decl
-   : FUNC_DECL '(' IDENTIFIER ',' block ')'                             { /* Function Decl */ std::cout << "FUNC DECL: NO PARAM" << std::endl;}
-   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { /* Function Decl */ std::cout << "FUNC DECL: PARAMS"   << std::endl;}
+   : FUNC_DECL '(' IDENTIFIER ',' block ')'                             { driver.function_decl($3, recv_params); recv_params.clear(); }
+   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { driver.function_decl($3, recv_params); recv_params.clear(); }
    ;
 
 

@@ -40,10 +40,23 @@ using token = NHLL::NHLL_Parser::token;
 "function"  { return( token::FUNC_DECL ); }
 "call"      { return( token::CALL  ); }
 "pcall"     { return( token::PCALL ); }
+"while"     { return( token::WHILE ); }
+
+"lte"       { return( token::LTE ); }
+"gte"       { return( token::GTE ); }
+"gt"        { return( token::GT  ); }
+"lt"        { return( token::LT  ); }
+"ne"        { return( token::NE  ); }
+"eq"        { return( token::EQ  ); }
+
+"/*"(.|\n)*?"*/" {}
 
 [ \t]+      { /* Eat WS */  }
 
 [\n]+       { loc->lines(); }
+
+"//"[^\n]*  { /* comment */ }
+
 
 \"[^\"]*\"  {
                yylval->build< std::string >( yytext );
@@ -65,7 +78,10 @@ using token = NHLL::NHLL_Parser::token;
                return ( token::REAL_LITERAL );
             }
 
+
 .           { /* Allow chars to slip in  */ return yytext[0]; } 
+
+
 %%
 
 

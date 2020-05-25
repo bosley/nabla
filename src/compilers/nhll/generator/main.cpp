@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "nhll.hpp"
 #include "nhll_driver.hpp"
 
 int 
