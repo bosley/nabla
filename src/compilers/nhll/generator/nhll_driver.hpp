@@ -39,16 +39,24 @@ namespace NHLL
       //! \brief Mark the end of a 'statement' indicating that we need to gen some code
       void end_of_statement();
 
+      void global_statements(std::vector<std::shared_ptr<NHLL::NhllElement>> elements);
+
       //! \brief Function declaration. 
       //! \param name The name of the function
       //! \param params The parameters of the function
       //! \post Marks end_of_statement 
-      void function_decl(std::string name, std::vector<std::string> params);
+      void function_decl(std::string name, std::vector<std::string> params, std::vector<std::shared_ptr<NHLL::NhllElement>> elements);
 
       //! \brief Mark the presence of a 'set' statement
       //! \param lhs Identifier 
       //! \param expression The expression to set the statement to
       void statement_set(std::string lhs, std::string expression);
+
+      std::shared_ptr<NHLL::NhllElement> create_set_statement(std::string lhs, std::string rhs );
+
+      std::shared_ptr<NHLL::NhllElement> create_use_statement(std::string lhs, std::string rhs = "");
+
+      std::shared_ptr<NHLL::NhllElement> create_while_statement(ConditionalExpression *expr, std::vector<std::shared_ptr<NHLL::NhllElement>> elements);
 
       //! \brief Mark the presence of a 'use' statement
       //! \param lhs The module to use

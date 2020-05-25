@@ -150,11 +150,11 @@ namespace NHLL
 
    void NHLL_Driver::end_parse()
    {
-      std::cout << "GLOBAL SECTION" << std::endl;
-
-      // Unmark global section
-      end_of_statement();
-      unmark_subsection();
+     // std::cout << "GLOBAL SECTION" << std::endl;
+//
+     // // Unmark global section
+     // end_of_statement();
+     // unmark_subsection();
    }
 
    // ----------------------------------------------------------
@@ -176,11 +176,24 @@ namespace NHLL
       //stage_sections[se_idx].clear();
    }
 
+
+   void NHLL_Driver::global_statements(std::vector<std::shared_ptr<NHLL::NhllElement>> elements)
+   {
+      std::cout << "GLOBAL STATEMENTS" << std::endl;
+      for( auto &i : elements)
+      {
+         if(i)
+         {
+            i->visit(*this);
+         }
+      }
+   }
+
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------
 
-   void NHLL_Driver::function_decl(std::string name, std::vector<std::string> params)
+   void NHLL_Driver::function_decl(std::string name, std::vector<std::string> params,  std::vector<std::shared_ptr<NHLL::NhllElement>> elements)
    {
       std::cout << "\n\ndriver.function_decl(" << name << ", " << "[";
       for(auto &i : params)
@@ -188,11 +201,42 @@ namespace NHLL
          std::cout << " " << i ;
       }
       std::cout << "])" << std::endl;
-
-      std::cout << "\tSTACK DEPTH "  << stage_sections.size() << std::endl;
  
-      end_of_statement();
-      unmark_subsection();
+      for( auto &i : elements)
+      {
+         if(i)
+         {
+            i->visit(*this);
+         }
+      }
+
+   }
+
+   std::shared_ptr<NHLL::NhllElement> NHLL_Driver::create_use_statement(std::string lhs, std::string rhs)
+   {
+      if(rhs.size() == 0)
+      {
+         rhs = lhs;
+      }
+
+      UseStmt us(lhs, rhs);
+      return std::make_shared<NHLL::UseStmt>(&us);
+   }
+
+
+
+   std::shared_ptr<NHLL::NhllElement> NHLL_Driver::create_set_statement(std::string lhs, std::string rhs)
+   {
+      SetStmt ss(lhs, rhs);  // Convert to post fix here
+      return std::make_shared<NHLL::SetStmt>(&ss);
+   }
+
+
+   std::shared_ptr<NHLL::NhllElement> NHLL_Driver::create_while_statement(ConditionalExpression *expr, std::vector<std::shared_ptr<NHLL::NhllElement>> elements)
+   {
+      WhileStmt ws(expr, elements);
+      
+      return std::make_shared<NHLL::WhileStmt>(&ws);
    }
 
    // ----------------------------------------------------------
@@ -233,13 +277,11 @@ namespace NHLL
    void NHLL_Driver::statement_while(ConditionalExpression *expr)
    {
       
-      WhileStmt ws(expr);
-      
-      std::shared_ptr<NHLL::NhllElement> s = std::make_shared<NHLL::WhileStmt>(&ws);
-
-      std::cout << "WHILE:::\tSTACK DEPTH "  << stage_sections.size() << std::endl;
-
-      stage_sections[se_idx].push_back( std::move(s) );
+     // WhileStmt ws(expr);
+     // 
+     // std::shared_ptr<NHLL::NhllElement> s = std::make_shared<NHLL::WhileStmt>(&ws);
+//
+     // stage_sections[se_idx].push_back( std::move(s) );
    }
 
    // -----------------------------------------------------------------------------------------------------------
@@ -280,11 +322,11 @@ namespace NHLL
       //             with the given condition
       
       // Go through each statement in the while loop, and generate the data
-      for( auto &i : stage_sections[se_idx])
+      for( auto &i : stmt.elements)
       {
          if(i)
          {
-        //    i->visit(*this);
+            i->visit(*this);
          }
       }
 

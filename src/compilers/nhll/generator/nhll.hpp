@@ -2,6 +2,8 @@
 #define NHLL_LANGUAGE_HPP
 
 #include <string>
+#include <vector>
+#include <memory>
 
 namespace NHLL
 {
@@ -94,12 +96,15 @@ namespace NHLL
     public:
         WhileStmt() {}
 
-        WhileStmt(ConditionalExpression *expr)
+        WhileStmt(ConditionalExpression *expr,
+                  std::vector<std::shared_ptr<NHLL::NhllElement>> el)
         {
             condition.type = expr->type;
             condition.cond = expr->cond;
             condition.lhs  = expr->lhs ;
             condition.rhs  = expr->rhs ;
+
+            elements = el;
         }
 
         WhileStmt(WhileStmt *o)
@@ -108,11 +113,13 @@ namespace NHLL
             condition.cond = o->condition.cond;
             condition.lhs  = o->condition.lhs ;
             condition.rhs  = o->condition.rhs ;
+            elements = o->elements;
         }
 
         virtual void visit(NhllVisitor &visitor) override;
 
         ConditionalExpression condition;
+        std::vector<std::shared_ptr<NHLL::NhllElement>> elements;
     };
 
     //

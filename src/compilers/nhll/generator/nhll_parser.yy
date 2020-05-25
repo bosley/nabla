@@ -36,6 +36,7 @@
    #include <stdint.h>
    #include <memory>
    #include <vector>
+   #include <iterator>
    
    #include "nhll.hpp"
    #include "nhll_driver.hpp"
@@ -44,6 +45,8 @@
 
 
    std::vector<std::shared_ptr<NHLL::NhllElement>>  blockStatements;
+
+   int statement_counter(0);
 
 #undef yylex
 #define yylex scanner.yylex
@@ -58,6 +61,9 @@
 %type<std::string> identifiers;
 %type<NHLL::ConditionalExpression*> condexpr;
 %type<int> conditional;
+
+%type<int> block;
+%type<int> multiple_statements;
 
 
 %token FUNC_DECL USE SET CALL PCALL WHILE
@@ -83,7 +89,7 @@ prog_option
 input
    : function_stmt               {  }
    | input function_stmt         {  }
-   | multiple_statements         { driver.end_of_statement(); }
+   | multiple_statements         { driver.global_statements(blockStatements); blockStatements.clear(); statement_counter = 0; }
    | input multiple_statements   {  }
    ;
 
@@ -130,9 +136,9 @@ primary
     ;
 
 stmt
-   : use_stmt  
-   | set_stmt  
-   | call_stmt 
+   : use_stmt     
+   | set_stmt     
+   | call_stmt    
    | while_stmt
    ;
 
@@ -142,12 +148,12 @@ function_stmt
    ;
 
 use_stmt
-   : USE '(' STRING_LITERAL ')'                    {  driver.statement_use($3);     }
-   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' {  driver.statement_use($3, $5); }
+   : USE '(' STRING_LITERAL ')'                    {  blockStatements.push_back(driver.create_use_statement($3));     }
+   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' {  blockStatements.push_back(driver.create_use_statement($3, $5)); }
    ;
 
 set_stmt
-   : SET '(' identifiers ',' expression ')'         { driver.statement_set($3, $5); }
+   : SET '(' identifiers ',' expression ')'         { blockStatements.push_back(driver.create_set_statement($3, $5)); }
    ;
 
 call_stmt
@@ -158,17 +164,33 @@ call_stmt
    ;
 
 while_stmt
-   :  WHILE '(' condexpr ',' block ')'              { driver.statement_while($3); delete $3; }
+   :  WHILE '(' condexpr ',' block ')'              { 
+                                                         // Build the statements belonging to the while statement from the block vector
+                                                         std::vector<std::shared_ptr<NHLL::NhllElement>> while_elements(
+                                                            blockStatements.begin()+(blockStatements.size()-$5+1), 
+                                                            blockStatements.end()
+                                                         );
+
+                                                         // Reform the block statement
+                                                         blockStatements = std::vector<std::shared_ptr<NHLL::NhllElement>>(
+                                                            blockStatements.begin(), blockStatements.begin()+(blockStatements.size()-$5+1)
+                                                         );
+
+                                                         // Add the while statement to the statement vector
+                                                         blockStatements.push_back(driver.create_while_statement($3, while_elements));
+                                                         
+                                                         delete $3;
+                                                    }
    |  WHILE '(' condexpr ',' '{' '}' ')'            { driver.statement_while($3); delete $3; }
    ;
 
 multiple_statements 
-   : stmt
-   | multiple_statements stmt 
+   : stmt                        { $$ = ++statement_counter; }
+   | multiple_statements stmt    { $$ = ++statement_counter; }
    ;
 
 block 
-   : '{' multiple_statements '}'
+   : '{' multiple_statements '}' { $$ = $2; statement_counter = 0;}
    ;
 
 recv_paramaters 
@@ -182,8 +204,8 @@ send_paramaters
    ;
 
 function_decl
-   : FUNC_DECL '(' IDENTIFIER ',' block ')'                             { driver.function_decl($3, recv_params); recv_params.clear(); }
-   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { driver.function_decl($3, recv_params); recv_params.clear(); }
+   : FUNC_DECL '(' IDENTIFIER ',' block ')'                             { driver.function_decl($3, recv_params, blockStatements); recv_params.clear(); blockStatements.clear(); }
+   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { driver.function_decl($3, recv_params, blockStatements); recv_params.clear(); blockStatements.clear(); }
    ;
 
 
