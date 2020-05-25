@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
-
+#include <memory>
 #include "nhll.hpp"
 #include "nhll_driver.hpp"
 
@@ -31,6 +31,9 @@ main( const int argc, const char **argv )
          /** assume file, prod code, use stat to check **/
          driver.parse( argv[1] );
       }
+
+      driver.end_parse();
+
       driver.print( std::cout ) << "\n";
    }
    else

@@ -11,6 +11,8 @@
       class NHLL_Driver;
       class NHLL_Scanner;
       class NhllFunction;
+      class ConditionalExpression;
+      enum class Conditionals;
    }
 
 // The following definitions is missing when %locations isn't used
@@ -32,11 +34,16 @@
    #include <cstdlib>
    #include <fstream>
    #include <stdint.h>
+   #include <memory>
+   #include <vector>
    
    #include "nhll.hpp"
    #include "nhll_driver.hpp"
 
    std::vector<std::string> recv_params;
+
+
+   std::vector<std::shared_ptr<NHLL::NhllElement>>  blockStatements;
 
 #undef yylex
 #define yylex scanner.yylex
@@ -49,8 +56,9 @@
 %type<std::string> ope;
 %type<std::string> primary;
 %type<std::string> identifiers;
-%type<std::string> condexpr;
-%type<std::string> conditional;
+%type<NHLL::ConditionalExpression*> condexpr;
+%type<int> conditional;
+
 
 %token FUNC_DECL USE SET CALL PCALL WHILE
 %token LTE GTE LT GT EQ NE 
@@ -99,19 +107,19 @@ ope
    ;
 
 conditional
-   : LTE { $$ = ""; }
-   | GTE { $$ = ""; }
-   | GT  { $$ = ""; }
-   | LT  { $$ = ""; }
-   | EQ  { $$ = ""; }
-   | NE  { $$ = ""; }
+   : LTE { $$ = static_cast<int>(NHLL::Conditionals::LTE); }
+   | GTE { $$ = static_cast<int>(NHLL::Conditionals::GTE); }
+   | GT  { $$ = static_cast<int>(NHLL::Conditionals::GT ); }
+   | LT  { $$ = static_cast<int>(NHLL::Conditionals::LT ); }
+   | EQ  { $$ = static_cast<int>(NHLL::Conditionals::EQ ); }
+   | NE  { $$ = static_cast<int>(NHLL::Conditionals::NE ); }
    ;
 
 condexpr
-   : IDENTIFIER                           { $$ = ""; }
-   | INTEGER_LITERAL                      { $$ = ""; }
-   | REAL_LITERAL                         { $$ = ""; }
-   | expression conditional expression    { $$ = ""; }
+   : IDENTIFIER                          { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::ID   , Conditionals::NONE , "", ""); }
+   | INTEGER_LITERAL                     { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::INT  , Conditionals::NONE , "", ""); }
+   | REAL_LITERAL                        { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::REAL , Conditionals::NONE , "", ""); }
+   | expression conditional expression   { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::EXPR , static_cast<NHLL::Conditionals>($2) , $1, $3 );              }
    ;
 
 primary
@@ -122,9 +130,9 @@ primary
     ;
 
 stmt
-   : use_stmt
-   | set_stmt
-   | call_stmt
+   : use_stmt  
+   | set_stmt  
+   | call_stmt 
    | while_stmt
    ;
 
@@ -134,8 +142,8 @@ function_stmt
    ;
 
 use_stmt
-   : USE '(' STRING_LITERAL ')'                    { driver.statement_use($3);     }
-   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' { driver.statement_use($3, $5); }
+   : USE '(' STRING_LITERAL ')'                    {  driver.statement_use($3);     }
+   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' {  driver.statement_use($3, $5); }
    ;
 
 set_stmt
@@ -150,8 +158,8 @@ call_stmt
    ;
 
 while_stmt
-   :  WHILE '(' condexpr ',' block ')'              { std::cout << "While" << std::endl;}
-   |  WHILE '(' condexpr ',' '{' '}' ')'            { std::cout << "Empty While" << std::endl;}
+   :  WHILE '(' condexpr ',' block ')'              { driver.statement_while($3); delete $3; }
+   |  WHILE '(' condexpr ',' '{' '}' ')'            { driver.statement_while($3); delete $3; }
    ;
 
 multiple_statements 

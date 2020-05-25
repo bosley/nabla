@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 
+#include "nhll_driver.hpp"
+
 /* Implementation of yyFlexScanner */ 
 #include "nhll_scanner.hpp"
 
@@ -37,10 +39,22 @@ using token = NHLL::NHLL_Parser::token;
 
 "set"       { return( token::SET );  }
 "use"       { return( token::USE );  }
-"function"  { return( token::FUNC_DECL ); }
 "call"      { return( token::CALL  ); }
 "pcall"     { return( token::PCALL ); }
-"while"     { return( token::WHILE ); }
+
+"function"  { 
+               // Indicate to driver that we are going into a subsection where
+               // statements from this point until unmark belong to subsection
+               //driver.mark_subsection(); 
+               return( token::FUNC_DECL ); 
+            }
+"while"     { 
+               // Indicate to driver that we are going into a subsection where
+               // statements from this point until unmark belong to subsection
+               //std::cout << "mark sub\n" << std::endl;
+               //driver.mark_subsection(); 
+               return( token::WHILE );
+            }
 
 "lte"       { return( token::LTE ); }
 "gte"       { return( token::GTE ); }

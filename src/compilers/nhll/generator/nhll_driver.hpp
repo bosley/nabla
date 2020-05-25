@@ -6,6 +6,7 @@
 #include <istream>
 #include <vector>
 #include <memory>
+#include <stack>
 
 #include "nhll.hpp"
 #include "nhll_scanner.hpp"
@@ -16,7 +17,8 @@ namespace NHLL
    class NHLL_Driver : public NhllVisitor
    {
    public:
-      NHLL_Driver() = default;
+      NHLL_Driver();
+
       virtual ~NHLL_Driver();
       
       //! \brief Parse from a file
@@ -27,6 +29,12 @@ namespace NHLL
 
       //! \brief Print driver
       std::ostream& print(std::ostream &stream);
+
+      void end_parse();
+
+      void mark_subsection();
+
+      void unmark_subsection();
 
       //! \brief Mark the end of a 'statement' indicating that we need to gen some code
       void end_of_statement();
@@ -47,12 +55,16 @@ namespace NHLL
       //! \param rhs The name to use the module as, defaults to lhs
       void statement_use(std::string lhs, std::string rhs = "");
 
+      void statement_while(ConditionalExpression *expr);
 
       //! \brief Visit a use statement, triggers code generation
       virtual void accept(UseStmt &stmt) override;
 
       //! \brief Visit a set statement, triggers code generation
       virtual void accept(SetStmt &stmt) override;
+
+      //! \brief Visit a while statement, triggers code generation
+      virtual void accept(WhileStmt &stmt) override;
 
    private:
 
@@ -61,8 +73,10 @@ namespace NHLL
       NHLL::NHLL_Parser  *parser  = nullptr;
       NHLL::NHLL_Scanner *scanner = nullptr;
 
-      std::vector<std::shared_ptr<NHLL::NhllElement>>  currentElements;
-
+      // The parts of the language that have been detected in their base element form
+      // from these base elements we forge ahead with generating byte code
+      std::vector< std::vector<std::shared_ptr<NHLL::NhllElement>> > stage_sections;
+      uint64_t se_idx;
    };
 
 }

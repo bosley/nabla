@@ -4,14 +4,40 @@
 #include <iostream>
 #include "nhll_driver.hpp"
 
+/*
+   stage_sections stack hold onto items that need to be generated relative to the section
+   that they are defined in.
+
+      <defined elements>         // Top - The current section ( if scope or something )
+  __________________________
+   |  <defined elements> |       while scope
+   |  <defined elements> |       function scope
+   |  <defined elements> |       global scope
+
+
+*/
+
 namespace NHLL
 {
+   NHLL_Driver::NHLL_Driver() : se_idx(0)
+   {
+      mark_subsection();
+      stage_sections.reserve(100);
+   }
+
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------
 
    NHLL_Driver::~NHLL_Driver()
    {
+      for(auto & i : stage_sections)
+      {
+         i.clear();
+      }
+
+      stage_sections.clear();
+
       delete(scanner);
       scanner = nullptr;
       delete(parser);
@@ -58,7 +84,7 @@ namespace NHLL
       delete(scanner);
       try
       {
-         scanner = new NHLL::NHLL_Scanner( &stream );
+         scanner = new NHLL::NHLL_Scanner( &stream, (*this) );
       }
       catch( std::bad_alloc &ba )
       {
@@ -97,23 +123,57 @@ namespace NHLL
       return(stream);
    }
 
+   void NHLL_Driver::mark_subsection()
+   {
+      std::cout << "--- MARK! " << stage_sections.size() << std::endl;
+
+      std::vector<std::shared_ptr<NHLL::NhllElement>> item;
+      stage_sections.push_back(item);
+      se_idx++;
+   }
+
+   void NHLL_Driver::unmark_subsection()
+   {
+      std::cout << "--- UNMARK! " << stage_sections.size() << std::endl;
+
+
+      if(se_idx > 0)
+      {
+         stage_sections.pop_back();
+         se_idx--;
+      }
+   }
+
    // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   void NHLL_Driver::end_parse()
+   {
+      std::cout << "GLOBAL SECTION" << std::endl;
+
+      // Unmark global section
+      end_of_statement();
+      unmark_subsection();
+   }
+
+   // ----------------------------------------------------------
+   //
+   //    At the end of a statement, we visit all elements and
+   //    trigger code generation specific to that element
    //
    // ----------------------------------------------------------
 
    void NHLL_Driver::end_of_statement()
    {
-      std::cout << "End of statement" << std::endl;
-
-      for( auto &i : currentElements)
+      for( auto &i : stage_sections[se_idx])
       {
          if(i)
          {
             i->visit(*this);
          }
       }
-      // Statements that exist outside of functions need to be popped and generated
-      currentElements.clear();
+      //stage_sections[se_idx].clear();
    }
 
    // ----------------------------------------------------------
@@ -122,14 +182,17 @@ namespace NHLL
 
    void NHLL_Driver::function_decl(std::string name, std::vector<std::string> params)
    {
-      std::cout << "driver.function_decl(" << name << ", " << "[";
+      std::cout << "\n\ndriver.function_decl(" << name << ", " << "[";
       for(auto &i : params)
       {
          std::cout << " " << i ;
       }
       std::cout << "])" << std::endl;
 
+      std::cout << "\tSTACK DEPTH "  << stage_sections.size() << std::endl;
+ 
       end_of_statement();
+      unmark_subsection();
    }
 
    // ----------------------------------------------------------
@@ -140,12 +203,9 @@ namespace NHLL
    {
       SetStmt ss(lhs, expression);  // Convert to post fix here
 
-
       std::shared_ptr<NHLL::NhllElement> s = std::make_shared<NHLL::SetStmt>(&ss);
 
-      currentElements.push_back( std::move(s) );
-
-      //std::cout << "driver.statement_set(" << lhs << ", " << expression << ")" << std::endl;
+      stage_sections[se_idx].push_back( std::move(s) );
    }
 
    // ----------------------------------------------------------
@@ -163,20 +223,72 @@ namespace NHLL
       
       std::shared_ptr<NHLL::NhllElement> s = std::make_shared<NHLL::UseStmt>(&us);
 
-      currentElements.push_back( std::move(s) );
-
-      //std::cout << "driver.statement_use(" << lhs << ", " << rhs << ")" << std::endl;
+      stage_sections[se_idx].push_back( std::move(s) );
    }
 
-   // ------------------------------------------------------------------------
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::statement_while(ConditionalExpression *expr)
+   {
+      
+      WhileStmt ws(expr);
+      
+      std::shared_ptr<NHLL::NhllElement> s = std::make_shared<NHLL::WhileStmt>(&ws);
 
+      std::cout << "WHILE:::\tSTACK DEPTH "  << stage_sections.size() << std::endl;
+
+      stage_sections[se_idx].push_back( std::move(s) );
+   }
+
+   // -----------------------------------------------------------------------------------------------------------
+   //
+   //       Accept functions from base visitor class that are used to call into the code generation
+   //       functions
+   //
+   // -----------------------------------------------------------------------------------------------------------
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
    void NHLL_Driver::accept(UseStmt &stmt)
    {
       std::cout << "Generate use statement ! " << stmt.module << ", " << stmt.as_name << std::endl;
    }
    
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
    void NHLL_Driver::accept(SetStmt &stmt)
    {
       std::cout << "Generate set statement ! " << stmt.identifier << ", " << stmt.expression << std::endl;
+   }
+   
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(WhileStmt &stmt)
+   {
+      std::cout << "Generate while statement ! " << std::endl; //<< stmt.identifier << ", " << stmt.expression << std::endl;
+
+      std::cout << "\tSTACK DEPTH "  << stage_sections.size() << std::endl;
+      // TODO HERE : Tell the bye generator that the next incomming data is for a while loop
+      //             with the given condition
+      
+      // Go through each statement in the while loop, and generate the data
+      for( auto &i : stage_sections[se_idx])
+      {
+         if(i)
+         {
+        //    i->visit(*this);
+         }
+      }
+
+      // Unmark this while loop's subsection
+      unmark_subsection();
    }
 }

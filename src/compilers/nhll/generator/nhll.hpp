@@ -14,6 +14,36 @@ namespace NHLL
         virtual void visit(NhllVisitor &visitor) = 0;
     };
 
+    enum class Conditionals
+    {
+        LT, GT, LTE, GTE, NE, EQ, NONE
+    };
+
+    enum class ConditialExpressionType
+    {
+        ID, INT, REAL, EXPR
+    };
+
+    class ConditionalExpression
+    {
+    public:
+        ConditionalExpression(){}
+        ConditionalExpression(ConditialExpressionType type, 
+                              Conditionals condition, 
+                              std::string expression_lhs,
+                              std::string expression_rhs) : type(type),
+                                                            cond(condition),
+                                                            lhs(expression_lhs),
+                                                            rhs(expression_rhs)
+        {
+            
+        }
+        ConditialExpressionType type;
+        Conditionals cond;
+        std::string lhs;
+        std::string rhs;
+    };
+
     //
     //
     //
@@ -59,6 +89,35 @@ namespace NHLL
     //
     //
     //
+    class WhileStmt : public NhllElement
+    {
+    public:
+        WhileStmt() {}
+
+        WhileStmt(ConditionalExpression *expr)
+        {
+            condition.type = expr->type;
+            condition.cond = expr->cond;
+            condition.lhs  = expr->lhs ;
+            condition.rhs  = expr->rhs ;
+        }
+
+        WhileStmt(WhileStmt *o)
+        {
+            condition.type = o->condition.type;
+            condition.cond = o->condition.cond;
+            condition.lhs  = o->condition.lhs ;
+            condition.rhs  = o->condition.rhs ;
+        }
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        ConditionalExpression condition;
+    };
+
+    //
+    //
+    //
     class NhllFunction
     {
     public:
@@ -76,6 +135,7 @@ namespace NHLL
     public:
         virtual void accept(UseStmt &stmt) = 0;
         virtual void accept(SetStmt &stmt) = 0;
+        virtual void accept(WhileStmt &stmt) = 0;
     };
 }
 

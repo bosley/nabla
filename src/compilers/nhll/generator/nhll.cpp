@@ -39,4 +39,13 @@ namespace NHLL
     {
         visitor.accept(*this);
     }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void WhileStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
 }

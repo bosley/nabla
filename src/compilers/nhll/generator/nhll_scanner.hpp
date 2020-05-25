@@ -8,12 +8,15 @@
 #include "nhll_parser.tab.hh"
 #include "location.hh"
 
-namespace NHLL{
+namespace NHLL
+{
+
+   class NHLL_Driver;
 
 class NHLL_Scanner : public yyFlexLexer{
 public:
    
-   NHLL_Scanner(std::istream *in) : yyFlexLexer(in)
+   NHLL_Scanner(std::istream *in, NHLL_Driver& driver) : yyFlexLexer(in), driver(driver)
    {
    };
    virtual ~NHLL_Scanner() {
@@ -32,6 +35,8 @@ public:
 private:
    /* yyval ptr */
    NHLL::NHLL_Parser::semantic_type *yylval = nullptr;
+
+   NHLL_Driver &driver;
 };
 
 } /* end namespace NHLL */
