@@ -4,25 +4,11 @@
 #include <iostream>
 #include "nhll_driver.hpp"
 
-/*
-   stage_sections stack hold onto items that need to be generated relative to the section
-   that they are defined in.
-
-      <defined elements>         // Top - The current section ( if scope or something )
-  __________________________
-   |  <defined elements> |       while scope
-   |  <defined elements> |       function scope
-   |  <defined elements> |       global scope
-
-
-*/
-
 namespace NHLL
 {
-   NHLL_Driver::NHLL_Driver() : se_idx(0)
+   NHLL_Driver::NHLL_Driver() 
    {
-      mark_subsection();
-      stage_sections.reserve(100);
+      
    }
 
    // ----------------------------------------------------------
@@ -31,13 +17,6 @@ namespace NHLL
 
    NHLL_Driver::~NHLL_Driver()
    {
-      for(auto & i : stage_sections)
-      {
-         i.clear();
-      }
-
-      stage_sections.clear();
-
       delete(scanner);
       scanner = nullptr;
       delete(parser);
@@ -123,68 +102,24 @@ namespace NHLL
       return(stream);
    }
 
-   void NHLL_Driver::mark_subsection()
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   void NHLL_Driver::build_input(std::vector< ElementList > input_elements )
    {
-      std::cout << "--- MARK! " << stage_sections.size() << std::endl;
+      std::cout << "Build from : " << input_elements.size() << " lists of elements" << std::endl;
 
-      std::vector<std::shared_ptr<NHLL::NhllElement>> item;
-      stage_sections.push_back(item);
-      se_idx++;
-   }
-
-   void NHLL_Driver::unmark_subsection()
-   {
-      std::cout << "--- UNMARK! " << stage_sections.size() << std::endl;
-
-
-      if(se_idx > 0)
+      for(auto &element_list : input_elements )
       {
-         stage_sections.pop_back();
-         se_idx--;
-      }
-   }
+         std::cout << "----- Current element list has " << element_list.size() << " elements" << std::endl;
 
-   // ----------------------------------------------------------
-   //
-   // ----------------------------------------------------------
-
-   void NHLL_Driver::end_parse()
-   {
-     // std::cout << "GLOBAL SECTION" << std::endl;
-//
-     // // Unmark global section
-     // end_of_statement();
-     // unmark_subsection();
-   }
-
-   // ----------------------------------------------------------
-   //
-   //    At the end of a statement, we visit all elements and
-   //    trigger code generation specific to that element
-   //
-   // ----------------------------------------------------------
-
-   void NHLL_Driver::end_of_statement()
-   {
-      for( auto &i : stage_sections[se_idx])
-      {
-         if(i)
+         for(auto &element : element_list)
          {
-            i->visit(*this);
-         }
-      }
-      //stage_sections[se_idx].clear();
-   }
-
-
-   void NHLL_Driver::global_statements(std::vector<std::shared_ptr<NHLL::NhllElement>> elements)
-   {
-      std::cout << "GLOBAL STATEMENTS" << std::endl;
-      for( auto &i : elements)
-      {
-         if(i)
-         {
-            i->visit(*this);
+            if(element)
+            {
+               element->visit(*this);
+            }
          }
       }
    }
@@ -193,95 +128,42 @@ namespace NHLL
    //
    // ----------------------------------------------------------
 
-   void NHLL_Driver::function_decl(std::string name, std::vector<std::string> params,  std::vector<std::shared_ptr<NHLL::NhllElement>> elements)
+   NHLL::NhllElement* NHLL_Driver::create_function_statement(std::string name, std::vector<std::string> params, ElementList elements)
    {
-      std::cout << "\n\ndriver.function_decl(" << name << ", " << "[";
-      for(auto &i : params)
-      {
-         std::cout << " " << i ;
-      }
-      std::cout << "])" << std::endl;
- 
-      for( auto &i : elements)
-      {
-         if(i)
-         {
-            i->visit(*this);
-         }
-      }
-
+      return new NhllFunction(name, params, elements);
    }
 
-   std::shared_ptr<NHLL::NhllElement> NHLL_Driver::create_use_statement(std::string lhs, std::string rhs)
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_use_statement(std::string lhs, std::string rhs)
    {
       if(rhs.size() == 0)
       {
          rhs = lhs;
       }
-
-      UseStmt us(lhs, rhs);
-      return std::make_shared<NHLL::UseStmt>(&us);
-   }
-
-
-
-   std::shared_ptr<NHLL::NhllElement> NHLL_Driver::create_set_statement(std::string lhs, std::string rhs)
-   {
-      SetStmt ss(lhs, rhs);  // Convert to post fix here
-      return std::make_shared<NHLL::SetStmt>(&ss);
-   }
-
-
-   std::shared_ptr<NHLL::NhllElement> NHLL_Driver::create_while_statement(ConditionalExpression *expr, std::vector<std::shared_ptr<NHLL::NhllElement>> elements)
-   {
-      WhileStmt ws(expr, elements);
-      
-      return std::make_shared<NHLL::WhileStmt>(&ws);
+      return new UseStmt(lhs, rhs);
    }
 
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------
-   
-   void NHLL_Driver::statement_set(std::string lhs, std::string expression)
+
+   NHLL::NhllElement* NHLL_Driver::create_set_statement(std::string lhs, std::string rhs)
    {
-      SetStmt ss(lhs, expression);  // Convert to post fix here
-
-      std::shared_ptr<NHLL::NhllElement> s = std::make_shared<NHLL::SetStmt>(&ss);
-
-      stage_sections[se_idx].push_back( std::move(s) );
+      return new SetStmt(lhs, rhs); // Convert to post fix here
    }
 
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------
-   
-   void NHLL_Driver::statement_use(std::string lhs, std::string rhs)
+
+   NHLL::NhllElement* NHLL_Driver::create_while_statement(ConditionalExpression *expr, ElementList elements)
    {
-      if(rhs.size() == 0)
-      {
-         rhs = lhs;
-      }
+      std::cout << "Create while statement! " << std::endl;
 
-      UseStmt us(lhs, rhs);
-      
-      std::shared_ptr<NHLL::NhllElement> s = std::make_shared<NHLL::UseStmt>(&us);
-
-      stage_sections[se_idx].push_back( std::move(s) );
-   }
-
-   // ----------------------------------------------------------
-   //
-   // ----------------------------------------------------------
-   
-   void NHLL_Driver::statement_while(ConditionalExpression *expr)
-   {
-      
-     // WhileStmt ws(expr);
-     // 
-     // std::shared_ptr<NHLL::NhllElement> s = std::make_shared<NHLL::WhileStmt>(&ws);
-//
-     // stage_sections[se_idx].push_back( std::move(s) );
+      return new WhileStmt(expr, elements);
    }
 
    // -----------------------------------------------------------------------------------------------------------
@@ -315,22 +197,31 @@ namespace NHLL
    
    void NHLL_Driver::accept(WhileStmt &stmt)
    {
-      std::cout << "Generate while statement ! " << std::endl; //<< stmt.identifier << ", " << stmt.expression << std::endl;
-
-      std::cout << "\tSTACK DEPTH "  << stage_sections.size() << std::endl;
-      // TODO HERE : Tell the bye generator that the next incomming data is for a while loop
-      //             with the given condition
+      std::cout << "Generate while statement ! " << std::endl;
       
-      // Go through each statement in the while loop, and generate the data
-      for( auto &i : stmt.elements)
+      for(auto & inner_stmt : stmt.elements)
       {
-         if(i)
+         if(inner_stmt)
          {
-            i->visit(*this);
+            inner_stmt->visit(*this);
          }
       }
+   }
 
-      // Unmark this while loop's subsection
-      unmark_subsection();
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(NhllFunction &stmt)
+   {
+      std::cout << "Generate function ! " << stmt.name << std::endl;
+
+      for(auto & inner_stmt : stmt.elements)
+      {
+         if(inner_stmt)
+         {
+            inner_stmt->visit(*this);
+         }
+      }
    }
 }

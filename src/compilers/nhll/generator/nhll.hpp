@@ -16,6 +16,9 @@ namespace NHLL
         virtual void visit(NhllVisitor &visitor) = 0;
     };
 
+    typedef std::vector<NHLL::NhllElement*> ElementList;
+
+
     enum class Conditionals
     {
         LT, GT, LTE, GTE, NE, EQ, NONE
@@ -96,8 +99,7 @@ namespace NHLL
     public:
         WhileStmt() {}
 
-        WhileStmt(ConditionalExpression *expr,
-                  std::vector<std::shared_ptr<NHLL::NhllElement>> el)
+        WhileStmt(ConditionalExpression *expr, ElementList el)
         {
             condition.type = expr->type;
             condition.cond = expr->cond;
@@ -119,19 +121,33 @@ namespace NHLL
         virtual void visit(NhllVisitor &visitor) override;
 
         ConditionalExpression condition;
-        std::vector<std::shared_ptr<NHLL::NhllElement>> elements;
+        ElementList elements;
     };
 
     //
     //
     //
-    class NhllFunction
+    class NhllFunction : public NhllElement
     {
     public:
-        NhllFunction();
-        ~NhllFunction();
-        //bool hasParams;
-        //std::vector<NhllElement *> statements;
+        NhllFunction() {}
+
+        NhllFunction(std::string name, 
+                     std::vector<std::string> params,
+                     ElementList el) 
+                            : name(name),
+                              params(params),
+                              elements(el){}
+
+        NhllFunction(NhllFunction *o) : name(o->name),
+                                        params(o->params),
+                                        elements(o->elements){}
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        std::string name;
+        std::vector<std::string> params;
+        ElementList elements;
     };
 
     /*
@@ -143,6 +159,7 @@ namespace NHLL
         virtual void accept(UseStmt &stmt) = 0;
         virtual void accept(SetStmt &stmt) = 0;
         virtual void accept(WhileStmt &stmt) = 0;
+        virtual void accept(NhllFunction &stmt) = 0;
     };
 }
 

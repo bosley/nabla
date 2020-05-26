@@ -32,8 +32,6 @@ main( const int argc, const char **argv )
          driver.parse( argv[1] );
       }
 
-      driver.end_parse();
-
       driver.print( std::cout ) << "\n";
    }
    else

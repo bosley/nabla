@@ -11,6 +11,7 @@
       class NHLL_Driver;
       class NHLL_Scanner;
       class NhllFunction;
+      class NhllElement;
       class ConditionalExpression;
       enum class Conditionals;
    }
@@ -41,12 +42,7 @@
    #include "nhll.hpp"
    #include "nhll_driver.hpp"
 
-   std::vector<std::string> recv_params;
-
-
-   std::vector<std::shared_ptr<NHLL::NhllElement>>  blockStatements;
-
-   int statement_counter(0);
+   std::vector< std::vector<NHLL::NhllElement*> > element_list;
 
 #undef yylex
 #define yylex scanner.yylex
@@ -62,9 +58,19 @@
 %type<NHLL::ConditionalExpression*> condexpr;
 %type<int> conditional;
 
-%type<int> block;
-%type<int> multiple_statements;
+%type<NHLL::NhllElement*> stmt;
+%type<NHLL::NhllElement*> use_stmt;
+%type<NHLL::NhllElement*> set_stmt;
+%type<NHLL::NhllElement*> call_stmt;
+%type<NHLL::NhllElement*> while_stmt;
+%type<NHLL::NhllElement*> function_stmt;
 
+%type<std::vector<NhllElement*>> multiple_statements;
+%type<std::vector<NhllElement*>> block;
+%type<std::vector<NhllElement*>> function_statements;
+
+%type<std::vector<std::string>> recv_paramaters;
+%type<std::vector<std::string>> send_paramaters;
 
 %token FUNC_DECL USE SET CALL PCALL WHILE
 %token LTE GTE LT GT EQ NE 
@@ -82,15 +88,15 @@
 %%
 
 prog_option
-   : input
+   : input     { driver.build_input(element_list); }
    | END
    ;
 
 input
-   : function_stmt               {  }
-   | input function_stmt         {  }
-   | multiple_statements         { driver.global_statements(blockStatements); blockStatements.clear(); statement_counter = 0; }
-   | input multiple_statements   {  }
+   : function_statements         { element_list.push_back($1); }
+   | input function_statements   { element_list.push_back($2); }
+   | multiple_statements         { element_list.push_back($1); }
+   | input multiple_statements   { element_list.push_back($2); }
    ;
 
 identifiers
@@ -136,76 +142,60 @@ primary
     ;
 
 stmt
-   : use_stmt     
-   | set_stmt     
-   | call_stmt    
-   | while_stmt
+   : use_stmt     { $$ = $1; }
+   | set_stmt     { $$ = $1; }
+   | call_stmt    { $$ = $1; }
+   | while_stmt   { $$ = $1; }
    ;
 
-function_stmt
-   : function_stmt function_stmt
-   | function_decl         { }
+function_statements
+   : function_stmt                     { $$ = std::vector<NhllElement*>(); $$.push_back($1); }
+   | function_statements function_stmt { $1.push_back($2); $$ = $1; }
    ;
 
 use_stmt
-   : USE '(' STRING_LITERAL ')'                    {  blockStatements.push_back(driver.create_use_statement($3));     }
-   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' {  blockStatements.push_back(driver.create_use_statement($3, $5)); }
+   : USE '(' STRING_LITERAL ')'                    { $$ = driver.create_use_statement($3);     }
+   | USE '(' STRING_LITERAL ',' STRING_LITERAL ')' { $$ = driver.create_use_statement($3, $5); }
    ;
 
 set_stmt
-   : SET '(' identifiers ',' expression ')'         { blockStatements.push_back(driver.create_set_statement($3, $5)); }
+   : SET '(' identifiers ',' expression ')'         { $$ = driver.create_set_statement($3, $5); }
    ;
 
 call_stmt
-   : CALL '(' identifiers ')'                              { std::cout << "Empty  call"  << std::endl; }
-   | CALL '(' identifiers ',' '[' send_paramaters ']' ')'  { std::cout << "Filled call"  << std::endl; }
-   | PCALL '(' identifiers ')'                             { std::cout << "Empty  pcall" << std::endl; }
-   | PCALL '(' identifiers ',' '[' send_paramaters ']' ')' { std::cout << "Filled pcall" << std::endl; }
+   : CALL '(' identifiers ')'                              { std::cout << "Empty  call"  << std::endl; $$ = nullptr; }
+   | CALL '(' identifiers ',' '[' send_paramaters ']' ')'  { std::cout << "Filled call"  << std::endl; $$ = nullptr; }
+   | PCALL '(' identifiers ')'                             { std::cout << "Empty  pcall" << std::endl; $$ = nullptr; }
+   | PCALL '(' identifiers ',' '[' send_paramaters ']' ')' { std::cout << "Filled pcall" << std::endl; $$ = nullptr; }
    ;
 
 while_stmt
-   :  WHILE '(' condexpr ',' block ')'              { 
-                                                         // Build the statements belonging to the while statement from the block vector
-                                                         std::vector<std::shared_ptr<NHLL::NhllElement>> while_elements(
-                                                            blockStatements.begin()+(blockStatements.size()-$5+1), 
-                                                            blockStatements.end()
-                                                         );
-
-                                                         // Reform the block statement
-                                                         blockStatements = std::vector<std::shared_ptr<NHLL::NhllElement>>(
-                                                            blockStatements.begin(), blockStatements.begin()+(blockStatements.size()-$5+1)
-                                                         );
-
-                                                         // Add the while statement to the statement vector
-                                                         blockStatements.push_back(driver.create_while_statement($3, while_elements));
-                                                         
-                                                         delete $3;
-                                                    }
-   |  WHILE '(' condexpr ',' '{' '}' ')'            { driver.statement_while($3); delete $3; }
+   :  WHILE '(' condexpr ',' block ')'              { $$ = driver.create_while_statement($3, $5); delete $3; }
+   |  WHILE '(' condexpr ',' '{' '}' ')'            { $$ = driver.create_while_statement($3, ElementList()); }
    ;
 
 multiple_statements 
-   : stmt                        { $$ = ++statement_counter; }
-   | multiple_statements stmt    { $$ = ++statement_counter; }
+   : stmt                        { $$ = std::vector<NhllElement*>(); $$.push_back($1); }     // Create the list to return, and add the statement
+   | multiple_statements stmt    { $1.push_back($2); $$ = $1; }                              // Add the statement to the list 
    ;
 
 block 
-   : '{' multiple_statements '}' { $$ = $2; statement_counter = 0;}
+   : '{' multiple_statements '}' { $$ = $2; }   // Return the statement list
    ;
 
 recv_paramaters 
-   : IDENTIFIER                                    { recv_params.push_back($1); }
-   | IDENTIFIER ',' recv_paramaters                { recv_params.push_back($1); }
+   : IDENTIFIER                                    { $$ = std::vector<std::string>(); $$.push_back($1); }
+   | recv_paramaters ',' IDENTIFIER                { $$.push_back($3); }
    ;
 
 send_paramaters 
-   : identifiers                                    { /* std::cout << "ID : " << $1 << std::endl; */}
-   | identifiers ',' send_paramaters                { /* std::cout << "ID : " << $1 << std::endl; */}
+   : identifiers                                    { $$ = std::vector<std::string>(); $$.push_back($1); }
+   | send_paramaters ',' identifiers                { $$.push_back($3); }
    ;
 
-function_decl
-   : FUNC_DECL '(' IDENTIFIER ',' block ')'                             { driver.function_decl($3, recv_params, blockStatements); recv_params.clear(); blockStatements.clear(); }
-   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { driver.function_decl($3, recv_params, blockStatements); recv_params.clear(); blockStatements.clear(); }
+function_stmt
+   : FUNC_DECL '(' IDENTIFIER ',' block ')'                             { $$ = driver.create_function_statement($3, std::vector<std::string>(), $5); }
+   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { $$ = driver.create_function_statement($3, $6, $9); }
    ;
 
 

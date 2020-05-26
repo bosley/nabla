@@ -30,40 +30,13 @@ namespace NHLL
       //! \brief Print driver
       std::ostream& print(std::ostream &stream);
 
-      void end_parse();
+      void build_input(std::vector< ElementList > input_elements );
 
-      void mark_subsection();
+      NHLL::NhllElement* create_function_statement(std::string name, std::vector<std::string> params, ElementList elements);
+      NHLL::NhllElement* create_set_statement(std::string lhs, std::string rhs );
+      NHLL::NhllElement* create_use_statement(std::string lhs, std::string rhs = "");
+      NHLL::NhllElement* create_while_statement(ConditionalExpression *expr, ElementList elements);
 
-      void unmark_subsection();
-
-      //! \brief Mark the end of a 'statement' indicating that we need to gen some code
-      void end_of_statement();
-
-      void global_statements(std::vector<std::shared_ptr<NHLL::NhllElement>> elements);
-
-      //! \brief Function declaration. 
-      //! \param name The name of the function
-      //! \param params The parameters of the function
-      //! \post Marks end_of_statement 
-      void function_decl(std::string name, std::vector<std::string> params, std::vector<std::shared_ptr<NHLL::NhllElement>> elements);
-
-      //! \brief Mark the presence of a 'set' statement
-      //! \param lhs Identifier 
-      //! \param expression The expression to set the statement to
-      void statement_set(std::string lhs, std::string expression);
-
-      std::shared_ptr<NHLL::NhllElement> create_set_statement(std::string lhs, std::string rhs );
-
-      std::shared_ptr<NHLL::NhllElement> create_use_statement(std::string lhs, std::string rhs = "");
-
-      std::shared_ptr<NHLL::NhllElement> create_while_statement(ConditionalExpression *expr, std::vector<std::shared_ptr<NHLL::NhllElement>> elements);
-
-      //! \brief Mark the presence of a 'use' statement
-      //! \param lhs The module to use
-      //! \param rhs The name to use the module as, defaults to lhs
-      void statement_use(std::string lhs, std::string rhs = "");
-
-      void statement_while(ConditionalExpression *expr);
 
       //! \brief Visit a use statement, triggers code generation
       virtual void accept(UseStmt &stmt) override;
@@ -74,6 +47,9 @@ namespace NHLL
       //! \brief Visit a while statement, triggers code generation
       virtual void accept(WhileStmt &stmt) override;
 
+      //! \brief Visit a while statement, triggers code generation
+      virtual void accept(NhllFunction &stmt) override;
+
    private:
 
       void parse_helper( std::istream &stream );
@@ -83,7 +59,6 @@ namespace NHLL
 
       // The parts of the language that have been detected in their base element form
       // from these base elements we forge ahead with generating byte code
-      std::vector< std::vector<std::shared_ptr<NHLL::NhllElement>> > stage_sections;
       uint64_t se_idx;
    };
 
