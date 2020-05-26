@@ -16,7 +16,6 @@
       enum class Conditionals;
    }
 
-// The following definitions is missing when %locations isn't used
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
 #   define YY_NULLPTR nullptr
@@ -56,6 +55,7 @@
 %type<std::string> expression;
 %type<std::string> ope;
 %type<std::string> primary;
+%type<std::string> passable;
 %type<std::string> identifiers;
 %type<NHLL::ConditionalExpression*> condexpr;
 %type<int> conditional;
@@ -140,6 +140,13 @@ primary
     | '(' expression ')'                  { $$ = std::string( "(" + $2 + ")"); }
     ;
 
+passable
+   : identifiers     { $$ = $1; }
+   | INTEGER_LITERAL { $$ = $1; }
+   | REAL_LITERAL    { $$ = $1; }
+   | STRING_LITERAL  { $$ = $1; }
+   ;
+
 stmt
    : use_stmt     { $$ = $1; }
    | set_stmt     { $$ = $1; }
@@ -183,13 +190,13 @@ block
    ;
 
 recv_paramaters 
-   : IDENTIFIER                                    { r_paramaters.push_back($1); }
-   | recv_paramaters ',' IDENTIFIER                { r_paramaters.push_back($3); }
+   : IDENTIFIER                                 { r_paramaters.push_back($1); }
+   | recv_paramaters ',' IDENTIFIER             { r_paramaters.push_back($3); }
    ;
 
 send_paramaters 
-   : identifiers                                   { s_paramaters.push_back($1); }
-   | send_paramaters ',' identifiers               { s_paramaters.push_back($3); }
+   : passable                                   { s_paramaters.push_back($1); }
+   | send_paramaters ',' passable               { s_paramaters.push_back($3); }
    ;
 
 function_stmt
