@@ -11,10 +11,10 @@ CSTD = -std=c99
 CXXSTD = -std=c++17
 
 CFLAGS = -Wno-deprecated-register -O0  $(CDEBUG) $(CSTD) 
-CXXFLAGS = -Wno-deprecated-register -O0  $(CXXDEBUG) $(CXXSTD)
+CXXFLAGS = -Wno-unused-function  -Wno-deprecated-register -O0  $(CXXDEBUG) $(CXXSTD)
 
 
-CPPOBJ = main nhll_driver nhll
+CPPOBJ = main nhll_driver nhll nhll_postfix
 SOBJ =  parser lexer
 
 FILES = $(addsuffix .cpp, $(CPPOBJ))

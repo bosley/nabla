@@ -131,9 +131,9 @@ namespace NHLL
    //
    // ----------------------------------------------------------
 
-   NHLL::NhllElement* NHLL_Driver::create_function_statement(std::string name, std::vector<std::string> params, ElementList elements)
+   NHLL::NhllElement* NHLL_Driver::create_function_statement(std::string name, std::vector<FunctionParam> params, DataPrims ret, ElementList elements)
    {
-      return new NhllFunction(name, params, elements);
+      return new NhllFunction(name, params, ret, elements);
    }
 
    // ----------------------------------------------------------
@@ -153,9 +153,18 @@ namespace NHLL
    //
    // ----------------------------------------------------------
 
-   NHLL::NhllElement* NHLL_Driver::create_set_statement(std::string lhs, std::string rhs)
+   NHLL::NhllElement* NHLL_Driver::create_let_statement(std::string lhs, std::string rhs, bool is_expression)
    {
-      return new SetStmt(lhs, rhs); // Convert to post fix here
+      return new LetStmt(lhs, rhs, is_expression);
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_reassign_statement(std::string lhs, std::string rhs, bool is_expression)
+   {
+      return new ReAssignStmt(lhs, rhs, is_expression);
    }
 
    // ----------------------------------------------------------
@@ -173,9 +182,31 @@ namespace NHLL
    //
    // ----------------------------------------------------------
 
-   NHLL::NhllElement* NHLL_Driver::create_call_statement(std::string function, std::vector<std::string> params, bool isPar)
+   NHLL::NhllElement* NHLL_Driver::create_loop_statement(std::string id, ElementList elements)
    {
-      return new CallStmt(isPar, function, params);
+      std::cout << "Create loop statement! " << std::endl;
+
+      return new LoopStmt(id, elements);
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_break_statement(std::string id)
+   {
+      std::cout << "Create break statement! " << std::endl;
+
+      return new BreakStmt(id);
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_call_statement(std::string function, std::vector<std::string> params)
+   {
+      return new CallStmt(function, params);
    }
 
    // -----------------------------------------------------------------------------------------------------------
@@ -198,11 +229,40 @@ namespace NHLL
    //
    // ----------------------------------------------------------
    
-   void NHLL_Driver::accept(SetStmt &stmt)
+   void NHLL_Driver::accept(LetStmt &stmt)
    {
-      std::cout << "Generate set statement ! " << stmt.identifier << ", " << stmt.expression << std::endl;
+      std::cout << "Generate let statement ! " << stmt.identifier << ", " << stmt.set_to << ", is expr : " << stmt.is_expr << std::endl;
+
+      if(stmt.is_expr)
+      {
+         std::cout << "\tPostfix: ";
+         for(auto & pfw : postfixer.convert(stmt.set_to))
+         {
+            std::cout << pfw.value << " ";
+         }
+         std::cout << std::endl;
+      }
    }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
    
+   void NHLL_Driver::accept(ReAssignStmt &stmt)
+   {
+      std::cout << "Generate reassign statement ! " << stmt.identifier << ", " << stmt.set_to << ", is expr : " << stmt.is_expr << std::endl;
+
+      if(stmt.is_expr)
+      {
+         std::cout << "\tPostfix: ";
+         for(auto & pfw : postfixer.convert(stmt.set_to))
+         {
+            std::cout << pfw.value << " ";
+         }
+         std::cout << std::endl;
+      }
+   }
+
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------
@@ -224,15 +284,41 @@ namespace NHLL
    //
    // ----------------------------------------------------------
    
+   void NHLL_Driver::accept(LoopStmt &stmt)
+   {
+      std::cout << "Generate loop statement ! id : " << stmt.id << std::endl;
+      
+      for(auto & inner_stmt : stmt.elements)
+      {
+         if(inner_stmt)
+         {
+            inner_stmt->visit(*this);
+         }
+      }
+   }
+   
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(BreakStmt &stmt)
+   {
+      std::cout << "Generate break statement ! " << stmt.id << std::endl;
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
    void NHLL_Driver::accept(CallStmt &stmt)
    {
-      std::cout << "Generate call statement ! " << stmt.function << ", " << " params : [";
+      std::cout << "Generate call statement ! " << stmt.function << ", " << " params : (";
 
       for(auto &p : stmt.params)
       {
          std::cout << " " << p;
       }
-      std::cout << " ] is_p_call : " << stmt.is_par_call << std::endl;
+      std::cout << " ) " << std::endl;
    }
 
    // ----------------------------------------------------------
@@ -241,13 +327,13 @@ namespace NHLL
    
    void NHLL_Driver::accept(NhllFunction &stmt)
    {
-      std::cout << "Generate function ! " << stmt.name << " params : [";
+      std::cout << "Generate function ! " << stmt.name << " params : (";
 
       for(auto &p : stmt.params)
       {
-         std::cout << " " << p;
+         std::cout << "type: " << DataPrims_to_string(p.type) << ", name: " << p.name;
       }
-      std::cout << " ] " << std::endl;
+      std::cout << " ) returns : " << DataPrims_to_string(stmt.return_type) << std::endl;
 
 
       for(auto & inner_stmt : stmt.elements)

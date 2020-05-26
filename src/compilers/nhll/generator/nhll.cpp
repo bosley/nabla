@@ -17,7 +17,16 @@ namespace NHLL
     //
     // --------------------------------------------------------------
 
-    void SetStmt::visit(NhllVisitor &visitor)
+    void LetStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void ReAssignStmt::visit(NhllVisitor &visitor)
     {
         visitor.accept(*this);
     }
@@ -30,6 +39,25 @@ namespace NHLL
     {
         visitor.accept(*this);
     }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void LoopStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void BreakStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+
 
     // --------------------------------------------------------------
     //

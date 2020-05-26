@@ -37,24 +37,22 @@ using token = NHLL::NHLL_Parser::token;
             yylval = lval;
 %}
 
-"set"       { return( token::SET );  }
+"let"       { return( token::LET );  }
 "use"       { return( token::USE );  }
+"as"        { return( token::AS  );  }
 "call"      { return( token::CALL  ); }
 "pcall"     { return( token::PCALL ); }
 
-"function"  { 
-               // Indicate to driver that we are going into a subsection where
-               // statements from this point until unmark belong to subsection
-               //driver.mark_subsection(); 
-               return( token::FUNC_DECL ); 
-            }
-"while"     { 
-               // Indicate to driver that we are going into a subsection where
-               // statements from this point until unmark belong to subsection
-               //std::cout << "mark sub\n" << std::endl;
-               //driver.mark_subsection(); 
-               return( token::WHILE );
-            }
+"def"       { return( token::FUNC_DECL); }
+"->"        { return( token::RET_ARROW); }
+"int"       { return( token::INT      ); }
+"real"      { return( token::REAL     ); }
+"nil"       { return( token::NIL      ); }
+"str"       { return( token::STR      ); }
+
+"while"     { return( token::WHILE ); }
+"loop"      { return( token::LOOP  ); }
+"break"     { return( token::BREAK ); }
 
 "lte"       { return( token::LTE ); }
 "gte"       { return( token::GTE ); }

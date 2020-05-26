@@ -29,6 +29,24 @@ namespace NHLL
         ID, INT, REAL, EXPR
     };
 
+    enum class DataPrims
+    {
+        INT, REAL, STR, NIL
+    };
+
+    static std::string DataPrims_to_string(DataPrims dp)
+    {
+         switch(dp)
+         {
+            case DataPrims::INT:  return "int"; 
+            case DataPrims::REAL: return "real";
+            case DataPrims::STR:  return "str"; 
+            case DataPrims::NIL:  return "nil"; 
+            default: break;
+         }
+        return "Invalid data prim given for to_string";
+    }
+
     class ConditionalExpression
     {
     public:
@@ -73,22 +91,25 @@ namespace NHLL
     //
     //
     //
-    class SetStmt : public NhllElement
+    class LetStmt : public NhllElement
     {
     public:
-        SetStmt() {}
+        LetStmt() {}
 
-        SetStmt(std::string lhs, std::string exp) 
+        LetStmt(std::string lhs, std::string rhs, bool is_expr) 
                             : identifier(lhs),
-                              expression(exp){}
+                              set_to(rhs),
+                              is_expr(is_expr){}
 
-        SetStmt(SetStmt *o) : identifier(o->identifier),
-                              expression(o->expression){}
+        LetStmt(LetStmt *o) : identifier(o->identifier),
+                              set_to(o->set_to),
+                              is_expr(o->is_expr){}
 
         virtual void visit(NhllVisitor &visitor) override;
 
         std::string identifier;
-        std::string expression;
+        std::string set_to;
+        bool is_expr;
     };
 
     //
@@ -99,22 +120,73 @@ namespace NHLL
     public:
         CallStmt() {}
 
-        CallStmt(bool isPar, 
-                 std::string function, 
+        CallStmt(std::string function, 
                  std::vector< std::string> params) 
-                            : is_par_call(isPar),
-                              function(function),
+                            : function(function),
                               params(params){}
 
-        CallStmt(CallStmt *o) : is_par_call(o->is_par_call),
-                               function(o->function),
-                               params(o->params){}
+        CallStmt(CallStmt *o) : function(o->function),
+                                params(o->params){}
 
         virtual void visit(NhllVisitor &visitor) override;
 
-        bool is_par_call;
         std::string function;
         std::vector< std::string> params;
+    };
+
+    //
+    //
+    //
+    class ReAssignStmt : public NhllElement
+    {
+    public:
+        ReAssignStmt() {}
+
+        ReAssignStmt(std::string lhs, std::string rhs, bool is_expr) 
+                            : identifier(lhs),
+                              set_to(rhs),
+                              is_expr(is_expr){}
+
+        ReAssignStmt(ReAssignStmt *o) : identifier(o->identifier),
+                              set_to(o->set_to),
+                              is_expr(o->is_expr){}
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        std::string identifier;
+        std::string set_to;
+        bool is_expr;
+    };
+
+    //
+    //
+    //
+    class LoopStmt : public NhllElement
+    {
+    public:
+        LoopStmt() {}
+        LoopStmt(std::string id, ElementList el) : id(id), elements(el){}
+        LoopStmt(LoopStmt * o) : id(o->id), elements(o->elements) {}
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        std::string id;
+        ElementList elements;
+    };
+
+    //
+    //
+    //
+    class BreakStmt : public NhllElement
+    {
+    public:
+        BreakStmt() {}
+        BreakStmt(std::string id) : id(id) {}
+        BreakStmt(BreakStmt *  o) : id(o->id){}
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        std::string id;
     };
 
     //
@@ -150,6 +222,12 @@ namespace NHLL
         ElementList elements;
     };
 
+    struct FunctionParam
+    {
+        DataPrims type;
+        std::string name;
+    };
+
     //
     //
     //
@@ -159,20 +237,24 @@ namespace NHLL
         NhllFunction() {}
 
         NhllFunction(std::string name, 
-                     std::vector<std::string> params,
+                     std::vector<FunctionParam> params,
+                     DataPrims return_type,
                      ElementList el) 
                             : name(name),
                               params(params),
+                              return_type(return_type),
                               elements(el){}
 
         NhllFunction(NhllFunction *o) : name(o->name),
                                         params(o->params),
+                                        return_type(o->return_type),
                                         elements(o->elements){}
 
         virtual void visit(NhllVisitor &visitor) override;
 
         std::string name;
-        std::vector<std::string> params;
+        std::vector<FunctionParam> params;
+        DataPrims return_type;
         ElementList elements;
     };
 
@@ -183,8 +265,11 @@ namespace NHLL
     {
     public:
         virtual void accept(UseStmt &stmt) = 0;
-        virtual void accept(SetStmt &stmt) = 0;
+        virtual void accept(LetStmt &stmt) = 0;
+        virtual void accept(ReAssignStmt & stmt) = 0;
         virtual void accept(WhileStmt &stmt) = 0;
+        virtual void accept(LoopStmt &stmt) = 0;
+        virtual void accept(BreakStmt &stmt) = 0;
         virtual void accept(CallStmt &stmt) = 0;
         virtual void accept(NhllFunction &stmt) = 0;
     };
