@@ -43,6 +43,8 @@
    #include "nhll_driver.hpp"
 
    std::vector< std::vector<NHLL::NhllElement*> > element_list;
+   std::vector< std::string > r_paramaters;
+   std::vector< std::string > s_paramaters;
 
 #undef yylex
 #define yylex scanner.yylex
@@ -69,9 +71,6 @@
 %type<std::vector<NhllElement*>> block;
 %type<std::vector<NhllElement*>> function_statements;
 
-%type<std::vector<std::string>> recv_paramaters;
-%type<std::vector<std::string>> send_paramaters;
-
 %token FUNC_DECL USE SET CALL PCALL WHILE
 %token LTE GTE LT GT EQ NE 
 
@@ -88,7 +87,7 @@
 %%
 
 prog_option
-   : input     { driver.build_input(element_list); }
+   : input     { driver.build_input(element_list); element_list.clear(); } // The driver deletes all allocated space for elements
    | END
    ;
 
@@ -163,10 +162,10 @@ set_stmt
    ;
 
 call_stmt
-   : CALL '(' identifiers ')'                              { std::cout << "Empty  call"  << std::endl; $$ = nullptr; }
-   | CALL '(' identifiers ',' '[' send_paramaters ']' ')'  { std::cout << "Filled call"  << std::endl; $$ = nullptr; }
-   | PCALL '(' identifiers ')'                             { std::cout << "Empty  pcall" << std::endl; $$ = nullptr; }
-   | PCALL '(' identifiers ',' '[' send_paramaters ']' ')' { std::cout << "Filled pcall" << std::endl; $$ = nullptr; }
+   : CALL '(' identifiers ')'                              { $$ = driver.create_call_statement($3, std::vector<std::string>());          }
+   | CALL '(' identifiers ',' '[' send_paramaters ']' ')'  { $$ = driver.create_call_statement($3, s_paramaters); s_paramaters.clear();  }
+   | PCALL '(' identifiers ')'                             { $$ = driver.create_call_statement($3, std::vector<std::string>(), true);    }
+   | PCALL '(' identifiers ',' '[' send_paramaters ']' ')' { $$ = driver.create_call_statement($3, s_paramaters, true); s_paramaters.clear();  }
    ;
 
 while_stmt
@@ -184,18 +183,18 @@ block
    ;
 
 recv_paramaters 
-   : IDENTIFIER                                    { $$ = std::vector<std::string>(); $$.push_back($1); }
-   | recv_paramaters ',' IDENTIFIER                { $$.push_back($3); }
+   : IDENTIFIER                                    { r_paramaters.push_back($1); }
+   | recv_paramaters ',' IDENTIFIER                { r_paramaters.push_back($3); }
    ;
 
 send_paramaters 
-   : identifiers                                    { $$ = std::vector<std::string>(); $$.push_back($1); }
-   | send_paramaters ',' identifiers                { $$.push_back($3); }
+   : identifiers                                   { s_paramaters.push_back($1); }
+   | send_paramaters ',' identifiers               { s_paramaters.push_back($3); }
    ;
 
 function_stmt
    : FUNC_DECL '(' IDENTIFIER ',' block ')'                             { $$ = driver.create_function_statement($3, std::vector<std::string>(), $5); }
-   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { $$ = driver.create_function_statement($3, $6, $9); }
+   | FUNC_DECL '(' IDENTIFIER ',' '[' recv_paramaters ']' ',' block ')' { $$ = driver.create_function_statement($3, r_paramaters, $9); r_paramaters.clear(); }
    ;
 
 

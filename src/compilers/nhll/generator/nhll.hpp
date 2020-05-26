@@ -94,6 +94,32 @@ namespace NHLL
     //
     //
     //
+    class CallStmt : public NhllElement
+    {
+    public:
+        CallStmt() {}
+
+        CallStmt(bool isPar, 
+                 std::string function, 
+                 std::vector< std::string> params) 
+                            : is_par_call(isPar),
+                              function(function),
+                              params(params){}
+
+        CallStmt(CallStmt *o) : is_par_call(o->is_par_call),
+                               function(o->function),
+                               params(o->params){}
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        bool is_par_call;
+        std::string function;
+        std::vector< std::string> params;
+    };
+
+    //
+    //
+    //
     class WhileStmt : public NhllElement
     {
     public:
@@ -159,6 +185,7 @@ namespace NHLL
         virtual void accept(UseStmt &stmt) = 0;
         virtual void accept(SetStmt &stmt) = 0;
         virtual void accept(WhileStmt &stmt) = 0;
+        virtual void accept(CallStmt &stmt) = 0;
         virtual void accept(NhllFunction &stmt) = 0;
     };
 }

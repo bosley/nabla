@@ -35,6 +35,15 @@ namespace NHLL
     //
     // --------------------------------------------------------------
 
+    void CallStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
     void NhllFunction::visit(NhllVisitor &visitor)
     {
         visitor.accept(*this);

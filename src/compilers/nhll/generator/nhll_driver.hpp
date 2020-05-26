@@ -30,13 +30,14 @@ namespace NHLL
       //! \brief Print driver
       std::ostream& print(std::ostream &stream);
 
+      //! \brief Call visit on all elements to generate code
       void build_input(std::vector< ElementList > input_elements );
 
       NHLL::NhllElement* create_function_statement(std::string name, std::vector<std::string> params, ElementList elements);
       NHLL::NhllElement* create_set_statement(std::string lhs, std::string rhs );
       NHLL::NhllElement* create_use_statement(std::string lhs, std::string rhs = "");
       NHLL::NhllElement* create_while_statement(ConditionalExpression *expr, ElementList elements);
-
+      NHLL::NhllElement* create_call_statement(std::string function, std::vector<std::string> params, bool isPar=false);
 
       //! \brief Visit a use statement, triggers code generation
       virtual void accept(UseStmt &stmt) override;
@@ -46,6 +47,9 @@ namespace NHLL
 
       //! \brief Visit a while statement, triggers code generation
       virtual void accept(WhileStmt &stmt) override;
+
+      //! \brief Visit a while statement, triggers code generation
+      virtual void accept(CallStmt &stmt) override;
 
       //! \brief Visit a while statement, triggers code generation
       virtual void accept(NhllFunction &stmt) override;

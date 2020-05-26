@@ -119,9 +119,12 @@ namespace NHLL
             if(element)
             {
                element->visit(*this);
+               delete element;
             }
          }
+         element_list.clear();
       }
+      input_elements.clear();
    }
 
    // ----------------------------------------------------------
@@ -166,6 +169,15 @@ namespace NHLL
       return new WhileStmt(expr, elements);
    }
 
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_call_statement(std::string function, std::vector<std::string> params, bool isPar)
+   {
+      return new CallStmt(isPar, function, params);
+   }
+
    // -----------------------------------------------------------------------------------------------------------
    //
    //       Accept functions from base visitor class that are used to call into the code generation
@@ -207,6 +219,21 @@ namespace NHLL
          }
       }
    }
+   
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(CallStmt &stmt)
+   {
+      std::cout << "Generate call statement ! " << stmt.function << ", " << " params : [";
+
+      for(auto &p : stmt.params)
+      {
+         std::cout << " " << p;
+      }
+      std::cout << " ] is_p_call : " << stmt.is_par_call << std::endl;
+   }
 
    // ----------------------------------------------------------
    //
@@ -214,7 +241,14 @@ namespace NHLL
    
    void NHLL_Driver::accept(NhllFunction &stmt)
    {
-      std::cout << "Generate function ! " << stmt.name << std::endl;
+      std::cout << "Generate function ! " << stmt.name << " params : [";
+
+      for(auto &p : stmt.params)
+      {
+         std::cout << " " << p;
+      }
+      std::cout << " ] " << std::endl;
+
 
       for(auto & inner_stmt : stmt.elements)
       {
