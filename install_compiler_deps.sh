@@ -8,6 +8,7 @@ cd bison-3.5.1
 ./configure
 sudo make
 sudo make install
+sudo rm /usr/bin/bison
 sudo ln -s /usr/local/bin/bison /usr/bin/bison
 
 # sudo apt-get -y install bison=2:3.5.1+dfsg-1
