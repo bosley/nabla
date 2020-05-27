@@ -16,11 +16,13 @@ matrix:
     
 before_install:
 
+  - PARENTDIR=$(pwd)
+
   - bash install_compiler_deps.sh
 
-  - eval "${MATRIX_EVAL}"
+  - cd $PARENTDIR
 
-  - PARENTDIR=$(pwd)
+  - eval "${MATRIX_EVAL}"
   
   - mkdir $PARENTDIR/build-release
 
