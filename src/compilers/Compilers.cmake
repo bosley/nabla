@@ -1,34 +1,27 @@
 
 #
+#   NHLL
+#
+set(NHLL_COMPILER_DIR
+    ${NABLA_COMPILERS_DIR}/nhll
+)
+
+include(${NHLL_COMPILER_DIR}/nhll.cmake)
+
+
+#
 #   Build the includes
 #
 set(NABLA_COMPILERS_INCLUDE_DIRS
     ${NABLA_COMPILERS_DIR}
-    ${NABLA_COMPILERS_DIR}/nhll
-)
-
-#
-#   Build the sources for the NHLL compiler
-#
-set(NABLA_COMPILER_NHLL
-    ${NABLA_COMPILERS_DIR}/nhll/NhllVisitor.cpp
-    ${NABLA_COMPILERS_DIR}/nhll/NhllParser.cpp
-    ${NABLA_COMPILERS_DIR}/nhll/NhllCompiler.cpp
+    ${NHLL_COMPILER_DIR}
+    ${NHLL_INCLUDE_DIRS}
 )
 
 #
 #   Add sources for all compilers 
 #
 set(NABLA_COMPILERS_SOURCES
-    ${NABLA_COMPILER_NHLL}
-
-    ${NABLA_COMPILERS_DIR}/CompiledPackage.cpp
+    ${NHLL_COMPILER_SOURCES}
+    ${NABLA_COMPILERS_DIR}/CodeGen.cpp
 )
-
-#-------------------------------------------------
-# Tests
-#-------------------------------------------------
-
-if(COMPILE_TESTS)
-        add_subdirectory(${NABLA_COMPILERS_DIR}/nhll/tests)
-endif()

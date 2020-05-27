@@ -1,26 +1,19 @@
 %{
-/* C++ string header, for string ops below */
 #include <string>
 #include <iostream>
 
-#include "nhll_driver.hpp"
-
-/* Implementation of yyFlexScanner */ 
-#include "nhll_scanner.hpp"
+#include "nhll/nhll_driver.hpp"
+#include "nhll/nhll_scanner.hpp"
 
 #undef  YY_DECL
 #define YY_DECL int NHLL::NHLL_Scanner::yylex( NHLL::NHLL_Parser::semantic_type * const lval, NHLL::NHLL_Parser::location_type *loc )
 
-/* typedef to make the returns for the tokens shorter */
 using token = NHLL::NHLL_Parser::token;
 
-/* define yyterminate as this instead of NULL */
 #define yyterminate() return( token::END )
 
-/* msvc2010 requires that we exclude this header file. */
 #define YY_NO_UNISTD_H
 
-/* update location on matching */
 #define YY_USER_ACTION loc->step(); loc->columns(yyleng);
 
 %}
@@ -33,7 +26,7 @@ using token = NHLL::NHLL_Parser::token;
 
 %%
 
-%{          /** Code executed at the beginning of yylex **/
+%{
             yylval = lval;
 %}
 

@@ -19,10 +19,13 @@ include(${CMAKE_SOURCE_DIR}/cmake/NablaVersion.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Platform.cmake)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated-register -Wno-Wconflicts-sr -Wno-unused-function")
 
 find_package(libnabla REQUIRED)
 
 find_package(Threads)
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
 
 include_directories(${LIBNABLA_INCLUDE_DIRS})
 
@@ -36,7 +39,9 @@ set(NABLA_COMPILERS_DIR
 
 include(${NABLA_COMPILERS_DIR}/Compilers.cmake)
 
-include_directories(${NABLA_COMPILERS_INCLUDE_DIRS})
+include_directories(
+    ${NABLA_COMPILERS_INCLUDE_DIRS}
+)
 
 set(NABLA_APP_SOURCES
     ${LIBNABLA_LIBRARIES}

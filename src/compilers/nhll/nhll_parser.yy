@@ -7,15 +7,15 @@
 %define api.parser.class {NHLL_Parser}
 
 %code requires{
-   namespace NHLL {
+   
+   namespace NHLL 
+   {
       class NHLL_Driver;
       class NHLL_Scanner;
       class NhllFunction;
       class NhllElement;
       class ConditionalExpression;
       enum class Conditionals;
-      //struct FunctionParam;
-      //enum class DataPrims;
    }
 
 # ifndef YY_NULLPTR
