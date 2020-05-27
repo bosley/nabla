@@ -1,0 +1,6 @@
+use io
+
+def main() -> int {
+
+    io.println("Hello world")
+}

@@ -1,19 +1,52 @@
 #include "CompilerFramework.hpp"
 
+#include <iostream>
+
+#include "CodeGen.hpp"
+#include "nhll.hpp"
+#include "nhll_driver.hpp"
 namespace NABLA
 {
-    CompilerFramework::CompilerFramework()
+    // ------------------------------------------------
+    //
+    // ------------------------------------------------
+    
+    CompilerFramework::CompilerFramework(NABLA::LibManifest & lm) : lib_manifest(lm)
     {
 
     }
 
+    // ------------------------------------------------
+    //
+    // ------------------------------------------------
+    
     CompilerFramework::~CompilerFramework()
     {
 
     }
 
-    void CompilerFramework::compile_project(std::string project_directory)
+    // ------------------------------------------------
+    //
+    // ------------------------------------------------
+    
+    int CompilerFramework::compile_project(NABLA::ProjectFS & project)
     {
+        std::cout << "Compile framework not yet setup" << std::endl;
+
+        NHLL::CodeGen code_generator(lib_manifest);
+
+        NHLL::NHLL_Driver driver(code_generator);
+
+        //
+        //  This will all change once the compiler is completed
+        //
+        NABLA::ProjectStructure ps = project.get_project_structure();
         
+        driver.parse( ps.get_entryFile().c_str() );
+
+        //driver.parse( theFile.nhll );
+
+        //driver.print( std::cout ) << "\n";
+        return 1;
     }
 }

@@ -2,11 +2,12 @@
 #include <fstream>
 #include <cassert>
 #include <iostream>
+#include "CodeGen.hpp"
 #include "nhll_driver.hpp"
 
 namespace NHLL
 {
-   NHLL_Driver::NHLL_Driver() 
+   NHLL_Driver::NHLL_Driver(NHLL::CodeGen &code_generator) : code_generator(code_generator) 
    {
       
    }
@@ -222,7 +223,7 @@ namespace NHLL
    
    void NHLL_Driver::accept(UseStmt &stmt)
    {
-      std::cout << "Generate use statement ! " << stmt.module << ", " << stmt.as_name << std::endl;
+      code_generator.gen_use_statement(UseStmt(stmt));
    }
    
    // ----------------------------------------------------------

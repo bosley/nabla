@@ -18,6 +18,7 @@ set(NHLL_INCLUDE_DIRS
 
 set(NHLL_COMPILER_HEADERS
     ${NHLL_COMPILER_DIR}
+    ${NHLL_COMPILER_DIR}/CodeGen.hpp
     ${NHLL_COMPILER_DIR}/nhll.hpp
     ${NHLL_COMPILER_DIR}/nhll_driver.hpp
     ${NHLL_COMPILER_DIR}/nhll_scanner.hpp
@@ -25,6 +26,7 @@ set(NHLL_COMPILER_HEADERS
 )
 
 set(NHLL_COMPILER_SOURCES
+    ${NHLL_COMPILER_DIR}/CodeGen.cpp
     ${NHLL_COMPILER_DIR}/nhll.cpp
     ${NHLL_COMPILER_DIR}/nhll_driver.cpp
     ${NHLL_COMPILER_DIR}/nhll_postfix.cpp

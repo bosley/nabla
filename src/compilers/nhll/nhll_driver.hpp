@@ -13,12 +13,15 @@
 #include "nhll_parser.tab.hh"
 #include "nhll_postfix.hpp"
 
+
 namespace NHLL
 {
+   class CodeGen;
+   
    class NHLL_Driver : public NhllVisitor
    {
    public:
-      NHLL_Driver();
+      NHLL_Driver(NHLL::CodeGen &code_generator);
 
       virtual ~NHLL_Driver();
       
@@ -75,6 +78,8 @@ namespace NHLL
       NHLL::NHLL_Scanner *scanner = nullptr;
 
       Postfix postfixer;
+
+      NHLL::CodeGen & code_generator;
    };
 
 }
