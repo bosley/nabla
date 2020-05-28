@@ -35,6 +35,8 @@ namespace NABLA
 
         NHLL::CodeGen code_generator(lib_manifest);
 
+        code_generator.set_project(project);
+
         NHLL::NHLL_Driver driver(code_generator);
 
         //

@@ -1,4 +1,4 @@
-use io
+use stdlib.io as io
 
 def main() -> int {
 
