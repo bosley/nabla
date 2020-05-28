@@ -31,7 +31,6 @@ using token = NHLL::NHLL_Parser::token;
 %}
 
 "let"       { return( token::LET );  }
-"use"       { return( token::USE );  }
 "as"        { return( token::AS  );  }
 "call"      { return( token::CALL  ); }
 "pcall"     { return( token::PCALL ); }
@@ -62,6 +61,7 @@ using token = NHLL::NHLL_Parser::token;
 
 "//"[^\n]*  { /* comment */ }
 
+"#"[^\n]*   { /* preproc token */ }
 
 \"[^\"]*\"  {
                yylval->build< std::string >( yytext );

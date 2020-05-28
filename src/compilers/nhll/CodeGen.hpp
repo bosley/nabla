@@ -20,8 +20,7 @@ namespace NHLL
     {
     public:
         //! \brief Construct a CodeGen
-        //! \param lib_manifest A loaded LibManifest object for pulling local libraries
-        CodeGen(NABLA::LibManifest & lib_manifest);
+        CodeGen();
 
         //! \brief Deconstruct a CodeGen
         ~CodeGen();
@@ -30,9 +29,6 @@ namespace NHLL
         //! \param project The project that we are generating code for
         void set_project(NABLA::ProjectFS & project);
 
-        //! \brief Generate a use statement
-        //! \param statement The object representing a use statement 
-        bool gen_use_statement(NHLL::UseStmt statement);
 
     private:
 
@@ -41,8 +37,6 @@ namespace NHLL
         NHLL::NHLL_Driver * local_driver;
 
         NABLA::ProjectFS * project_fs;
-
-        NABLA::LibManifest & lib_manifest;
 
         NABLA::ScopeTree scope_tree;
         
@@ -65,7 +59,6 @@ namespace NHLL
 
         std::vector<Module> modules;
 
-        bool load_module(std::string module, std::string alias);
     };
 }
 

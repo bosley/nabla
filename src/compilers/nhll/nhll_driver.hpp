@@ -46,9 +46,6 @@ namespace NHLL
       NHLL::NhllElement* create_break_statement(std::string id);
       NHLL::NhllElement* create_call_statement(std::string function, std::vector<std::string> params);
 
-      //! \brief Visit a use statement, triggers code generation
-      virtual void accept(UseStmt &stmt) override;
-
       //! \brief Visit a set statement, triggers code generation
       virtual void accept(LetStmt &stmt) override;
 

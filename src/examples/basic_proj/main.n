@@ -1,6 +1,16 @@
-use stdlib.io as io
+
+
+// Import IO functionality - When imports happen the imports are prefixed with the library 
+// that contain them, but they are not to be used when calling the imported object
+#import std.io
+
+// Import an example module
+#import local.exmod
 
 def main() -> int {
 
-    io.println("Hello world")
+    // io is the library, output is module within the io library, println is an exported function from the output module
+    io.output.println("Hello world")
+
+    exmod.isgood()
 }

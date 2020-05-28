@@ -118,7 +118,7 @@ namespace NABLA
 
                 //  The thing is finally loaded
                 //
-                libraries[bundle.key()][lib.value().get<std::string>()] = pfs;    
+                libraries[bundle.key()].insert( std::make_pair(lib.value().get<std::string>(), pfs) );
             }
         }
 
@@ -131,17 +131,20 @@ namespace NABLA
     
     NABLA::ProjectFS LibManifest::get_library(std::string bundle, std::string lib, bool & okay)
     {
-        NABLA::ProjectFS pfs;
-        try
-        {
-            pfs = libraries[bundle][lib];
-            okay = true;
-        }
-        catch(...)
+        if ( libraries.find(bundle) == libraries.end() ) 
         {
             okay = false;
+            return NABLA::ProjectFS();
         }
-        return pfs;
+
+        if(libraries[bundle].find(lib) == libraries[bundle].end())
+        {
+            okay = false;
+            return NABLA::ProjectFS();
+        }
+
+        okay = true;
+        return libraries[bundle][lib];
     }
 
 }

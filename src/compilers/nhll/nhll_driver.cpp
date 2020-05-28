@@ -141,19 +141,6 @@ namespace NHLL
    //
    // ----------------------------------------------------------
 
-   NHLL::NhllElement* NHLL_Driver::create_use_statement(std::string lhs, std::string rhs)
-   {
-      if(rhs.size() == 0)
-      {
-         rhs = lhs;
-      }
-      return new UseStmt(lhs, rhs);
-   }
-
-   // ----------------------------------------------------------
-   //
-   // ----------------------------------------------------------
-
    NHLL::NhllElement* NHLL_Driver::create_let_statement(std::string lhs, std::string rhs, bool is_expression)
    {
       return new LetStmt(lhs, rhs, is_expression);
@@ -217,15 +204,7 @@ namespace NHLL
    //
    // -----------------------------------------------------------------------------------------------------------
 
-   // ----------------------------------------------------------
-   //
-   // ----------------------------------------------------------
-   
-   void NHLL_Driver::accept(UseStmt &stmt)
-   {
-      code_generator.gen_use_statement(UseStmt(stmt));
-   }
-   
+
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------

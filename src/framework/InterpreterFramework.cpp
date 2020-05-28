@@ -44,11 +44,13 @@ namespace NABLA
     {
         std::cout << "Interpreter Framework not yet setup for cli interpretation" << std::endl;
 
+        // Will need to run pre-processor on each line 
+/*
         NHLL::CodeGen code_generator(lib_manifest);
 
         NHLL::NHLL_Driver driver(code_generator);
         driver.parse( std::cin );
-
+*/
         return 1;
     }
 }

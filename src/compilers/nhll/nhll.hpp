@@ -264,7 +264,6 @@ namespace NHLL
     class NhllVisitor
     {
     public:
-        virtual void accept(UseStmt &stmt) = 0;
         virtual void accept(LetStmt &stmt) = 0;
         virtual void accept(ReAssignStmt & stmt) = 0;
         virtual void accept(WhileStmt &stmt) = 0;

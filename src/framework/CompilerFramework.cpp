@@ -2,9 +2,11 @@
 
 #include <iostream>
 
+#include "Preprocessor.hpp"
 #include "CodeGen.hpp"
 #include "nhll.hpp"
 #include "nhll_driver.hpp"
+
 namespace NABLA
 {
     // ------------------------------------------------
@@ -33,9 +35,16 @@ namespace NABLA
     {
         std::cout << "Compile framework not yet setup" << std::endl;
 
-        NHLL::CodeGen code_generator(lib_manifest);
+        NHLL::Preprocessor preproc(lib_manifest, true);
 
-        code_generator.set_project(project);
+        if(!preproc.process(project))
+        {
+            return 1;
+        }
+
+        // Get output from preproc for project and feed to driver
+
+        NHLL::CodeGen code_generator;
 
         NHLL::NHLL_Driver driver(code_generator);
 
@@ -44,7 +53,7 @@ namespace NABLA
         //
         NABLA::ProjectStructure ps = project.get_project_structure();
         
-        driver.parse( ps.get_entryFile().c_str() );
+        driver.parse( preproc.get_preproc().c_str() );
 
         //driver.parse( theFile.nhll );
 

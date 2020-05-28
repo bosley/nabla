@@ -62,7 +62,6 @@
 %type<int> data_prim;
 
 %type<NHLL::NhllElement*> stmt;
-%type<NHLL::NhllElement*> use_stmt;
 %type<NHLL::NhllElement*> let_stmt;
 %type<NHLL::NhllElement*> reassign_stmt;
 %type<NHLL::NhllElement*> call_stmt;
@@ -75,7 +74,7 @@
 %type<std::vector<NhllElement*>> block;
 %type<std::vector<NhllElement*>> function_statements;
 
-%token FUNC_DECL USE LET CALL PCALL WHILE LOOP AS INT NIL REAL STR RET_ARROW BREAK
+%token FUNC_DECL LET CALL PCALL WHILE LOOP AS INT NIL REAL STR RET_ARROW BREAK
 %token LTE GTE LT GT EQ NE 
 
 %token <std::string> STRING_LITERAL
@@ -169,8 +168,7 @@ passable
    ;
 
 stmt
-   : use_stmt      { $$ = $1; }
-   | let_stmt      { $$ = $1; }
+   : let_stmt      { $$ = $1; }
    | reassign_stmt { $$ = $1; }
    | call_stmt     { $$ = $1; }
    | while_stmt    { $$ = $1; }
@@ -191,11 +189,6 @@ block
 function_statements
    : function_stmt                        { $$ = std::vector<NhllElement*>(); $$.push_back($1); }
    | function_statements function_stmt    { $1.push_back($2); $$ = $1; }
-   ;
-
-use_stmt
-   : USE identifiers                      { $$ = driver.create_use_statement($2);      }
-   | USE identifiers AS IDENTIFIER        { $$ = driver.create_use_statement($2, $4);  }
    ;
 
 let_stmt
@@ -226,8 +219,8 @@ break_stmt
    ;
 
 function_stmt
-   : FUNC_DECL IDENTIFIER '(' ')' RET_ARROW data_prim block                 { $$ = driver.create_function_statement($2, std::vector<FunctionParam>(), static_cast<DataPrims>($6), $7); }
-   | FUNC_DECL IDENTIFIER '(' recv_paramaters ')' RET_ARROW data_prim block { $$ = driver.create_function_statement($2, r_paramaters, static_cast<DataPrims>($7), $8); r_paramaters.clear(); }
+   : FUNC_DECL identifiers '(' ')' RET_ARROW data_prim block                 { $$ = driver.create_function_statement($2, std::vector<FunctionParam>(), static_cast<DataPrims>($6), $7); }
+   | FUNC_DECL identifiers '(' recv_paramaters ')' RET_ARROW data_prim block { $$ = driver.create_function_statement($2, r_paramaters, static_cast<DataPrims>($7), $8); r_paramaters.clear(); }
    ;
    
 

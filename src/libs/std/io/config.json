@@ -3,6 +3,6 @@
     "description": "Standard IO for Nabla",
     "project_type": "lib",
     "modules": [
-      "print"
+      "output"
       ]
   }

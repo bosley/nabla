@@ -1,3 +1,0 @@
-public print.print
-
-use print.print as print
