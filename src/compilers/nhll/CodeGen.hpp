@@ -25,39 +25,71 @@ namespace NHLL
         //! \brief Deconstruct a CodeGen
         ~CodeGen();
 
-        //! \brief Set the current project (one asked to gen code for)
-        //! \param project The project that we are generating code for
-        void set_project(NABLA::ProjectFS & project);
+        bool start_function(std::string name, std::vector<FunctionParam> params,  DataPrims return_type);
 
 
     private:
 
-        // Used to parse / externals requested from code given
-        // by user driver
-        NHLL::NHLL_Driver * local_driver;
+        enum class GenState
+        {
+            IDLE,
+            BUILD_FUNCTION,
+            END_FUNCTION
+        };
 
-        NABLA::ProjectFS * project_fs;
+        GenState state;
 
-        NABLA::ScopeTree scope_tree;
-        
-        std::vector<std::string> current_path;
+        // A Variable
+        struct Variable
+        {
+            // Name stored as key in map
+            std::string definition; // Definition
+            NHLL::DataPrims type;   // Type
+            bool isExpression;      // Definition is an expression if true
+        };
 
+        // Function representation
         struct FunctionRepresentation
         {
+            FunctionRepresentation(std::string name, 
+                                   std::vector<NHLL::FunctionParam> parameters, 
+                                   NHLL::DataPrims return_type) : 
+                                   name(name),
+                                   parameters(parameters),
+                                   return_type(return_type) {}
+
+            // Name of the function
             std::string name;
-            std::vector<NHLL::FunctionParam> paramters;
+
+            // Expected parameters
+            std::vector<NHLL::FunctionParam> parameters;
+
+            // Return type
             NHLL::DataPrims return_type;
+
+            // Function variables
+            // Vector.end() is the current scope. Temporary scopes will be removed post-processing
+            // Vector used to determing if variable is accessable
+            std::vector< std::map<std::string, Variable> > scoped_variable_map;
+
+            // Bytecode for function
             std::vector<uint8_t> bytes;
         };
 
-        struct Module
+        // Generated functions
+        std::vector<FunctionRepresentation> functions;
+
+        enum class VariablePollResult
         {
-            std::string name;
-            std::vector<FunctionRepresentation> functions;
+            OKAY,
+            INVALID_TYPE,
+            OUT_OF_SCOPE,
+            NOT_FOUND
         };
 
+        VariablePollResult check_variable_access(std::string name, Variable & definition);
 
-        std::vector<Module> modules;
+        std::string state_to_string(CodeGen::GenState state) const;
 
     };
 }
