@@ -62,21 +62,26 @@
 %type<int> data_prim;
 
 %type<NHLL::NhllElement*> stmt;
+%type<NHLL::NhllElement*> asm_stmt;
 %type<NHLL::NhllElement*> let_stmt;
 %type<NHLL::NhllElement*> reassign_stmt;
+%type<NHLL::NhllElement*> global_stmt;
 %type<NHLL::NhllElement*> call_stmt;
 %type<NHLL::NhllElement*> while_stmt;
 %type<NHLL::NhllElement*> loop_stmt;
 %type<NHLL::NhllElement*> break_stmt;
 %type<NHLL::NhllElement*> function_stmt;
+%type<NHLL::NhllElement*> leave_stmt;
 
 %type<std::vector<NhllElement*>> multiple_statements;
 %type<std::vector<NhllElement*>> block;
 %type<std::vector<NhllElement*>> function_statements;
 
-%token FUNC_DECL LET CALL PCALL WHILE LOOP AS INT NIL REAL STR RET_ARROW BREAK
+%token FUNC_DECL LET CALL WHILE LOOP INT NIL REAL STR RET_ARROW BREAK GLOBAL
+%token RETURN YIELD EXIT
 %token LTE GTE LT GT EQ NE 
 
+%token <std::string> ASM
 %token <std::string> STRING_LITERAL
 %token <std::string> INTEGER_LITERAL
 %token <std::string> REAL_LITERAL
@@ -170,10 +175,18 @@ passable
 stmt
    : let_stmt      { $$ = $1; }
    | reassign_stmt { $$ = $1; }
+   | global_stmt   { $$ = $1; }
    | call_stmt     { $$ = $1; }
    | while_stmt    { $$ = $1; }
    | loop_stmt     { $$ = $1; }
    | break_stmt    { $$ = $1; }
+   | asm_stmt      { $$ = $1; }
+   | leave_stmt    { $$ = $1; }
+   ;
+
+global_stmt
+   : GLOBAL identifiers '=' expression     { $$ = driver.create_global_statement($2, $4); }
+   | GLOBAL identifiers '=' STRING_LITERAL { $$ = driver.create_global_statement($2, $4, false); }
    ;
 
 multiple_statements 
@@ -191,6 +204,10 @@ function_statements
    | function_statements function_stmt    { $1.push_back($2); $$ = $1; }
    ;
 
+asm_stmt
+   : ASM    { $$ = driver.create_asm_statement($1); }
+   ;
+
 let_stmt
    : LET identifiers '=' expression       { $$ = driver.create_let_statement($2, $4);        }
    | LET identifiers '=' STRING_LITERAL   { $$ = driver.create_let_statement($2, $4, false); }
@@ -199,6 +216,14 @@ let_stmt
 reassign_stmt
    : identifiers '=' expression           { $$ = driver.create_reassign_statement($1, $3);        }
    | identifiers '=' STRING_LITERAL       { $$ = driver.create_reassign_statement($1, $3, false); }
+   ;
+
+leave_stmt
+   : YIELD expression      { $$ = driver.create_leave_statement($2, false, true);  }
+   | YIELD STRING_LITERAL  { $$ = driver.create_leave_statement($2, false, false); }
+   | RETURN expression     { $$ = driver.create_leave_statement($2, true,  true);  }
+   | RETURN STRING_LITERAL { $$ = driver.create_leave_statement($2, true,  false); }
+   | EXIT                  { $$ = driver.create_exit_statement();                  }
    ;
 
 call_stmt

@@ -30,10 +30,8 @@ using token = NHLL::NHLL_Parser::token;
             yylval = lval;
 %}
 
-"let"       { return( token::LET );  }
-"as"        { return( token::AS  );  }
+"let"       { return( token::LET   ); }
 "call"      { return( token::CALL  ); }
-"pcall"     { return( token::PCALL ); }
 
 "def"       { return( token::FUNC_DECL); }
 "->"        { return( token::RET_ARROW); }
@@ -45,6 +43,7 @@ using token = NHLL::NHLL_Parser::token;
 "while"     { return( token::WHILE ); }
 "loop"      { return( token::LOOP  ); }
 "break"     { return( token::BREAK ); }
+"global"    { return( token::GLOBAL); }
 
 "lte"       { return( token::LTE ); }
 "gte"       { return( token::GTE ); }
@@ -53,7 +52,16 @@ using token = NHLL::NHLL_Parser::token;
 "ne"        { return( token::NE  ); }
 "eq"        { return( token::EQ  ); }
 
+"return"    { return( token::RETURN ); }
+"yield"     { return( token::YIELD  ); }
+"exit"      { return( token::EXIT   ); }
+
 "/*"(.|\n)*?"*/" {}
+
+"<asm>"(.|\n)*"</asm>" { 
+                     yylval->build< std::string >( yytext );
+                     return( token::ASM ); 
+                   }
 
 [ \t]+      { /* Eat WS */  }
 

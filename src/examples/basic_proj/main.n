@@ -7,10 +7,52 @@
 // Import an example module
 #import local.exmod
 
+global MY_GLOB = 3
+
 def main() -> int {
 
     // io is the library, output is module within the io library, println is an exported function from the output module
     io.output.println("Hello world")
 
     exmod.isgood()
+
+    // exmod has a global, and it gets superficially scoped to exmod. 
+    io.output.println(exmod.x_global)
+
+    return 0
+}
+
+def other_stuff() -> int {
+
+    let a = 0
+    let b = 10
+
+    while( a lt b ) {
+
+        a = a + 1
+        let c = 0
+
+        loop.inner {
+
+            c = c + 1
+            break inner
+        }
+    }
+
+    yield 0
+
+    //check {
+    //    [condition] { }
+    //    [condition] { }
+    //    []          { }
+    //}
+
+    // This is a planned expansion
+    //
+    // let r = check -> int {
+    //     [condition] { -> 4 }
+    //     []          { -> 0 }
+    // }
+
+    exit
 }

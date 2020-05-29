@@ -372,6 +372,13 @@ namespace NHLL
                 line  = std::regex_replace(line, std::regex("(^|\\s*)def(\\s*)"), ("def " + prefix_for_functions), std::regex_constants::format_first_only);
             }
 
+            //  If the line is a 'global someVar' we need to append the prefix
+            //
+            if(std::regex_match(line, std::regex("(^|\\s*)global(\\s*).*")))
+            {
+                line  = std::regex_replace(line, std::regex("(^|\\s*)global(\\s*)"), ("global " + prefix_for_functions), std::regex_constants::format_first_only);
+            }
+
             //  If the line wasnt an import we write out
             //
             if(!matched)

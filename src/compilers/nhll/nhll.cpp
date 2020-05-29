@@ -8,6 +8,15 @@ namespace NHLL
     //
     // --------------------------------------------------------------
 
+    void AsmStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
     void LetStmt::visit(NhllVisitor &visitor)
     {
         visitor.accept(*this);
@@ -18,6 +27,15 @@ namespace NHLL
     // --------------------------------------------------------------
 
     void ReAssignStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void GlobalStmt::visit(NhllVisitor &visitor)
     {
         visitor.accept(*this);
     }
@@ -64,6 +82,24 @@ namespace NHLL
     // --------------------------------------------------------------
 
     void NhllFunction::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void LeaveStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void ExitStmt::visit(NhllVisitor &visitor)
     {
         visitor.accept(*this);
     }

@@ -115,6 +115,30 @@ namespace NHLL
     //
     //
     //
+    class GlobalStmt : public NhllElement
+    {
+    public:
+        GlobalStmt() {}
+
+        GlobalStmt(std::string lhs, std::string rhs, bool is_expr) 
+                            : identifier(lhs),
+                              set_to(rhs),
+                              is_expr(is_expr){}
+
+        GlobalStmt(GlobalStmt *o) : identifier(o->identifier),
+                              set_to(o->set_to),
+                              is_expr(o->is_expr){}
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        std::string identifier;
+        std::string set_to;
+        bool is_expr;
+    };
+
+    //
+    //
+    //
     class CallStmt : public NhllElement
     {
     public:
@@ -192,6 +216,62 @@ namespace NHLL
     //
     //
     //
+    class AsmStmt : public NhllElement
+    {
+    public:
+        AsmStmt() {}
+        AsmStmt(std::vector<std::string> asm_block) : asm_block(asm_block) {}
+        AsmStmt(AsmStmt *  o) : asm_block(o->asm_block){}
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        std::vector<std::string> asm_block;
+    };
+
+    //
+    //
+    //
+    class ExitStmt : public NhllElement
+    {
+    public:
+        ExitStmt() {}
+        ExitStmt(ExitStmt *  o){}
+
+        virtual void visit(NhllVisitor &visitor) override;
+    };
+
+    //
+    //
+    //
+    class LeaveStmt : public NhllElement
+    {
+    public:
+        enum class Variant
+        {
+            YIELD,
+            RETURN
+        };
+
+        LeaveStmt() {}
+        LeaveStmt(std::string value, Variant variant, bool is_expr) : value(value), 
+                                                                      variant(variant), 
+                                                                      is_expr(is_expr) {}
+        LeaveStmt(LeaveStmt *  o) :value(o->value), 
+                                   variant(o->variant), 
+                                   is_expr(o->is_expr) {}
+
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+
+        std::string value;
+        Variant variant;
+        bool is_expr;
+    };
+
+    //
+    //
+    //
     class WhileStmt : public NhllElement
     {
     public:
@@ -264,13 +344,17 @@ namespace NHLL
     class NhllVisitor
     {
     public:
+        virtual void accept(AsmStmt &stmt) = 0;
         virtual void accept(LetStmt &stmt) = 0;
         virtual void accept(ReAssignStmt & stmt) = 0;
+        virtual void accept(GlobalStmt & stmt) = 0;
         virtual void accept(WhileStmt &stmt) = 0;
         virtual void accept(LoopStmt &stmt) = 0;
         virtual void accept(BreakStmt &stmt) = 0;
         virtual void accept(CallStmt &stmt) = 0;
         virtual void accept(NhllFunction &stmt) = 0;
+        virtual void accept(LeaveStmt &stmt) = 0;
+        virtual void accept(ExitStmt &stmt) = 0;
     };
 }
 

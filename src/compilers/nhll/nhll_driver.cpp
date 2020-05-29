@@ -1,6 +1,8 @@
 #include <cctype>
 #include <fstream>
 #include <cassert>
+#include <regex>
+#include <sstream>
 #include <iostream>
 #include "CodeGen.hpp"
 #include "nhll_driver.hpp"
@@ -68,8 +70,7 @@ namespace NHLL
       }
       catch( std::bad_alloc &ba )
       {
-         std::cerr << "Failed to allocate scanner: (" <<
-            ba.what() << "), exiting!!\n";
+         std::cerr << "Failed to allocate scanner: (" << ba.what() << ")\n";
          exit( EXIT_FAILURE );
       }
 
@@ -81,8 +82,7 @@ namespace NHLL
       }
       catch( std::bad_alloc &ba )
       {
-         std::cerr << "Failed to allocate parser: (" << 
-            ba.what() << "), exiting!!\n";
+         std::cerr << "Failed to allocate parser: (" <<  ba.what() << ")\n";
          exit( EXIT_FAILURE );
       }
       const int accept( 0 );
@@ -109,12 +109,8 @@ namespace NHLL
 
    void NHLL_Driver::build_input(std::vector< ElementList > input_elements )
    {
-      std::cout << "Build from : " << input_elements.size() << " lists of elements" << std::endl;
-
       for(auto &element_list : input_elements )
       {
-         std::cout << "----- Current element list has " << element_list.size() << " elements" << std::endl;
-
          for(auto &element : element_list)
          {
             if(element)
@@ -126,6 +122,29 @@ namespace NHLL
          element_list.clear();
       }
       input_elements.clear();
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_asm_statement(std::string asm_block)
+   {
+      asm_block  = std::regex_replace(asm_block, std::regex("<asm>"),  "\n", std::regex_constants::format_first_only);
+      asm_block  = std::regex_replace(asm_block, std::regex("</asm>"), "\n", std::regex_constants::format_first_only);
+
+      std::string part;
+      std::istringstream ss(asm_block);
+      std::vector<std::string> parts;
+      while(std::getline(ss, part, '\n'))
+      {
+         if(part.size() > 0)
+         {
+            parts.push_back(part);
+         }
+      }
+
+      return new AsmStmt(parts);
    }
 
    // ----------------------------------------------------------
@@ -150,6 +169,15 @@ namespace NHLL
    //
    // ----------------------------------------------------------
 
+   NHLL::NhllElement* NHLL_Driver::create_global_statement(std::string lhs, std::string rhs, bool is_expression)
+   {
+      return new GlobalStmt(lhs, rhs, is_expression);
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
    NHLL::NhllElement* NHLL_Driver::create_reassign_statement(std::string lhs, std::string rhs, bool is_expression)
    {
       return new ReAssignStmt(lhs, rhs, is_expression);
@@ -161,8 +189,6 @@ namespace NHLL
 
    NHLL::NhllElement* NHLL_Driver::create_while_statement(ConditionalExpression *expr, ElementList elements)
    {
-      std::cout << "Create while statement! " << std::endl;
-
       return new WhileStmt(expr, elements);
    }
 
@@ -172,8 +198,6 @@ namespace NHLL
 
    NHLL::NhllElement* NHLL_Driver::create_loop_statement(std::string id, ElementList elements)
    {
-      std::cout << "Create loop statement! " << std::endl;
-
       return new LoopStmt(id, elements);
    }
 
@@ -183,8 +207,6 @@ namespace NHLL
 
    NHLL::NhllElement* NHLL_Driver::create_break_statement(std::string id)
    {
-      std::cout << "Create break statement! " << std::endl;
-
       return new BreakStmt(id);
    }
 
@@ -197,6 +219,25 @@ namespace NHLL
       return new CallStmt(function, params);
    }
 
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_leave_statement(std::string value, bool is_return, bool is_expression)
+   {
+      if(is_return){ return new LeaveStmt( value, LeaveStmt::Variant::RETURN, is_expression ); }
+      else         { return new LeaveStmt( value, LeaveStmt::Variant::YIELD,  is_expression ); }
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_exit_statement()
+   {
+      return new ExitStmt();
+   }
+
    // -----------------------------------------------------------------------------------------------------------
    //
    //       Accept functions from base visitor class that are used to call into the code generation
@@ -204,6 +245,17 @@ namespace NHLL
    //
    // -----------------------------------------------------------------------------------------------------------
 
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(AsmStmt &stmt)
+   {
+      if(!code_generator.asm_block(stmt.asm_block))
+      {
+         exit(EXIT_FAILURE);
+      }
+   }
 
    // ----------------------------------------------------------
    //
@@ -211,16 +263,9 @@ namespace NHLL
    
    void NHLL_Driver::accept(LetStmt &stmt)
    {
-      std::cout << "Generate let statement ! " << stmt.identifier << ", " << stmt.set_to << ", is expr : " << stmt.is_expr << std::endl;
-
-      if(stmt.is_expr)
+      if(!code_generator.declare_variable(stmt.identifier, stmt.set_to, stmt.is_expr))
       {
-         std::cout << "\tPostfix: ";
-         for(auto & pfw : postfixer.convert(stmt.set_to))
-         {
-            std::cout << pfw.value << " ";
-         }
-         std::cout << std::endl;
+         exit(EXIT_FAILURE);
       }
    }
 
@@ -230,16 +275,21 @@ namespace NHLL
    
    void NHLL_Driver::accept(ReAssignStmt &stmt)
    {
-      std::cout << "Generate reassign statement ! " << stmt.identifier << ", " << stmt.set_to << ", is expr : " << stmt.is_expr << std::endl;
-
-      if(stmt.is_expr)
+      if(!code_generator.reassign_variable(stmt.identifier, stmt.set_to, stmt.is_expr))
       {
-         std::cout << "\tPostfix: ";
-         for(auto & pfw : postfixer.convert(stmt.set_to))
-         {
-            std::cout << pfw.value << " ";
-         }
-         std::cout << std::endl;
+         exit(EXIT_FAILURE);
+      }
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(GlobalStmt &stmt)
+   {
+      if(!code_generator.global_variable(stmt.identifier, stmt.set_to, stmt.is_expr))
+      {
+         exit(EXIT_FAILURE);
       }
    }
 
@@ -249,8 +299,8 @@ namespace NHLL
    
    void NHLL_Driver::accept(WhileStmt &stmt)
    {
-      std::cout << "Generate while statement ! " << std::endl;
-      
+      if(!code_generator.start_while(stmt.condition)) { exit(EXIT_FAILURE); }
+
       for(auto & inner_stmt : stmt.elements)
       {
          if(inner_stmt)
@@ -258,6 +308,8 @@ namespace NHLL
             inner_stmt->visit(*this);
          }
       }
+
+      if(!code_generator.end_while()) { exit(EXIT_FAILURE); }
    }
    
    // ----------------------------------------------------------
@@ -266,8 +318,8 @@ namespace NHLL
    
    void NHLL_Driver::accept(LoopStmt &stmt)
    {
-      std::cout << "Generate loop statement ! id : " << stmt.id << std::endl;
-      
+      if(!code_generator.start_loop(stmt.id)) { exit(EXIT_FAILURE); }
+
       for(auto & inner_stmt : stmt.elements)
       {
          if(inner_stmt)
@@ -275,6 +327,8 @@ namespace NHLL
             inner_stmt->visit(*this);
          }
       }
+
+      if(!code_generator.end_loop()) { exit(EXIT_FAILURE); }
    }
    
    // ----------------------------------------------------------
@@ -283,7 +337,7 @@ namespace NHLL
    
    void NHLL_Driver::accept(BreakStmt &stmt)
    {
-      std::cout << "Generate break statement ! " << stmt.id << std::endl;
+      if(!code_generator.break_loop(stmt.id)) { exit(EXIT_FAILURE); }
    }
 
    // ----------------------------------------------------------
@@ -292,13 +346,7 @@ namespace NHLL
    
    void NHLL_Driver::accept(CallStmt &stmt)
    {
-      std::cout << "Generate call statement ! " << stmt.function << ", " << " params : (";
-
-      for(auto &p : stmt.params)
-      {
-         std::cout << " " << p;
-      }
-      std::cout << " ) " << std::endl;
+      if(!code_generator.call_method(stmt.function, stmt.params)) { exit(EXIT_FAILURE); }
    }
 
    // ----------------------------------------------------------
@@ -307,14 +355,10 @@ namespace NHLL
    
    void NHLL_Driver::accept(NhllFunction &stmt)
    {
-      std::cout << "Generate function ! " << stmt.name << " params : (";
-
-      for(auto &p : stmt.params)
+      if(!code_generator.start_function(stmt.name, stmt.params, stmt.return_type))
       {
-         std::cout << "type: " << DataPrims_to_string(p.type) << ", name: " << p.name;
+         exit(EXIT_FAILURE);
       }
-      std::cout << " ) returns : " << DataPrims_to_string(stmt.return_type) << std::endl;
-
 
       for(auto & inner_stmt : stmt.elements)
       {
@@ -323,5 +367,48 @@ namespace NHLL
             inner_stmt->visit(*this);
          }
       }
+
+      if(!code_generator.end_function())
+      {
+         exit(EXIT_FAILURE);
+      }
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(LeaveStmt &stmt)
+   {
+      switch(stmt.variant)
+      {
+         case LeaveStmt::Variant::YIELD:
+         {
+            if(!code_generator.yield_statement(stmt.value, stmt.is_expr)){ exit(EXIT_FAILURE); }
+            break;
+         }
+
+         case LeaveStmt::Variant::RETURN:
+         {
+            if(!code_generator.return_statement(stmt.value, stmt.is_expr)){ exit(EXIT_FAILURE); }
+            break;
+         }
+
+         default:
+            std::cerr << "Driver::Error : A leave statement has an unhandled variant!" << std::endl;
+            std::cerr << "If you're seeing this message mark it on you calendar as a day you saw "
+                      << "actual black magic happen." << std::endl;
+            exit(EXIT_FAILURE);
+         break;
+      }
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(ExitStmt &stmt)
+   {
+      if(!code_generator.exit_statement()) { exit(EXIT_FAILURE); }
    }
 }

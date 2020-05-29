@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stack>
 
 #include "nhll.hpp"
 #include "nhll_driver.hpp"
@@ -25,8 +26,32 @@ namespace NHLL
         //! \brief Deconstruct a CodeGen
         ~CodeGen();
 
-        bool start_function(std::string name, std::vector<FunctionParam> params,  DataPrims return_type);
+        bool asm_block(std::vector<std::string> asm_code);
 
+        bool start_function(std::string name, std::vector<FunctionParam> params,  DataPrims return_type);
+        bool end_function();
+
+        bool start_while(ConditionalExpression conditional);
+        bool end_while();
+
+        bool start_loop(std::string name);
+        bool end_loop();
+
+        bool global_variable(std::string name, std::string set_to, bool is_expr);
+
+        bool declare_variable(std::string name, std::string set_to, bool is_expr);
+
+        bool reassign_variable(std::string name, std::string set_to, bool is_expr);
+
+        bool break_loop(std::string name);
+
+        bool call_method(std::string method, std::vector<std::string> params);
+
+        bool yield_statement(std::string value, bool is_expr);
+
+        bool return_statement(std::string value, bool is_expr);
+
+        bool exit_statement();
 
     private:
 
@@ -34,18 +59,28 @@ namespace NHLL
         {
             IDLE,
             BUILD_FUNCTION,
-            END_FUNCTION
+            BUILD_WHILE,
+            BUILD_LOOP
         };
 
-        GenState state;
+        std::stack<GenState> state_stack;
+
+        enum class VariableLocation
+        {
+            CONSTANT,
+            FUNCTION
+        };
 
         // A Variable
         struct Variable
         {
-            // Name stored as key in map
+            std::string name;
             std::string definition; // Definition
             NHLL::DataPrims type;   // Type
             bool isExpression;      // Definition is an expression if true
+
+            uint64_t address;
+            VariableLocation location;
         };
 
         // Function representation
@@ -56,7 +91,8 @@ namespace NHLL
                                    NHLL::DataPrims return_type) : 
                                    name(name),
                                    parameters(parameters),
-                                   return_type(return_type) {}
+                                   return_type(return_type),
+                                   local_stack_index(0) {}
 
             // Name of the function
             std::string name;
@@ -72,6 +108,10 @@ namespace NHLL
             // Vector used to determing if variable is accessable
             std::vector< std::map<std::string, Variable> > scoped_variable_map;
 
+            std::vector<std::string> asm_code;
+
+            uint64_t local_stack_index;
+
             // Bytecode for function
             std::vector<uint8_t> bytes;
         };
@@ -79,13 +119,19 @@ namespace NHLL
         // Generated functions
         std::vector<FunctionRepresentation> functions;
 
+        std::vector<Variable> constants;
+
         enum class VariablePollResult
         {
             OKAY,
-            INVALID_TYPE,
-            OUT_OF_SCOPE,
             NOT_FOUND
         };
+
+
+        // Maps to functions.back()
+        FunctionRepresentation * current_function;
+
+        uint64_t global_stack_index;
 
         VariablePollResult check_variable_access(std::string name, Variable & definition);
 
