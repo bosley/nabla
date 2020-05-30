@@ -41,18 +41,13 @@ def other_stuff() -> int {
 
     yield 0
 
-    //check {
-    //    [condition] { }
-    //    [condition] { }
-    //    []          { }
-    //}
+    check {
+        [a lt b] { io.output.println("if")     }
+        [a gt b] { io.output.println("elseif") }
+        []       { io.output.println("else - required")   }
+    }
 
-    // This is a planned expansion
-    //
-    // let r = check -> int {
-    //     [condition] { -> 4 }
-    //     []          { -> 0 }
-    // }
+
 
     exit
 }

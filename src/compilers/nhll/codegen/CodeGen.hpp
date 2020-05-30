@@ -37,6 +37,12 @@ namespace NHLL
         bool start_loop(std::string name);
         bool end_loop();
 
+        bool start_check();
+        bool end_check();
+
+        bool start_check_condition(ConditionalExpression conditional);
+        bool end_check_condition();
+
         bool global_variable(std::string name, std::string set_to, bool is_expr);
 
         bool declare_variable(std::string name, std::string set_to, bool is_expr);
@@ -60,7 +66,9 @@ namespace NHLL
             IDLE,
             BUILD_FUNCTION,
             BUILD_WHILE,
-            BUILD_LOOP
+            BUILD_LOOP,
+            BUILD_CHECK,
+            BUILD_CHECK_COND
         };
 
         std::stack<GenState> state_stack;

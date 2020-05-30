@@ -48,6 +48,8 @@ namespace NHLL
       NHLL::NhllElement* create_call_statement(std::string function, std::vector<std::string> params);
       NHLL::NhllElement* create_leave_statement(std::string value, bool is_return, bool is_expression=true);
       NHLL::NhllElement* create_exit_statement();
+      NHLL::NhllElement* create_check_condition(ConditionalExpression *expr, ElementList elements);
+      NHLL::NhllElement* create_check_statement(ElementList elements);
 
       //! \brief Visit a set statement, triggers code generation
       virtual void accept(AsmStmt &stmt) override;
@@ -81,6 +83,12 @@ namespace NHLL
 
       //! \brief Visit a while statement, triggers code generation
       virtual void accept(ExitStmt &stmt) override;
+      
+      //! \brief Visit a while statement, triggers code generation
+      virtual void accept(CheckCondition &stmt) override;
+      
+      //! \brief Visit a while statement, triggers code generation
+      virtual void accept(CheckStmt &stmt) override;
    private:
 
       void parse_helper( std::istream &stream );

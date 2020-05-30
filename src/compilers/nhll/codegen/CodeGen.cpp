@@ -174,6 +174,59 @@ namespace NHLL
     //
     // --------------------------------------------
 
+    bool  CodeGen::start_check()
+    {
+        if(state_stack.top() == GenState::IDLE)
+        {
+            std::cerr << "CodeGen::Error : Can not create check statement outside of functions " << std::endl;
+            return false;
+        }
+
+        std::cout << ">> CodegEn::start_check " << std::endl;
+        
+        state_stack.push(GenState::BUILD_CHECK);
+
+        return true;
+    }
+
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+
+    bool  CodeGen::end_check()
+    {
+        std::cout << ">> CodegEn::end_check " << std::endl;
+        state_stack.pop();
+        return true;
+    }
+
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+
+    bool CodeGen::start_check_condition(ConditionalExpression conditional)
+    {
+        std::cout << "\t>> CodegEn::start_check_condition " << std::endl;
+        
+        state_stack.push(GenState::BUILD_CHECK_COND);
+        return true;
+    }
+    
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+
+    bool CodeGen::end_check_condition()
+    {
+        std::cout << "\t>> CodegEn::end_check_condition " << std::endl;
+        state_stack.pop();
+        return true;
+    }
+
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+
     bool CodeGen::declare_variable(std::string name, std::string set_to, bool is_expr)
     {
         if(state_stack.top() == GenState::IDLE)
@@ -425,10 +478,12 @@ namespace NHLL
     {
         switch(state)
         {
-            case CodeGen::GenState::IDLE:           return "IDLE";
-            case CodeGen::GenState::BUILD_FUNCTION: return "BUILD_FUNCTION";
-            case CodeGen::GenState::BUILD_WHILE:    return "BUILD_WHILE";
-            case CodeGen::GenState::BUILD_LOOP:     return "BUILD_LOOP";
+            case CodeGen::GenState::IDLE:             return "IDLE";
+            case CodeGen::GenState::BUILD_FUNCTION:   return "BUILD_FUNCTION";
+            case CodeGen::GenState::BUILD_WHILE:      return "BUILD_WHILE";
+            case CodeGen::GenState::BUILD_LOOP:       return "BUILD_LOOP";
+            case CodeGen::GenState::BUILD_CHECK:      return "BUILD_CHECK";
+            case CodeGen::GenState::BUILD_CHECK_COND: return "BUILD_CHECK_COND";
             default:
                 std::cerr << "CodeGen::Error : Trying to print an invalid state!" << std::endl;
                 exit(EXIT_FAILURE);

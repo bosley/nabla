@@ -238,6 +238,24 @@ namespace NHLL
       return new ExitStmt();
    }
 
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_check_condition(ConditionalExpression *expr, ElementList elements)
+   {
+      return new CheckCondition(expr, elements);
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+
+   NHLL::NhllElement* NHLL_Driver::create_check_statement(ElementList elements)
+   {
+      return new CheckStmt(elements);
+   }
+
    // -----------------------------------------------------------------------------------------------------------
    //
    //       Accept functions from base visitor class that are used to call into the code generation
@@ -401,6 +419,45 @@ namespace NHLL
             exit(EXIT_FAILURE);
          break;
       }
+   }
+
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(CheckCondition &stmt)
+   {
+      if(!code_generator.start_check_condition(stmt.condition)) { exit(EXIT_FAILURE); }
+
+      for(auto & inner_stmt : stmt.elements)
+      {
+         if(inner_stmt)
+         {
+            inner_stmt->visit(*this);
+         }
+      }
+
+      if(!code_generator.end_check_condition()) { exit(EXIT_FAILURE); }
+   
+   }
+   
+   // ----------------------------------------------------------
+   //
+   // ----------------------------------------------------------
+   
+   void NHLL_Driver::accept(CheckStmt &stmt)
+   {
+      if(!code_generator.start_check()) { exit(EXIT_FAILURE); }
+
+      for(auto & inner_stmt : stmt.elements)
+      {
+         if(inner_stmt)
+         {
+            inner_stmt->visit(*this);
+         }
+      }
+
+      if(!code_generator.end_check()) { exit(EXIT_FAILURE); }
    }
 
    // ----------------------------------------------------------

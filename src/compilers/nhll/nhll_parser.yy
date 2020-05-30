@@ -42,6 +42,7 @@
    #include "nhll_driver.hpp"
 
    std::vector< std::vector<NHLL::NhllElement*> > element_list;
+   std::vector< NHLL::NhllElement* > check_list;
    std::vector< NHLL::FunctionParam > r_paramaters;
    std::vector< std::string > s_paramaters;
 
@@ -64,6 +65,7 @@
 %type<NHLL::NhllElement*> stmt;
 %type<NHLL::NhllElement*> asm_stmt;
 %type<NHLL::NhllElement*> let_stmt;
+%type<NHLL::NhllElement*> check_stmt;
 %type<NHLL::NhllElement*> reassign_stmt;
 %type<NHLL::NhllElement*> global_stmt;
 %type<NHLL::NhllElement*> call_stmt;
@@ -72,13 +74,14 @@
 %type<NHLL::NhllElement*> break_stmt;
 %type<NHLL::NhllElement*> function_stmt;
 %type<NHLL::NhllElement*> leave_stmt;
+%type<NHLL::NhllElement*> check_cond;
 
 %type<std::vector<NhllElement*>> multiple_statements;
 %type<std::vector<NhllElement*>> block;
 %type<std::vector<NhllElement*>> function_statements;
 
-%token FUNC_DECL LET CALL WHILE LOOP INT NIL REAL STR RET_ARROW BREAK GLOBAL
-%token RETURN YIELD EXIT
+%token FUNC_DECL LET WHILE LOOP INT NIL REAL STR RET_ARROW BREAK GLOBAL
+%token RETURN YIELD EXIT CHECK
 %token LTE GTE LT GT EQ NE 
 
 %token <std::string> ASM
@@ -182,6 +185,7 @@ stmt
    | break_stmt    { $$ = $1; }
    | asm_stmt      { $$ = $1; }
    | leave_stmt    { $$ = $1; }
+   | check_stmt    { $$ = $1; }
    ;
 
 global_stmt
@@ -248,6 +252,32 @@ function_stmt
    | FUNC_DECL identifiers '(' recv_paramaters ')' RET_ARROW data_prim block { $$ = driver.create_function_statement($2, r_paramaters, static_cast<DataPrims>($7), $8); r_paramaters.clear(); }
    ;
    
+check_cond
+   :  '[' condexpr ']' block  { $$ = driver.create_check_condition($2, $4); delete $2; }
+   ;
+
+checks
+   : check_cond            { check_list.push_back($1); }
+   | checks check_cond     { check_list.push_back($2); }
+   ;
+
+check_final
+   : '[' ']' block  { 
+                              // The final 'else' in the check statement we build a ' 1==1' condition that should be true unless
+                              // the universe has bigger issues.
+                              auto c = new NHLL::ConditionalExpression(
+                                        NHLL::ConditionalExpression(NHLL::ConditialExpressionType::EXPR , NHLL::Conditionals::EQ, "1", "1")
+                                       );
+                              check_list.push_back(
+                                 driver.create_check_condition(c ,  $3)
+                              );
+                              delete c;
+                           }
+   ;
+
+check_stmt
+   :  CHECK '{' checks check_final '}' { $$ = driver.create_check_statement(check_list); check_list.clear(); }
+   ;
 
 %%
 

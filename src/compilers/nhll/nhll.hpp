@@ -338,6 +338,61 @@ namespace NHLL
         ElementList elements;
     };
 
+    //
+    //
+    //
+    class CheckCondition : public NhllElement
+    {
+    public:
+        CheckCondition() {}
+
+        CheckCondition(ConditionalExpression *expr, ElementList el)
+        {
+            condition.type = expr->type;
+            condition.cond = expr->cond;
+            condition.lhs  = expr->lhs ;
+            condition.rhs  = expr->rhs ;
+
+            elements = el;
+        }
+
+        CheckCondition(CheckCondition *o)
+        {
+            condition.type = o->condition.type;
+            condition.cond = o->condition.cond;
+            condition.lhs  = o->condition.lhs ;
+            condition.rhs  = o->condition.rhs ;
+            elements = o->elements;
+        }
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        ConditionalExpression condition;
+        ElementList elements;
+    };
+
+    //
+    //
+    //
+    class CheckStmt : public NhllElement
+    {
+    public:
+        CheckStmt() {}
+
+        CheckStmt(ElementList el)
+        {
+            elements = el;
+        }
+
+        CheckStmt(CheckStmt *o)
+        {
+            elements = o->elements;
+        }
+
+        virtual void visit(NhllVisitor &visitor) override;
+
+        ElementList elements;
+    };
     /*
             Visitor is last so we don't  have to fwd decl all the things
     */
@@ -355,6 +410,8 @@ namespace NHLL
         virtual void accept(NhllFunction &stmt) = 0;
         virtual void accept(LeaveStmt &stmt) = 0;
         virtual void accept(ExitStmt &stmt) = 0;
+        virtual void accept(CheckCondition &stmt) = 0;
+        virtual void accept(CheckStmt &stmt) = 0;
     };
 }
 

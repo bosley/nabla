@@ -31,7 +31,7 @@ using token = NHLL::NHLL_Parser::token;
 %}
 
 "let"       { return( token::LET   ); }
-"call"      { return( token::CALL  ); }
+"check"     { return( token::CHECK  ); }
 
 "def"       { return( token::FUNC_DECL); }
 "->"        { return( token::RET_ARROW); }

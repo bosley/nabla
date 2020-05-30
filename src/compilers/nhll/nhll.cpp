@@ -103,4 +103,22 @@ namespace NHLL
     {
         visitor.accept(*this);
     }
+    
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void CheckCondition::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
+    
+    // --------------------------------------------------------------
+    //
+    // --------------------------------------------------------------
+
+    void CheckStmt::visit(NhllVisitor &visitor)
+    {
+        visitor.accept(*this);
+    }
 }
