@@ -37,6 +37,9 @@ namespace NHLL
       //! \brief Call visit on all elements to generate code
       void build_input(std::vector< ElementList > input_elements );
 
+      void build_lines(ElementList el);
+      void build_line(NHLL::NhllElement* el);
+
       NHLL::NhllElement* create_asm_statement(std::string asm_block);
       NHLL::NhllElement* create_function_statement(std::string name, std::vector<FunctionParam> params, DataPrims ret, ElementList elements);
       NHLL::NhllElement* create_let_statement(std::string lhs, std::string rhs, bool is_expression=true);

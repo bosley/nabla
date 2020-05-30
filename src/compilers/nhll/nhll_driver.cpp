@@ -124,6 +124,28 @@ namespace NHLL
       input_elements.clear();
    }
 
+   
+   void NHLL_Driver::build_lines(ElementList el)
+   {
+         for(auto &element : el)
+         {
+            if(element)
+            {
+               element->visit(*this);
+               delete element;
+            }
+         }
+         el.clear();
+   }
+
+   void  NHLL_Driver::build_line(NHLL::NhllElement* element)
+   {
+      if(element)
+      {
+         element->visit(*this);
+         delete element;
+      }
+   }
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------

@@ -43,6 +43,7 @@
    #include "nhll_postfix.hpp"
 
    std::vector< std::vector<NHLL::NhllElement*> > element_list;
+   std::vector< NHLL::NhllElement* > parse_list;
    std::vector< NHLL::NhllElement* > check_list;
    std::vector< NHLL::FunctionParam > r_paramaters;
    std::vector< std::string > s_paramaters;
@@ -81,7 +82,6 @@
 
 %type<std::vector<NhllElement*>> multiple_statements;
 %type<std::vector<NhllElement*>> block;
-%type<std::vector<NhllElement*>> function_statements;
 
 %token FUNC_DECL LET WHILE LOOP INT NIL REAL STR RET_ARROW BREAK GLOBAL
 %token RETURN YIELD EXIT CHECK
@@ -99,18 +99,25 @@
 
 %locations
 
+%start start
+
 %%
 
-prog_option
-   : input     { driver.build_input(element_list); element_list.clear(); } // The driver deletes all allocated space for elements
-   | END
-   ;
+start 
+   : END 
+   | input END
+   ; 
 
 input
-   : function_statements         { element_list.push_back($1); }
-   | input function_statements   { element_list.push_back($2); }
-   | multiple_statements         { element_list.push_back($1); }
-   | input multiple_statements   { element_list.push_back($2); }
+   : function_stmt       { driver.build_line($1); }
+   | input function_stmt { driver.build_line($2); }
+   | global_stmt         { driver.build_line($1); }
+   | input global_stmt   { driver.build_line($2); }
+   ;
+
+multiple_statements 
+   : stmt                        { $$ = std::vector<NhllElement*>(); $$.push_back($1); }     // Create the list to return, and add the statement
+   | multiple_statements stmt    { $1.push_back($2); $$ = $1; }                              // Add the statement to the list 
    ;
 
 identifiers
@@ -208,19 +215,9 @@ global_stmt
    | GLOBAL identifiers '=' STRING_LITERAL { $$ = driver.create_global_statement($2, $4, false); }
    ;
 
-multiple_statements 
-   : stmt                        { $$ = std::vector<NhllElement*>(); $$.push_back($1); }     // Create the list to return, and add the statement
-   | multiple_statements stmt    { $1.push_back($2); $$ = $1; }                              // Add the statement to the list 
-   ;
-
 block 
    : '{' multiple_statements '}' { $$ = $2; }   // Return the statement list
    | '{' '}'                     { $$ = std::vector<NhllElement*>(); }
-   ;
-
-function_statements
-   : function_stmt                        { $$ = std::vector<NhllElement*>(); $$.push_back($1); }
-   | function_statements function_stmt    { $1.push_back($2); $$ = $1; }
    ;
 
 asm_stmt
