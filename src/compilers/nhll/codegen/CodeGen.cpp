@@ -1,4 +1,5 @@
 #include "CodeGen.hpp"
+#include "nhll_postfix.hpp"
 #include <algorithm>
 #include <filesystem>
 #include <sstream>
@@ -273,9 +274,16 @@ namespace NHLL
         // if its not an expression its a string
         if(is_expr)
         {
-            Postfix postfixer;
-            
-            auto el_list = postfixer.convert(set_to);
+            Postfix pf;
+            std::vector<Postfix::Element> pf_el = pf.convert(set_to);
+
+            std::cout << std::endl << "\t\t";
+            for(auto & i : pf_el )
+            {
+                std::cout << i.value << " ";
+            }
+            std::cout << std::endl;
+
         }
         return true;
     }

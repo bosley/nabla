@@ -40,6 +40,7 @@
    
    #include "nhll.hpp"
    #include "nhll_driver.hpp"
+   #include "nhll_postfix.hpp"
 
    std::vector< std::vector<NHLL::NhllElement*> > element_list;
    std::vector< NHLL::NhllElement* > check_list;
@@ -73,7 +74,9 @@
 %type<NHLL::NhllElement*> loop_stmt;
 %type<NHLL::NhllElement*> break_stmt;
 %type<NHLL::NhllElement*> function_stmt;
-%type<NHLL::NhllElement*> leave_stmt;
+%type<NHLL::NhllElement*> yield_stmt;
+%type<NHLL::NhllElement*> exit_stmt;
+%type<NHLL::NhllElement*> return_stmt;
 %type<NHLL::NhllElement*> check_cond;
 
 %type<std::vector<NhllElement*>> multiple_statements;
@@ -82,7 +85,8 @@
 
 %token FUNC_DECL LET WHILE LOOP INT NIL REAL STR RET_ARROW BREAK GLOBAL
 %token RETURN YIELD EXIT CHECK
-%token LTE GTE LT GT EQ NE 
+%token LTE GTE LT GT EQ NE COR CAND
+%token LEFT_SH RIGHT_SH OR XOR AND NOT
 
 %token <std::string> ASM
 %token <std::string> STRING_LITERAL
@@ -121,27 +125,36 @@ expression
     ;
 
 ope
-   : '+' { $$ = "+"; }
-   | '*' { $$ = "*"; }
-   | '-' { $$ = "-"; }
-   | '/' { $$ = "/"; }
-   | '^' { $$ = "^"; }
+   : '+'      { $$ = Postfix::ADD;  } // The postfix class uses special symbols
+   | '*'      { $$ = Postfix::MUL;  } // for some operations, so we call them
+   | '-'      { $$ = Postfix::SUB;  } // by name here as-to not confuse the 
+   | '/'      { $$ = Postfix::DIV;  } // symbols here in the grammar
+   | '^'      { $$ = Postfix::POW;  }
+   | '%'      { $$ = Postfix::MOD;  }
+   | NOT      { $$ = Postfix::NOT;  }
+   | LEFT_SH  { $$ = Postfix::LSH;  }
+   | RIGHT_SH { $$ = Postfix::RSH;  }
+   | OR       { $$ = Postfix::OR;   }
+   | XOR      { $$ = Postfix::XOR;  }
+   | AND      { $$ = Postfix::AND;  }
    ;
 
 conditional
-   : LTE { $$ = static_cast<int>(NHLL::Conditionals::LTE); }
-   | GTE { $$ = static_cast<int>(NHLL::Conditionals::GTE); }
-   | GT  { $$ = static_cast<int>(NHLL::Conditionals::GT ); }
-   | LT  { $$ = static_cast<int>(NHLL::Conditionals::LT ); }
-   | EQ  { $$ = static_cast<int>(NHLL::Conditionals::EQ ); }
-   | NE  { $$ = static_cast<int>(NHLL::Conditionals::NE ); }
+   : LTE  { $$ = static_cast<int>(NHLL::Conditionals::LTE); }
+   | GTE  { $$ = static_cast<int>(NHLL::Conditionals::GTE); }
+   | GT   { $$ = static_cast<int>(NHLL::Conditionals::GT ); }
+   | LT   { $$ = static_cast<int>(NHLL::Conditionals::LT ); }
+   | EQ   { $$ = static_cast<int>(NHLL::Conditionals::EQ ); }
+   | NE   { $$ = static_cast<int>(NHLL::Conditionals::NE ); }
+   | COR  { $$ = static_cast<int>(NHLL::Conditionals::OR ); }
+   | CAND { $$ = static_cast<int>(NHLL::Conditionals::AND); }
    ;
 
 condexpr
-   : IDENTIFIER                          { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::ID   , Conditionals::NONE , "", ""); }
+   : expression conditional expression   { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::EXPR , static_cast<NHLL::Conditionals>($2) , $1, $3 ); }
+   | IDENTIFIER                          { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::ID   , Conditionals::NONE , "", ""); }
    | INTEGER_LITERAL                     { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::INT  , Conditionals::NONE , "", ""); }
    | REAL_LITERAL                        { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::REAL , Conditionals::NONE , "", ""); }
-   | expression conditional expression   { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::EXPR , static_cast<NHLL::Conditionals>($2) , $1, $3 );              }
    ;
 
 data_prim
@@ -184,7 +197,9 @@ stmt
    | loop_stmt     { $$ = $1; }
    | break_stmt    { $$ = $1; }
    | asm_stmt      { $$ = $1; }
-   | leave_stmt    { $$ = $1; }
+   | yield_stmt    { $$ = $1; }
+   | return_stmt   { $$ = $1; }
+   | exit_stmt     { $$ = $1; }
    | check_stmt    { $$ = $1; }
    ;
 
@@ -222,12 +237,18 @@ reassign_stmt
    | identifiers '=' STRING_LITERAL       { $$ = driver.create_reassign_statement($1, $3, false); }
    ;
 
-leave_stmt
+yield_stmt
    : YIELD expression      { $$ = driver.create_leave_statement($2, false, true);  }
    | YIELD STRING_LITERAL  { $$ = driver.create_leave_statement($2, false, false); }
-   | RETURN expression     { $$ = driver.create_leave_statement($2, true,  true);  }
+   ;
+
+return_stmt
+   : RETURN expression     { $$ = driver.create_leave_statement($2, true,  true);  }
    | RETURN STRING_LITERAL { $$ = driver.create_leave_statement($2, true,  false); }
-   | EXIT                  { $$ = driver.create_exit_statement();                  }
+   ;
+
+exit_stmt
+   :  EXIT                  { $$ = driver.create_exit_statement();                  }
    ;
 
 call_stmt

@@ -45,12 +45,21 @@ using token = NHLL::NHLL_Parser::token;
 "break"     { return( token::BREAK ); }
 "global"    { return( token::GLOBAL); }
 
-"lte"       { return( token::LTE ); }
-"gte"       { return( token::GTE ); }
-"gt"        { return( token::GT  ); }
-"lt"        { return( token::LT  ); }
-"ne"        { return( token::NE  ); }
-"eq"        { return( token::EQ  ); }
+"<="        { return( token::LTE  ); }
+">="        { return( token::GTE  ); }
+">"         { return( token::GT   ); }
+"<"         { return( token::LT   ); }
+"!="        { return( token::NE   ); }
+"=="        { return( token::EQ   ); }
+"||"        { return( token::COR  ); }
+"&&"        { return( token::CAND ); }
+
+"lsh"       { return( token::LEFT_SH);  }
+"rsh"       { return( token::RIGHT_SH); }
+"or"        { return( token::OR);       }
+"xor"       { return( token::XOR);      }
+"and"       { return( token::AND);      }
+"not"       { return( token::NOT);      }
 
 "return"    { return( token::RETURN ); }
 "yield"     { return( token::YIELD  ); }

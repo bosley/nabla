@@ -21,7 +21,7 @@ namespace NHLL
 
     enum class Conditionals
     {
-        LT, GT, LTE, GTE, NE, EQ, NONE
+        LT, GT, LTE, GTE, NE, EQ, AND, OR, NONE
     };
 
     enum class ConditialExpressionType

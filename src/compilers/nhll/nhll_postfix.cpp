@@ -13,14 +13,23 @@ namespace NHLL
 {
     std::vector<Postfix::Element> Postfix::convert(std::string exp)
     {
+        // https://en.wikipedia.org/wiki/Order_of_operations
+
         std::stack<std::string> op;
         std::string res = "";
         std::map<std::string,std::pair<int,int> > ops;
-        ops["^"] = std::make_pair(4,1); // E
-        ops["*"] = std::make_pair(3,0); // M
-        ops["/"] = std::make_pair(3,0); // D
-        ops["+"] = std::make_pair(2,0); // A
-        ops["-"] = std::make_pair(2,0); // S
+        ops["^"]  = std::make_pair(9,1); // E
+        ops["*"]  = std::make_pair(8,0); // M
+        ops["/"]  = std::make_pair(8,0); // D
+        ops["%"]  = std::make_pair(8,0); // MOD
+        ops["+"]  = std::make_pair(7,0); // A
+        ops["-"]  = std::make_pair(7,0); // S
+        ops["~"]  = std::make_pair(7,0); // S
+        ops["<"]  = std::make_pair(6,0); // left shift
+        ops[">"]  = std::make_pair(6,0); // right shift
+        ops["&"]  = std::make_pair(5,0); // and
+        ops["x"]  = std::make_pair(4,0); // xor
+        ops["|"]  = std::make_pair(3,0); // or
 
         std::vector<Element> element_vector;
 
@@ -76,7 +85,9 @@ namespace NHLL
                 continue;
             }
 
-            if(tmp == "^" || tmp == "*" || tmp == "/" || tmp == "+" || tmp == "-")
+            if(tmp == "^" || tmp == "*" || tmp == "/" || tmp == "+" || 
+               tmp == "-" || tmp == "<" || tmp == ">" || tmp == "|" ||
+               tmp == "x" || tmp == "&" || tmp == "%" || tmp == "~")
             {
                 element_vector.push_back(Element{ tmp, Type::OP });
             }
