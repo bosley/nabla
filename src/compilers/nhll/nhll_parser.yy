@@ -56,7 +56,8 @@
 %define parse.assert
 
 %type<std::string> expression;
-%type<std::string> ope;
+%type<std::string> term;
+%type<std::string> factor;
 %type<std::string> primary;
 %type<std::string> passable;
 %type<std::string> identifiers;
@@ -87,7 +88,6 @@
 %token RETURN YIELD EXIT CHECK
 %token LTE GTE LT GT EQ NE COR CAND
 %token LEFT_SH RIGHT_SH OR XOR AND NOT
-
 %token <std::string> ASM
 %token <std::string> STRING_LITERAL
 %token <std::string> INTEGER_LITERAL
@@ -126,24 +126,49 @@ identifiers
    ;
 
 expression
-    : primary                    { $$ = $1; }
-    | expression ope expression  { $$ = std::string( $1 + $2 + $3); }
-    | ope primary                { $$ = std::string( $1 + $2); }
-    ;
+   : term                        { $$ = $$ + $1; }
+   | expression '+' term         { $$ = $$ + $1 + Postfix::ADD + $3; }
+   | expression '-' term         { $$ = $$ + $1 + Postfix::SUB + $3; }
+   ;
 
-ope
-   : '+'      { $$ = Postfix::ADD;  } // The postfix class uses special symbols
-   | '*'      { $$ = Postfix::MUL;  } // for some operations, so we call them
-   | '-'      { $$ = Postfix::SUB;  } // by name here as-to not confuse the 
-   | '/'      { $$ = Postfix::DIV;  } // symbols here in the grammar
-   | '^'      { $$ = Postfix::POW;  }
-   | '%'      { $$ = Postfix::MOD;  }
-   | NOT      { $$ = Postfix::NOT;  }
-   | LEFT_SH  { $$ = Postfix::LSH;  }
-   | RIGHT_SH { $$ = Postfix::RSH;  }
-   | OR       { $$ = Postfix::OR;   }
-   | XOR      { $$ = Postfix::XOR;  }
-   | AND      { $$ = Postfix::AND;  }
+term
+   : factor
+   | term '*' factor             { $$ = $$ + $1 + Postfix::MUL + $3; } // Postfix class uses special symbols for some things
+   | term '/' factor             { $$ = $$ + $1 + Postfix::DIV + $3; } // so we just add them by name here
+   | term '^' factor             { $$ = $$ + $1 + Postfix::POW + $3; } // For instance, this usually doesn't mean power in languages
+   | term '%' factor             { $$ = $$ + $1 + Postfix::MOD + $3; } // I think thats dumb, so I made ^ mean power
+   | term LEFT_SH  factor        { $$ = $$ + $1 + Postfix::LSH + $3; }
+   | term RIGHT_SH factor        { $$ = $$ + $1 + Postfix::RSH + $3; }
+   | term XOR factor             { $$ = $$ + $1 + Postfix::XOR + $3; }
+   | term OR factor              { $$ = $$ + $1 + Postfix::OR  + $3; }
+   | term AND factor             { $$ = $$ + $1 + Postfix::AND + $3; }
+   ;
+
+factor
+   : primary                     { $$ = $$ + $1; }
+   | '(' expression ')'          { $$ = $$ + "(" + $2 + ")"; }
+   | NOT factor                  { $$ = $$ + Postfix::NOT + $2; }
+   ;
+
+conditional_expression
+   : conditional_term                          
+   | conditional_expression LTE conditional_term   
+   | conditional_expression GTE conditional_term
+   | conditional_expression GT  conditional_term
+   | conditional_expression LT  conditional_term
+   | conditional_expression EQ  conditional_term
+   | conditional_expression NE  conditional_term
+   ;
+
+conditional_term
+   : conditional_factor
+   | conditional_term COR  conditional_factor
+   | conditional_term CAND conditional_factor
+   ;
+
+conditional_factor
+   :  expression
+   | '(' conditional_expression ')'
    ;
 
 conditional
@@ -157,12 +182,16 @@ conditional
    | CAND { $$ = static_cast<int>(NHLL::Conditionals::AND); }
    ;
 
+
+
 condexpr
    : expression conditional expression   { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::EXPR , static_cast<NHLL::Conditionals>($2) , $1, $3 ); }
    | IDENTIFIER                          { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::ID   , Conditionals::NONE , "", ""); }
    | INTEGER_LITERAL                     { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::INT  , Conditionals::NONE , "", ""); }
    | REAL_LITERAL                        { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::REAL , Conditionals::NONE , "", ""); }
    ;
+
+
 
 data_prim
    :  INT  { $$ = static_cast<int>(NHLL::DataPrims::INT ); }
@@ -182,10 +211,10 @@ send_paramaters
    ;
 
 primary
-    : INTEGER_LITERAL                     { $$ = $1; }
-    | REAL_LITERAL                        { $$ = $1; }
-    | identifiers                         { $$ = $1; }
-    | '(' expression ')'                  { $$ = std::string( "(" + $2 + ")"); }
+    : INTEGER_LITERAL                     { $$ = $1;       }
+    | '-' INTEGER_LITERAL                 { $$ = "-" + $2; }   // because -?[0-9]+ Would only match negatives ? 
+    | REAL_LITERAL                        { $$ = $1;       }
+    | identifiers                         { $$ = $1;       }
     ;
 
 passable

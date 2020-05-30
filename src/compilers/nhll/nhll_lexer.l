@@ -89,15 +89,15 @@ using token = NHLL::NHLL_Parser::token;
                yylval->build< std::string >( yytext );
                return( token::IDENTIFIER ); 
             }
-
-[0-9]+    {
-               yylval->build< std::string >( yytext );
-               return ( token::INTEGER_LITERAL );
-            }
-
 -?[0-9]+\.[0-9]+ {
                yylval->build< std::string >( yytext );
                return ( token::REAL_LITERAL );
+            }
+
+[0-9]+      {
+               yylval->build< std::string >( yytext );
+               std::cout << "GOT THAT INT : " << yytext << std::endl;
+               return ( token::INTEGER_LITERAL );
             }
 
 
