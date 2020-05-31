@@ -1,3 +1,15 @@
+/*
+    This class takes any expression and converts it to its postfix form. It works with mathimatical expressions
+    and conditional expressions. Its a bit ridiculous because some of the symbols needed get converted to something
+    that won't be part of a variable name, and it isn't really sensible at first glance. The implementation here is
+    a bit suspect, and deserves some clean-up but it works. 
+
+    input -> "~(4+2*(9-1))"  | output -> "4 2 9 1 - * + ~"
+
+    The output is a vector of type Postfix::Element so processing it and converting it into ASM / Bytecode will be 
+    super simple
+*/
+
 #ifndef NHLL_POSTFIX_HPP
 #define NHLL_POSTFIX_HPP
 
@@ -20,24 +32,37 @@ namespace NHLL
         // The postfixer uses its own symbols in a couple of cases for operations
         // That wouldn't make sense to 'outsiders' so these are defined for them to
         // be called by name
-        static constexpr char ADD  = '+';
-        static constexpr char MUL  = '*';
-        static constexpr char SUB  = '-';
-        static constexpr char DIV  = '/';
-        static constexpr char POW  = '^';
-        static constexpr char MOD  = '%';
-        static constexpr char NOT  = '~';
-        static constexpr char LSH  = '<';
-        static constexpr char RSH  = '>';
-        static constexpr char OR   = '|';
-        static constexpr char XOR  = 'x';
-        static constexpr char AND  = '&';
+        enum class POP
+        {
+            ADD  = '+',
+            MUL  = '*',
+            SUB  = '-',
+            DIV  = '/',
+            POW  = '^',
+            MOD  = '%',
+            NOT  = '~',
+            LSH  = '<',
+            RSH  = '>',
+            OR   = '|',
+            XOR  = '@',
+            AND  = '&',
+            LTE  = '`',
+            GTE  = ';',
+            GT   = ',',
+            LT   = '#',
+            EQ   = '"',
+            NE   = '$',
+            COR  = '_',
+            CAND = ':',
+            NONE = ' '
+        };
 
         //!\brief An element of an expression
         struct Element
         {
             std::string value; // Value
             Type type;         // Element type
+            POP operation;
         };
 
         //!\brief Convert an expression to postfix

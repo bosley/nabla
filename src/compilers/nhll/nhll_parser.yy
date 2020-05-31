@@ -61,8 +61,6 @@
 %type<std::string> primary;
 %type<std::string> passable;
 %type<std::string> identifiers;
-%type<NHLL::ConditionalExpression*> condexpr;
-%type<int> conditional;
 %type<int> data_prim;
 
 %type<NHLL::NhllElement*> stmt;
@@ -127,71 +125,36 @@ identifiers
 
 expression
    : term                        { $$ = $$ + $1; }
-   | expression '+' term         { $$ = $$ + $1 + Postfix::ADD + $3; }
-   | expression '-' term         { $$ = $$ + $1 + Postfix::SUB + $3; }
+   | expression '+' term         { $$ = $$ + $1 + (char)Postfix::POP::ADD + $3; }
+   | expression '-' term         { $$ = $$ + $1 + (char)Postfix::POP::SUB + $3; }
+   | expression LTE term         { $$ = $$ + $1 + (char)Postfix::POP::LTE + $3; }
+   | expression GTE term         { $$ = $$ + $1 + (char)Postfix::POP::GTE + $3; }
+   | expression GT  term         { $$ = $$ + $1 + (char)Postfix::POP::GT  + $3; }
+   | expression LT  term         { $$ = $$ + $1 + (char)Postfix::POP::LT  + $3; }
+   | expression EQ  term         { $$ = $$ + $1 + (char)Postfix::POP::EQ  + $3; }
+   | expression NE  term         { $$ = $$ + $1 + (char)Postfix::POP::NE  + $3; }
    ;
 
 term
    : factor
-   | term '*' factor             { $$ = $$ + $1 + Postfix::MUL + $3; } // Postfix class uses special symbols for some things
-   | term '/' factor             { $$ = $$ + $1 + Postfix::DIV + $3; } // so we just add them by name here
-   | term '^' factor             { $$ = $$ + $1 + Postfix::POW + $3; } // For instance, this usually doesn't mean power in languages
-   | term '%' factor             { $$ = $$ + $1 + Postfix::MOD + $3; } // I think thats dumb, so I made ^ mean power
-   | term LEFT_SH  factor        { $$ = $$ + $1 + Postfix::LSH + $3; }
-   | term RIGHT_SH factor        { $$ = $$ + $1 + Postfix::RSH + $3; }
-   | term XOR factor             { $$ = $$ + $1 + Postfix::XOR + $3; }
-   | term OR factor              { $$ = $$ + $1 + Postfix::OR  + $3; }
-   | term AND factor             { $$ = $$ + $1 + Postfix::AND + $3; }
+   | term '*' factor             { $$ = $$ + $1 + (char)Postfix::POP::MUL + $3; } // Postfix class uses special symbols for some things
+   | term '/' factor             { $$ = $$ + $1 + (char)Postfix::POP::DIV + $3; } // so we just add them by name here
+   | term '^' factor             { $$ = $$ + $1 + (char)Postfix::POP::POW + $3; } // For instance, this usually doesn't mean power in languages
+   | term '%' factor             { $$ = $$ + $1 + (char)Postfix::POP::MOD + $3; } // I think thats dumb, so I made ^ mean power
+   | term LEFT_SH  factor        { $$ = $$ + $1 + (char)Postfix::POP::LSH + $3; }
+   | term RIGHT_SH factor        { $$ = $$ + $1 + (char)Postfix::POP::RSH + $3; }
+   | term XOR factor             { $$ = $$ + $1 + (char)Postfix::POP::XOR + $3; }
+   | term OR factor              { $$ = $$ + $1 + (char)Postfix::POP::OR  + $3; }
+   | term AND factor             { $$ = $$ + $1 + (char)Postfix::POP::AND + $3; }
+   | term COR  factor            { $$ = $$ + $1 + (char)Postfix::POP::COR  + $3;}
+   | term CAND factor            { $$ = $$ + $1 + (char)Postfix::POP::CAND + $3;}
    ;
 
 factor
    : primary                     { $$ = $$ + $1; }
    | '(' expression ')'          { $$ = $$ + "(" + $2 + ")"; }
-   | NOT factor                  { $$ = $$ + Postfix::NOT + $2; }
+   | NOT factor                  { $$ = $$ + (char)Postfix::POP::NOT + $2; }
    ;
-
-conditional_expression
-   : conditional_term                          
-   | conditional_expression LTE conditional_term   
-   | conditional_expression GTE conditional_term
-   | conditional_expression GT  conditional_term
-   | conditional_expression LT  conditional_term
-   | conditional_expression EQ  conditional_term
-   | conditional_expression NE  conditional_term
-   ;
-
-conditional_term
-   : conditional_factor
-   | conditional_term COR  conditional_factor
-   | conditional_term CAND conditional_factor
-   ;
-
-conditional_factor
-   :  expression
-   | '(' conditional_expression ')'
-   ;
-
-conditional
-   : LTE  { $$ = static_cast<int>(NHLL::Conditionals::LTE); }
-   | GTE  { $$ = static_cast<int>(NHLL::Conditionals::GTE); }
-   | GT   { $$ = static_cast<int>(NHLL::Conditionals::GT ); }
-   | LT   { $$ = static_cast<int>(NHLL::Conditionals::LT ); }
-   | EQ   { $$ = static_cast<int>(NHLL::Conditionals::EQ ); }
-   | NE   { $$ = static_cast<int>(NHLL::Conditionals::NE ); }
-   | COR  { $$ = static_cast<int>(NHLL::Conditionals::OR ); }
-   | CAND { $$ = static_cast<int>(NHLL::Conditionals::AND); }
-   ;
-
-
-
-condexpr
-   : expression conditional expression   { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::EXPR , static_cast<NHLL::Conditionals>($2) , $1, $3 ); }
-   | IDENTIFIER                          { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::ID   , Conditionals::NONE , "", ""); }
-   | INTEGER_LITERAL                     { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::INT  , Conditionals::NONE , "", ""); }
-   | REAL_LITERAL                        { $$ = new NHLL::ConditionalExpression(NHLL::ConditialExpressionType::REAL , Conditionals::NONE , "", ""); }
-   ;
-
-
 
 data_prim
    :  INT  { $$ = static_cast<int>(NHLL::DataPrims::INT ); }
@@ -283,7 +246,7 @@ call_stmt
    ;
 
 while_stmt
-   :  WHILE '(' condexpr ')' block        { $$ = driver.create_while_statement($3, $5); delete $3; }
+   :  WHILE '(' expression ')' block  { $$ = driver.create_while_statement($3, $5); }
    ;
 
 loop_stmt
@@ -300,7 +263,7 @@ function_stmt
    ;
    
 check_cond
-   :  '[' condexpr ']' block  { $$ = driver.create_check_condition($2, $4); delete $2; }
+   :  '[' expression ']' block  { $$ = driver.create_check_condition($2, $4); }
    ;
 
 checks
@@ -312,13 +275,10 @@ check_final
    : '[' ']' block  { 
                               // The final 'else' in the check statement we build a ' 1==1' condition that should be true unless
                               // the universe has bigger issues.
-                              auto c = new NHLL::ConditionalExpression(
-                                        NHLL::ConditionalExpression(NHLL::ConditialExpressionType::EXPR , NHLL::Conditionals::EQ, "1", "1")
-                                       );
+                              std::string condition = "1" + std::string( 1, (char)Postfix::POP::EQ ) + "1";
                               check_list.push_back(
-                                 driver.create_check_condition(c ,  $3)
+                                 driver.create_check_condition(condition ,  $3)
                               );
-                              delete c;
                            }
    ;
 

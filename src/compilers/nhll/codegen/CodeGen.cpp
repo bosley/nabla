@@ -113,9 +113,23 @@ namespace NHLL
     //
     // --------------------------------------------
 
-    bool CodeGen::start_while(ConditionalExpression conditional)
+    bool CodeGen::start_while(std::string conditional)
     {
         std::cout << ">> CodegEn::start_while " << std::endl;
+
+        std::cout << "\t>>> EXPR (May look odd) >>> " << conditional << std::endl;
+
+
+        Postfix pf;
+        std::vector<Postfix::Element> pf_el = pf.convert(conditional);
+
+        std::cout << std::endl << "\t\t";
+        for(auto & i : pf_el )
+        {
+            std::cout << i.value << " ";
+        }
+        std::cout << std::endl;
+
 
         // Add a new item to the current_function's scoped_variable map to 
         // ensure that new definitions are stored there
@@ -205,10 +219,22 @@ namespace NHLL
     //
     // --------------------------------------------
 
-    bool CodeGen::start_check_condition(ConditionalExpression conditional)
+    bool CodeGen::start_check_condition(std::string conditional)
     {
         std::cout << "\t>> CodegEn::start_check_condition " << std::endl;
         
+        std::cout << "\t>>> EXPR (May look odd) >>> " << conditional << std::endl;
+
+        Postfix pf;
+        std::vector<Postfix::Element> pf_el = pf.convert(conditional);
+
+        std::cout << std::endl << "\t\t";
+        for(auto & i : pf_el )
+        {
+            std::cout << i.value << " ";
+        }
+        std::cout << std::endl;
+
         state_stack.push(GenState::BUILD_CHECK_COND);
         return true;
     }

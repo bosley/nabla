@@ -96,7 +96,6 @@ using token = NHLL::NHLL_Parser::token;
 
 [0-9]+      {
                yylval->build< std::string >( yytext );
-               std::cout << "GOT THAT INT : " << yytext << std::endl;
                return ( token::INTEGER_LITERAL );
             }
 

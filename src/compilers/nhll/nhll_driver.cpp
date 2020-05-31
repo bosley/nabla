@@ -209,9 +209,9 @@ namespace NHLL
    //
    // ----------------------------------------------------------
 
-   NHLL::NhllElement* NHLL_Driver::create_while_statement(ConditionalExpression *expr, ElementList elements)
+   NHLL::NhllElement* NHLL_Driver::create_while_statement(std::string cond_expr, ElementList elements)
    {
-      return new WhileStmt(expr, elements);
+      return new WhileStmt(cond_expr, elements);
    }
 
    // ----------------------------------------------------------
@@ -264,9 +264,9 @@ namespace NHLL
    //
    // ----------------------------------------------------------
 
-   NHLL::NhllElement* NHLL_Driver::create_check_condition(ConditionalExpression *expr, ElementList elements)
+   NHLL::NhllElement* NHLL_Driver::create_check_condition(std::string cond_expr, ElementList elements)
    {
-      return new CheckCondition(expr, elements);
+      return new CheckCondition(cond_expr, elements);
    }
 
    // ----------------------------------------------------------

@@ -30,14 +30,11 @@ def other_stuff() -> int {
 
     let g = 4 + 2 * 9
 
-    let k = k and j
+    let k = k and someVar
 
     let p = not (4 + 2 * (9-1) )
 
-
-    // Nested conditionals not supported yet 
-    // Example :  (a>b) || (b>100))
-    while( a < b ) {
+    while((a>b) || (b>100) ) {
 
         a = a + 1
         let c = 0

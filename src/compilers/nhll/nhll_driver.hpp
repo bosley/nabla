@@ -45,13 +45,13 @@ namespace NHLL
       NHLL::NhllElement* create_let_statement(std::string lhs, std::string rhs, bool is_expression=true);
       NHLL::NhllElement* create_reassign_statement(std::string lhs, std::string rhs, bool is_expression=true);
       NHLL::NhllElement* create_global_statement(std::string lhs, std::string rhs, bool is_expression=true);
-      NHLL::NhllElement* create_while_statement(ConditionalExpression *expr, ElementList elements);
+      NHLL::NhllElement* create_while_statement(std::string cond_expr, ElementList elements);
       NHLL::NhllElement* create_loop_statement(std::string id, ElementList elements);
       NHLL::NhllElement* create_break_statement(std::string id);
       NHLL::NhllElement* create_call_statement(std::string function, std::vector<std::string> params);
       NHLL::NhllElement* create_leave_statement(std::string value, bool is_return, bool is_expression=true);
       NHLL::NhllElement* create_exit_statement();
-      NHLL::NhllElement* create_check_condition(ConditionalExpression *expr, ElementList elements);
+      NHLL::NhllElement* create_check_condition(std::string cond_expr, ElementList elements);
       NHLL::NhllElement* create_check_statement(ElementList elements);
 
       //! \brief Visit a set statement, triggers code generation

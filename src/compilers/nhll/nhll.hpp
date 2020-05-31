@@ -47,26 +47,6 @@ namespace NHLL
         return "Invalid data prim given for to_string";
     }
 
-    class ConditionalExpression
-    {
-    public:
-        ConditionalExpression(){}
-        ConditionalExpression(ConditialExpressionType type, 
-                              Conditionals condition, 
-                              std::string expression_lhs,
-                              std::string expression_rhs) : type(type),
-                                                            cond(condition),
-                                                            lhs(expression_lhs),
-                                                            rhs(expression_rhs)
-        {
-            
-        }
-        ConditialExpressionType type;
-        Conditionals cond;
-        std::string lhs;
-        std::string rhs;
-    };
-
     //
     //
     //
@@ -277,28 +257,21 @@ namespace NHLL
     public:
         WhileStmt() {}
 
-        WhileStmt(ConditionalExpression *expr, ElementList el)
+        WhileStmt(std::string conditional_expression, ElementList el)
         {
-            condition.type = expr->type;
-            condition.cond = expr->cond;
-            condition.lhs  = expr->lhs ;
-            condition.rhs  = expr->rhs ;
-
+            condition = conditional_expression;
             elements = el;
         }
 
         WhileStmt(WhileStmt *o)
         {
-            condition.type = o->condition.type;
-            condition.cond = o->condition.cond;
-            condition.lhs  = o->condition.lhs ;
-            condition.rhs  = o->condition.rhs ;
+            condition = o->condition;
             elements = o->elements;
         }
 
         virtual void visit(NhllVisitor &visitor) override;
 
-        ConditionalExpression condition;
+        std::string condition;
         ElementList elements;
     };
 
@@ -346,28 +319,21 @@ namespace NHLL
     public:
         CheckCondition() {}
 
-        CheckCondition(ConditionalExpression *expr, ElementList el)
+        CheckCondition(std::string conditional_expression, ElementList el)
         {
-            condition.type = expr->type;
-            condition.cond = expr->cond;
-            condition.lhs  = expr->lhs ;
-            condition.rhs  = expr->rhs ;
-
+            condition = conditional_expression;
             elements = el;
         }
 
         CheckCondition(CheckCondition *o)
         {
-            condition.type = o->condition.type;
-            condition.cond = o->condition.cond;
-            condition.lhs  = o->condition.lhs ;
-            condition.rhs  = o->condition.rhs ;
+            condition = o->condition;
             elements = o->elements;
         }
 
         virtual void visit(NhllVisitor &visitor) override;
 
-        ConditionalExpression condition;
+        std::string condition;
         ElementList elements;
     };
 

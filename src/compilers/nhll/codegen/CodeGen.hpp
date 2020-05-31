@@ -31,7 +31,7 @@ namespace NHLL
         bool start_function(std::string name, std::vector<FunctionParam> params,  DataPrims return_type);
         bool end_function();
 
-        bool start_while(ConditionalExpression conditional);
+        bool start_while(std::string conditional);
         bool end_while();
 
         bool start_loop(std::string name);
@@ -40,7 +40,7 @@ namespace NHLL
         bool start_check();
         bool end_check();
 
-        bool start_check_condition(ConditionalExpression conditional);
+        bool start_check_condition(std::string conditional);
         bool end_check_condition();
 
         bool global_variable(std::string name, std::string set_to, bool is_expr);
