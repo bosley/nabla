@@ -42,10 +42,13 @@
    #include "nhll_driver.hpp"
    #include "nhll_postfix.hpp"
 
-   std::vector< std::vector<NHLL::NhllElement*> > element_list;
-   std::vector< NHLL::NhllElement* > parse_list;
+   // Elements in a 'check' statement
    std::vector< NHLL::NhllElement* > check_list;
+
+   // Parameters on the receiving end of a call
    std::vector< NHLL::FunctionParam > r_paramaters;
+
+   // Paramaters on the caller end of a call
    std::vector< std::string > s_paramaters;
 
 #undef yylex
@@ -91,12 +94,8 @@
 %token <std::string> INTEGER_LITERAL
 %token <std::string> REAL_LITERAL
 %token <std::string> IDENTIFIER
-
-
 %token               END    0     "end of file"
-
 %locations
-
 %start start
 
 %%
@@ -107,10 +106,10 @@ start
    ; 
 
 input
-   : function_stmt       { driver.build_line($1); }
-   | input function_stmt { driver.build_line($2); }
-   | global_stmt         { driver.build_line($1); }
-   | input global_stmt   { driver.build_line($2); }
+   : function_stmt       { driver.build_element($1); }
+   | input function_stmt { driver.build_element($2); }
+   | global_stmt         { driver.build_element($1); }
+   | input global_stmt   { driver.build_element($2); }
    ;
 
 multiple_statements 

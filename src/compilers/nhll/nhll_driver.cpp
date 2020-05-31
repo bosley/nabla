@@ -106,39 +106,8 @@ namespace NHLL
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------
-
-   void NHLL_Driver::build_input(std::vector< ElementList > input_elements )
-   {
-      for(auto &element_list : input_elements )
-      {
-         for(auto &element : element_list)
-         {
-            if(element)
-            {
-               element->visit(*this);
-               delete element;
-            }
-         }
-         element_list.clear();
-      }
-      input_elements.clear();
-   }
-
    
-   void NHLL_Driver::build_lines(ElementList el)
-   {
-         for(auto &element : el)
-         {
-            if(element)
-            {
-               element->visit(*this);
-               delete element;
-            }
-         }
-         el.clear();
-   }
-
-   void  NHLL_Driver::build_line(NHLL::NhllElement* element)
+   void  NHLL_Driver::build_element(NHLL::NhllElement* element)
    {
       if(element)
       {

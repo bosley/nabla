@@ -1,3 +1,9 @@
+/*
+    I REALLY don't want to go through all of these objects and write documentation so I'm pushing it off for later. 
+    In a brief description, all of these objects are representations of the things that are found in the NHLL. While loops,
+    loops, check blocks, variable assignments, etc.
+*/
+
 #ifndef NHLL_LANGUAGE_HPP
 #define NHLL_LANGUAGE_HPP
 
