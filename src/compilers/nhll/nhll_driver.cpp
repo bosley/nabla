@@ -103,6 +103,11 @@ namespace NHLL
       return(stream);
    }
 
+   bool NHLL_Driver::indicate_complete()
+   {
+      return code_generator.finalize();
+   }
+
    // ----------------------------------------------------------
    //
    // ----------------------------------------------------------

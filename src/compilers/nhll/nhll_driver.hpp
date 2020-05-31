@@ -37,6 +37,10 @@ namespace NHLL
       //! \brief Parse from an istream
       void parse( std::istream &iss );
 
+      //! \brief Indicate to the driver that everything is completed
+      //! \retval True completion execution was able to be run, False otherwise
+      bool indicate_complete();
+
       //! \brief Trigger the building of a given element
       //! \param el The element to build 
       //! \note This triggers visits contained by the element and each accept method 

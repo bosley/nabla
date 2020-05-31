@@ -6,10 +6,12 @@
 #include <map>
 #include <stack>
 
+#include "AddressManager.hpp"
 #include "nhll.hpp"
 #include "nhll_driver.hpp"
 
 #include "LibManifest.hpp"
+#include "Variable.hpp"
 
 #include <libnabla/projectfs.hpp>
 #include <libnabla/scopetree.hpp>
@@ -25,6 +27,8 @@ namespace NHLL
 
         //! \brief Deconstruct a CodeGen
         ~CodeGen();
+
+        bool finalize();
 
         bool asm_block(std::vector<std::string> asm_code);
 
@@ -61,6 +65,8 @@ namespace NHLL
 
     private:
 
+        AddressManager addr_mgr;
+
         enum class GenState
         {
             IDLE,
@@ -72,24 +78,6 @@ namespace NHLL
         };
 
         std::stack<GenState> state_stack;
-
-        enum class VariableLocation
-        {
-            CONSTANT,
-            FUNCTION
-        };
-
-        // A Variable
-        struct Variable
-        {
-            std::string name;
-            std::string definition; // Definition
-            NHLL::DataPrims type;   // Type
-            bool isExpression;      // Definition is an expression if true
-
-            uint64_t address;
-            VariableLocation location;
-        };
 
         // Function representation
         struct FunctionRepresentation
@@ -114,7 +102,7 @@ namespace NHLL
             // Function variables
             // Vector.end() is the current scope. Temporary scopes will be removed post-processing
             // Vector used to determing if variable is accessable
-            std::vector< std::map<std::string, Variable> > scoped_variable_map;
+            std::vector< std::map<std::string, BaseVariable*> > scoped_variable_map;
 
             std::vector<std::string> asm_code;
 
@@ -127,13 +115,7 @@ namespace NHLL
         // Generated functions
         std::vector<FunctionRepresentation> functions;
 
-        std::vector<Variable> constants;
-
-        enum class VariablePollResult
-        {
-            OKAY,
-            NOT_FOUND
-        };
+        std::vector<BaseVariable*> constants;
 
 
         // Maps to functions.back()
@@ -141,7 +123,9 @@ namespace NHLL
 
         uint64_t global_stack_index;
 
-        VariablePollResult check_variable_access(std::string name, Variable & definition);
+        BaseVariable * check_local_variable_access(std::string name);
+
+        BaseVariable * check_global_variable_access(std::string name);
 
         std::string state_to_string(CodeGen::GenState state) const;
 

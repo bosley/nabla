@@ -102,7 +102,7 @@
 
 start 
    : END 
-   | input END
+   | input END { driver.indicate_complete(); }
    ; 
 
 input
