@@ -55,7 +55,7 @@ namespace NHLL
         std::vector<std::string> end_result;
 
         end_result.push_back(".file\t\"App Build with NHLL V.0\"\n");
-        end_result.push_back(".init\tmain\n");
+        end_result.push_back(".init\t__NHLL_INIT_METHOD__\n");
 
         end_result.push_back("; Bytes reserved for system space: [ 0, " + 
                                 std::to_string(RESERVED_GS_BYTES-1) + " ]\n");
@@ -193,6 +193,8 @@ namespace NHLL
 
         current_function = &functions.back();
 
+        current_function->scoped_variable_map.reserve(100);
+
         // Replace '.' with '_' for asm function name
         std::replace(name.begin(), name.end(), '.', '_');
 
@@ -268,7 +270,7 @@ namespace NHLL
         std::cout << ">> CodegEn::end_while " << std::endl;
 
         // Need to remove the last element off of the current_function's scoped variable map
-        // as the this scope is nolonger accessable to the use
+        // as the this scope is nolonger accessable to the use - also need to 'delete' the elements in that map
 
         state_stack.pop();
         return true;
@@ -299,7 +301,7 @@ namespace NHLL
         std::cout << ">> CodegEn::end_loop " << std::endl;
 
         // Need to remove the last element off of the current_function's scoped variable map
-        // as the this scope is nolonger accessable to the use
+        // as the this scope is nolonger accessable to the use - also need to 'delete' the elements in that map
 
         state_stack.pop();
         return true;
@@ -443,6 +445,64 @@ namespace NHLL
     // --------------------------------------------
     //
     // --------------------------------------------
+    
+    bool CodeGen::declare_integer(std::string name, std::string expression)
+    {
+        std::cout << ">> CodeGen : Declare Int : " << name << " : " << expression << std::endl;
+
+        // Ensure it doesn't exist, we aren't in the idle state, and that current_function is valid
+        if(!allowed_to_set_variable(name))
+        {
+            return false;
+        }
+        
+        // Integers are defaulted to 64-bit signed integers (for now)
+        AddressManager::AddressResult addr_res = addr_mgr.new_user_stack_variable(8);
+
+        // Vector to hold resulting assembly code
+        std::vector<std::string> code_vector;
+        
+        // Construct the expression code
+        if(!construct_expression(name, expression, addr_res.address, code_vector))
+        {
+            return false;
+        }
+
+        // Add the variable to the current scope map if the expression was a success
+
+        auto scope_map = current_function->scoped_variable_map[current_function->scoped_variable_map.size()];
+        scope_map[name] = new Nhll_Integer(addr_res.address, name, expression);
+
+        // Add the asm code to the function's asm code
+        current_function->asm_code.insert(current_function->asm_code.end(), code_vector.begin(), code_vector.end());
+
+        // Indicate complete
+        return true;
+    }
+
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+
+    bool CodeGen::declare_real(std::string name, std::string expression)
+    {
+        std::cout << ">> CodeGen : Declare Real : " << name << " : " << expression << std::endl;
+        return true;
+    }
+
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+
+    bool CodeGen::declare_string(std::string name, std::string value, uint64_t allowed_size)
+    {
+        std::cout << ">> CodeGen : Declare String : " << name << " : " << value << " | " << allowed_size << std::endl;
+        return true;
+    }
+
+    // --------------------------------------------
+    //
+    // --------------------------------------------
 
     bool CodeGen::reassign_variable(std::string name, std::string set_to, bool is_expr)
     {
@@ -518,10 +578,9 @@ namespace NHLL
                 {
                     if(HELPERS::is_number<int>(el_list[0].value))
                     {
-                        int64_t val = 0;
                         try
                         {
-                            val = std::stol(el_list[0].value);
+                            std::stol(el_list[0].value);
                         }
                         catch(...)
                         {
@@ -529,7 +588,7 @@ namespace NHLL
                             return false; 
                         }
 
-                        AddressManager::AddressResult addr_res = addr_mgr.new_global_integer(val);
+                        AddressManager::AddressResult addr_res = addr_mgr.new_global_integer();
                         constants.push_back(new Nhll_Integer(addr_res.address, name, set_to));
                     }
                     else
@@ -595,10 +654,9 @@ namespace NHLL
             {
                 pre_computed_value = HELPERS::pre_compute<int64_t> (el_list);
 
-                int64_t val = 0;
                 try
                 {
-                    val = std::stol(pre_computed_value);
+                    std::stol(pre_computed_value);
                 }
                 catch(...)
                 {
@@ -606,7 +664,7 @@ namespace NHLL
                     return false; 
                 }
                 
-                AddressManager::AddressResult addr_res = addr_mgr.new_global_integer(val);
+                AddressManager::AddressResult addr_res = addr_mgr.new_global_integer();
                 constants.push_back(new Nhll_Integer(addr_res.address, name, pre_computed_value));
             }
             return true;
@@ -784,4 +842,74 @@ namespace NHLL
                 break;
         }
     }
+
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+    
+    bool CodeGen::allowed_to_set_variable(std::string name)
+    {
+        if(state_stack.top() == GenState::IDLE)
+        {
+            std::cerr << "CodeGen::Error : Can not declare variables outside of functions " << std::endl;
+            return false;
+        }
+
+        if(check_global_variable_access(name) != nullptr)
+        {
+            std::cerr << "CodeGen::Error : Variable \"" << name << "\" already defined as a global" << std::endl;
+            return false; 
+        }
+
+        if(check_local_variable_access(name) != nullptr)
+        {
+            std::cerr << "CodeGen::Error : Variable \"" << name << "\" already defined locally" << std::endl;
+            return false; 
+        }
+
+        if(current_function == nullptr)
+        {
+            std::cerr << "CodeGen::Error : Current function was a nullptr when attempting to set a variable" << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+    
+    std::vector<std::string> CodeGen::setup_init_function()
+    {
+        std::vector<std::string> result;
+
+        result.push_back("<__NHLL_INIT_METHOD__:\n");
+
+        // Expand gs to hold program stack and reserved space
+
+        // Insert program stack start position in GS 0 
+
+
+        result.push_back(">\n");
+
+        return result;
+    }
+    
+    // --------------------------------------------
+    //
+    // --------------------------------------------
+    
+    bool CodeGen::construct_expression(std::string name, std::string expression, uint64_t address_to, std::vector<std::string> &result)
+    {
+        result.clear();
+
+        std::cout << ">>> CodeGen::Construct Expresison! " << std::endl;
+
+        // Assume int, if a double is present, the whole thing will be promoted to a double.
+
+
+        return true;
+    }
+
 }

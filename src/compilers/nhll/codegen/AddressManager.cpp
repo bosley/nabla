@@ -5,7 +5,7 @@
 
 namespace NHLL
 {
-    AddressManager::AddressManager() : global_address_index(0)
+    AddressManager::AddressManager() : global_address_index(0), offset_address_index(1)
     {
 
     }
@@ -20,7 +20,7 @@ namespace NHLL
         return AddressResult { addr, assigned };
     }
 
-    AddressManager::AddressResult AddressManager::new_global_integer(int64_t val)
+    AddressManager::AddressResult AddressManager::new_global_integer()
     {
         // For now we are setting all global integers to int64s
         uint64_t  assigned = 0;
@@ -44,5 +44,19 @@ namespace NHLL
         uint64_t addr = global_address_index;
         global_address_index += length;
         return AddressResult{ addr, length * 8};
+    }
+
+    AddressManager::AddressResult AddressManager::mark_stack_start(uint64_t stack_size)
+    {
+        uint64_t addr = global_address_index;
+        global_address_index += stack_size;
+        return AddressResult{ addr, stack_size * 8};
+    }
+
+    AddressManager::AddressResult AddressManager::new_user_stack_variable(uint64_t byte_size)
+    {
+        uint64_t addr = offset_address_index;
+        offset_address_index += byte_size;
+        return AddressResult{ addr, byte_size * 8};
     }
 }

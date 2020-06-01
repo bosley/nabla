@@ -51,6 +51,12 @@ namespace NHLL
 
         bool declare_variable(std::string name, std::string set_to, bool is_expr);
 
+        bool declare_integer(std::string name, std::string expression);
+
+        bool declare_real(std::string name, std::string expression);
+
+        bool declare_string(std::string name, std::string value, uint64_t allowed_size);
+
         bool reassign_variable(std::string name, std::string set_to, bool is_expr);
 
         bool break_loop(std::string name);
@@ -128,6 +134,12 @@ namespace NHLL
         BaseVariable * check_global_variable_access(std::string name);
 
         std::string state_to_string(CodeGen::GenState state) const;
+
+        bool allowed_to_set_variable(std::string name);
+
+        bool construct_expression(std::string name, std::string expression, uint64_t address_to, std::vector<std::string> &result);
+
+        std::vector<std::string> setup_init_function();
 
     };
 }

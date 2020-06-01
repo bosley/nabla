@@ -1,5 +1,4 @@
 # Design
 
-The first 32 bytes of the global stack will be reserved for storing meta data about actions happening in regards to memory and function access. 
-The layout of which will be described here: 
 
+let a = "This is a string, there are many like it, but this one is mine" // Creates a string 67 chars long. It is now fixed at this size, as it is a 'let' statement, Similar to char a[67];
