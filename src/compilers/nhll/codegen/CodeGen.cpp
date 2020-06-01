@@ -122,6 +122,17 @@ namespace NHLL
             std::cout << res;
         }
         result_out.close();
+
+        std::vector<uint8_t> program_data;
+
+        if(!ASSEMBLER::ParseAsm(".nhll_build/asm.s", program_data, true))
+        {
+            std::cerr << "CodeGen::Error : Assembler failed to assemble final project source" << std::endl;
+            return false;
+        }
+
+        std::cout << "SUCCESS! Time to pipe the bytes!" << std::endl;
+
         return true;
     }
 
