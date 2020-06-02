@@ -202,8 +202,8 @@ stmt
    ;
 
 global_stmt
-   : GLOBAL identifiers '=' expression     { $$ = driver.create_global_statement($2, $4); }
-   | GLOBAL identifiers '=' STRING_LITERAL { $$ = driver.create_global_statement($2, $4, false); }
+   : GLOBAL identifiers '=' expression     { $$ = new NHLL::GlobalStmt($2, $4, true); }
+   | GLOBAL identifiers '=' STRING_LITERAL { $$ = new NHLL::GlobalStmt($2, $4, false); }
    ;
 
 block 
@@ -212,58 +212,58 @@ block
    ;
 
 asm_stmt
-   : ASM    { $$ = driver.create_asm_statement($1); }
+   : ASM    { $$ = new NHLL::AsmStmt($1); }
    ;
 
 let_stmt
-   : INT  IDENTIFIER '=' expression                             { $$ = driver.create_decl_integer($2, $4, true); }
-   | REAL IDENTIFIER '=' expression                             { $$ = driver.create_decl_real($2, $4,    true); }
-   | STR  IDENTIFIER '[' INTEGER_LITERAL ']' '=' STRING_LITERAL { $$ = driver.create_decl_string($2, $7, std::stol($4));    }
+   : INT  IDENTIFIER '=' expression                             { $$ = new NHLL::DeclInteger($2, $4); }
+   | REAL IDENTIFIER '=' expression                             { $$ = new NHLL::DeclReal($2, $4); }
+   | STR  IDENTIFIER '[' INTEGER_LITERAL ']' '=' STRING_LITERAL { $$ = new NHLL::DeclString($2, $7, std::stol($4));    }
    ;
 
 reassign_stmt
-   : identifiers '=' expression           { $$ = driver.create_reassign_statement($1, $3);        }
-   | identifiers '=' STRING_LITERAL       { $$ = driver.create_reassign_statement($1, $3, false); }
+   : identifiers '=' expression           { $$ = new NHLL::ReAssignStmt($1, $3, true);  }
+   | identifiers '=' STRING_LITERAL       { $$ = new NHLL::ReAssignStmt($1, $3, false); }
    ;
 
 yield_stmt
-   : YIELD expression      { $$ = driver.create_leave_statement($2, false, true);  }
-   | YIELD STRING_LITERAL  { $$ = driver.create_leave_statement($2, false, false); }
+   : YIELD expression      { $$ = new LeaveStmt($2, NHLL::LeaveStmt::Variant::YIELD, true);  }
+   | YIELD STRING_LITERAL  { $$ = new LeaveStmt($2, NHLL::LeaveStmt::Variant::YIELD, false); }
    ;
 
 return_stmt
-   : RETURN expression     { $$ = driver.create_leave_statement($2, true,  true);  }
-   | RETURN STRING_LITERAL { $$ = driver.create_leave_statement($2, true,  false); }
+   : RETURN expression     { $$ = new LeaveStmt($2, NHLL::LeaveStmt::Variant::RETURN, true);  }
+   | RETURN STRING_LITERAL { $$ = new LeaveStmt($2, NHLL::LeaveStmt::Variant::RETURN, false); }
    ;
 
 exit_stmt
-   :  EXIT                  { $$ = driver.create_exit_statement();                  }
+   :  EXIT                  { $$ = new NHLL::ExitStmt();                  }
    ;
 
 call_stmt
-   : identifiers '(' ')'                  { $$ = driver.create_call_statement($1, std::vector<std::string>()); }
-   | identifiers '(' send_paramaters ')'  { $$ = driver.create_call_statement($1, s_paramaters); s_paramaters.clear(); }
+   : identifiers '(' ')'                  { $$ = new NHLL::CallStmt($1, std::vector<std::string>()); }
+   | identifiers '(' send_paramaters ')'  { $$ = new NHLL::CallStmt($1, s_paramaters); s_paramaters.clear(); }
    ;
 
 while_stmt
-   :  WHILE '(' expression ')' block  { $$ = driver.create_while_statement($3, $5); }
+   :  WHILE '(' expression ')' block  { $$ = new NHLL::WhileStmt($3, $5); }
    ;
 
 loop_stmt
-   : LOOP '.' IDENTIFIER block            { $$ = driver.create_loop_statement($3, $4); }
+   : LOOP '.' IDENTIFIER block            { $$ = new NHLL::LoopStmt($3, $4); }
    ;
 
 break_stmt
-   : BREAK IDENTIFIER                     { $$ = driver.create_break_statement($2); }
+   : BREAK IDENTIFIER                     { $$ = new NHLL::BreakStmt($2); }
    ;
 
 function_stmt
-   : FUNC_DECL identifiers '(' ')' RET_ARROW data_prim block                 { $$ = driver.create_function_statement($2, std::vector<FunctionParam>(), static_cast<DataPrims>($6), $7); }
-   | FUNC_DECL identifiers '(' recv_paramaters ')' RET_ARROW data_prim block { $$ = driver.create_function_statement($2, r_paramaters, static_cast<DataPrims>($7), $8); r_paramaters.clear(); }
+   : FUNC_DECL identifiers '(' ')' RET_ARROW data_prim block                 { $$ = new NHLL::NhllFunction($2, std::vector<FunctionParam>(), static_cast<DataPrims>($6), $7); }
+   | FUNC_DECL identifiers '(' recv_paramaters ')' RET_ARROW data_prim block { $$ = new NHLL::NhllFunction($2, r_paramaters, static_cast<DataPrims>($7), $8); r_paramaters.clear(); }
    ;
    
 check_cond
-   :  '[' expression ']' block  { $$ = driver.create_check_condition($2, $4); }
+   :  '[' expression ']' block  { $$ = new NHLL::CheckCondition($2, $4); }
    ;
 
 checks
@@ -277,13 +277,13 @@ check_final
                               // the universe has bigger issues.
                               std::string condition = "1" + std::string( 1, (char)Postfix::POP::EQ ) + "1";
                               check_list.push_back(
-                                 driver.create_check_condition(condition ,  $3)
+                                 new NHLL::CheckCondition(condition, $3)
                               );
                            }
    ;
 
 check_stmt
-   :  CHECK '{' checks check_final '}' { $$ = driver.create_check_statement(check_list); check_list.clear(); }
+   :  CHECK '{' checks check_final '}' { $$ = new NHLL::CheckStmt(check_list);; check_list.clear(); }
    ;
 
 %%

@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <regex>
+#include <sstream>
 
 namespace NHLL
 {
@@ -61,20 +63,17 @@ namespace NHLL
     public:
         DeclInteger() {}
 
-        DeclInteger(std::string lhs, std::string rhs, bool is_expr) 
+        DeclInteger(std::string lhs, std::string rhs) 
                             : identifier(lhs),
-                              set_to(rhs),
-                              is_expr(is_expr){}
+                              set_to(rhs){}
 
         DeclInteger(DeclInteger *o) : identifier(o->identifier),
-                              set_to(o->set_to),
-                              is_expr(o->is_expr){}
+                              set_to(o->set_to){}
 
         virtual void visit(NhllVisitor &visitor) override;
 
         std::string identifier;
         std::string set_to;
-        bool is_expr;
     };
 
     //
@@ -85,20 +84,17 @@ namespace NHLL
     public:
         DeclReal() {}
 
-        DeclReal(std::string lhs, std::string rhs, bool is_expr) 
+        DeclReal(std::string lhs, std::string rhs) 
                             : identifier(lhs),
-                              set_to(rhs),
-                              is_expr(is_expr){}
+                              set_to(rhs){}
 
         DeclReal(DeclReal *o) : identifier(o->identifier),
-                              set_to(o->set_to),
-                              is_expr(o->is_expr){}
+                              set_to(o->set_to){}
 
         virtual void visit(NhllVisitor &visitor) override;
 
         std::string identifier;
         std::string set_to;
-        bool is_expr;
     };
 
     //
@@ -233,7 +229,21 @@ namespace NHLL
     {
     public:
         AsmStmt() {}
-        AsmStmt(std::vector<std::string> asm_block) : asm_block(asm_block) {}
+        AsmStmt(std::string asm_str)
+        {
+            asm_str  = std::regex_replace(asm_str, std::regex("<asm>"),  "\n", std::regex_constants::format_first_only);
+            asm_str  = std::regex_replace(asm_str, std::regex("</asm>"), "\n", std::regex_constants::format_first_only);
+
+            std::string part;
+            std::istringstream ss(asm_str);
+            while(std::getline(ss, part, '\n'))
+            {
+                if(part.size() > 0)
+                {
+                    asm_block.push_back(part);
+                }
+            }
+        }
         AsmStmt(AsmStmt *  o) : asm_block(o->asm_block){}
 
         virtual void visit(NhllVisitor &visitor) override;
