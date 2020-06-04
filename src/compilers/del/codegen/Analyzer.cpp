@@ -119,7 +119,9 @@ namespace DEL
             el->visit(*this);
 
             // If no errors are present in the current statement, then we trigger code generation
-            el->visit(code_gen);
+
+            // --- This might be removed in-place of a simplified object being passed to codegen so it doesn't have to parse trees, but idk yet!
+          //  el->visit(code_gen);
 
             // Now that the item is constructed, we free the memory
             delete el;

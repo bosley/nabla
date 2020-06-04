@@ -37,6 +37,23 @@ using token = DEL::DEL_Parser::token;
 "->"        { return token::ARROW;  }
 "return"    { return token::RETURN; }
 
+"<="       { return token::LTE;    }
+"<"        { return token::LT;     }
+">="       { return token::GTE;    }
+">"        { std::cout << "GT"; return token::GT;     }
+"=="       { return token::EQ;     }
+"!="       { return token::NE;     }
+"<<"       { return token::LSH;    }
+">>"       { return token::RSH;    }
+"!"        { std::cout << "NEGATE "; return token::NEGATE; }
+
+"||"        { return token::OR;     }
+"&&"        { return token::AND;    }
+"or"        { return token::BW_OR;  }
+"xor"       { return token::BW_XOR; }
+"and"       { return token::BW_AND; }
+"not"       { return token::BW_NOT; }
+
 
 [ \t]+      { /* Eat WS */  }
 

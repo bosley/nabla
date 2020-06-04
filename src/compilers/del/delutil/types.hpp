@@ -15,7 +15,24 @@ namespace DEL
         MOD,
         POW,
         VAL,
-        ID
+        ID,
+
+        LTE,
+        GTE,
+        GT ,
+        LT ,
+        EQ ,
+        NE ,
+        LSH,
+        RSH,
+        BW_OR,
+        BW_XOR,
+        BW_AND,
+        BW_NOT,
+        OR,
+        AND,
+        NEGATE
+
     };
 
     enum class ValType

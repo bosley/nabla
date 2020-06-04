@@ -52,7 +52,8 @@
 %define api.value.type variant
 %define parse.assert
 
-%token INT REAL CHAR DEF ARROW RETURN
+%token INT REAL CHAR DEF ARROW RETURN LTE GTE GT LT EQ NE BW_NOT 
+%token LSH RSH BW_OR BW_AND BW_XOR AND OR NEGATE
 
 %type<DEL::Element*> stmt;
 %type<DEL::Element*> assignment;
@@ -94,19 +95,34 @@ expression
    : term                        { $$ = $1;  }
    | expression '+' term         { $$ = new DEL::AST(DEL::NodeType::ADD, $1, $3);  }
    | expression '-' term         { $$ = new DEL::AST(DEL::NodeType::SUB, $1, $3);  }
+   | expression LTE term         { $$ = new DEL::AST(DEL::NodeType::LTE, $1, $3);  }
+   | expression GTE term         { $$ = new DEL::AST(DEL::NodeType::GTE, $1, $3);  }
+   | expression GT  term         { $$ = new DEL::AST(DEL::NodeType::GT , $1, $3);  }
+   | expression LT  term         { $$ = new DEL::AST(DEL::NodeType::LT , $1, $3);  }
+   | expression EQ  term         { $$ = new DEL::AST(DEL::NodeType::EQ , $1, $3);  }
+   | expression NE  term         { $$ = new DEL::AST(DEL::NodeType::NE , $1, $3);  }
    ;
 
 term
    : factor                      { $$ = $1;  }
-   | term '*' factor             { $$ = new DEL::AST(DEL::NodeType::MUL, $1, $3);  }
-   | term '/' factor             { $$ = new DEL::AST(DEL::NodeType::DIV, $1, $3);  }
-   | term '^' factor             { $$ = new DEL::AST(DEL::NodeType::POW, $1, $3);  }
-   | term '%' factor             { $$ = new DEL::AST(DEL::NodeType::MOD, $1, $3);  }
+   | term '*' factor             { $$ = new DEL::AST(DEL::NodeType::MUL,    $1, $3);  }
+   | term '/' factor             { $$ = new DEL::AST(DEL::NodeType::DIV,    $1, $3);  }
+   | term '^' factor             { $$ = new DEL::AST(DEL::NodeType::POW,    $1, $3);  }
+   | term '%' factor             { $$ = new DEL::AST(DEL::NodeType::MOD,    $1, $3);  }
+   | term LSH factor             { $$ = new DEL::AST(DEL::NodeType::LSH,    $1, $3);  }
+   | term RSH factor             { $$ = new DEL::AST(DEL::NodeType::RSH,    $1, $3);  }
+   | term BW_XOR factor          { $$ = new DEL::AST(DEL::NodeType::BW_XOR, $1, $3);  }
+   | term BW_OR factor           { $$ = new DEL::AST(DEL::NodeType::BW_OR,  $1, $3);  }
+   | term BW_AND factor          { $$ = new DEL::AST(DEL::NodeType::BW_AND, $1, $3);  }
+   | term OR factor              { $$ = new DEL::AST(DEL::NodeType::OR,     $1, $3);  }
+   | term AND factor             { $$ = new DEL::AST(DEL::NodeType::AND,    $1, $3);  }
    ;
 
 factor
    : primary                     { $$ = $1; }
    | '(' expression ')'          { $$ = $2; }
+   | BW_NOT factor               { $$ = new DEL::AST(DEL::NodeType::BW_NOT, $2, nullptr);}
+   | NEGATE factor               { $$ = new DEL::AST(DEL::NodeType::NEGATE, $2, nullptr);}
    ;
 
 primary
