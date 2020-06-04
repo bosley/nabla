@@ -1,0 +1,10 @@
+
+
+def main() -> int {
+
+    int my_int = 3
+
+    char mychar = "3"
+
+    mychar = 4
+}

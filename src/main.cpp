@@ -134,7 +134,7 @@ int handle_compilation(std::string project_dir)
               << "------------------------------------"  << std::endl; 
 
     NABLA::LibManifest lib_manifest;
-
+/*
     // Load the system library manifest. Errors reported by method call
     if(!lib_manifest.load_manifest(LIB_LOCATION))
     {
@@ -151,6 +151,11 @@ int handle_compilation(std::string project_dir)
     NABLA::CompilerFramework cfw(lib_manifest);
 
     return cfw.compile_project(project);
+*/
+
+    NABLA::CompilerFramework cfw(lib_manifest);
+    return cfw.compile_file(project_dir); // Really just a file rn
+
 }
 
 // --------------------------------------------

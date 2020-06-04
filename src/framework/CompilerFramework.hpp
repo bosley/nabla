@@ -21,6 +21,9 @@ namespace NABLA
         //! \param project A reference to a loaded project
         //! \retval Application return code
         int compile_project(NABLA::ProjectFS & project);
+
+        // Used for constructing DEL - Not yet using project FS
+        int compile_file(std::string path);
     private:
         NABLA::LibManifest & lib_manifest;
     };

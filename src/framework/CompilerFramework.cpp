@@ -2,10 +2,14 @@
 
 #include <iostream>
 
-#include "Preprocessor.hpp"
-#include "CodeGen.hpp"
-#include "nhll.hpp"
-#include "nhll_driver.hpp"
+//#include "Preprocessor.hpp"
+//#include "CodeGen.hpp"
+//#include "nhll.hpp"
+//#include "nhll_driver.hpp"
+
+#include "del_driver.hpp"
+
+#  define N_UNUSED(x) (void)x;
 
 namespace NABLA
 {
@@ -15,7 +19,8 @@ namespace NABLA
     
     CompilerFramework::CompilerFramework(NABLA::LibManifest & lm) : lib_manifest(lm)
     {
-
+        // Get rid of clang unused warning while remaking the compiler
+        N_UNUSED(lib_manifest)
     }
 
     // ------------------------------------------------
@@ -42,7 +47,7 @@ namespace NABLA
         */
 
         return 1;
-
+/*
 
         NHLL::Preprocessor preproc(lib_manifest, true);
 
@@ -67,6 +72,18 @@ namespace NABLA
         //driver.parse( theFile.nhll );
 
         //driver.print( std::cout ) << "\n";
+        */
+        return 1;
+    }
+
+
+
+    int CompilerFramework::compile_file(std::string path)
+    {
+        DEL::DEL_Driver driver;
+
+        driver.parse(path.c_str());
+
         return 1;
     }
 }
