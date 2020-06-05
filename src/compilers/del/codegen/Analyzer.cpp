@@ -186,6 +186,7 @@ namespace DEL
             code generator while analyzing the data to ensure that all variables exist and to pull the type
             that the resulting operation would be
         */
+
         Intermediate::AssignmentClassifier classification = Intermediate::AssignmentClassifier::INTEGER; // Assume int 
         
         std::string postfix_expression = validate_assignment_ast(stmt.rhs, classification, stmt.data_type, stmt.lhs);
@@ -280,27 +281,31 @@ namespace DEL
                 // Build a string for the intermediate layer to determine what to load and how much to load
                 return "#ID:" + std::to_string(mem_info.start_pos) + ":" + std::to_string(mem_info.bytes_alloced);
             }
-            case NodeType::ADD    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " + "  );  
-            case NodeType::SUB    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " - "  );
-            case NodeType::DIV    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " / "  );
-            case NodeType::MUL    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " * "  );
-            case NodeType::MOD    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " % "  );
-            case NodeType::POW    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " ^ "  );
-            case NodeType::LTE    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " <= "  );
-            case NodeType::GTE    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " >= "  );
-            case NodeType::GT     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " > "  );
-            case NodeType::LT     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " < "  );
-            case NodeType::EQ     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " == "  );
-            case NodeType::NE     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " != "  );
-            case NodeType::LSH    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " << " );
-            case NodeType::RSH    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " >> " );
-            case NodeType::BW_OR  :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " or " );
-            case NodeType::BW_XOR :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " xor ");
-            case NodeType::BW_AND :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " and ");
-            case NodeType::OR     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " || " );
-            case NodeType::AND    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " && " );
-            case NodeType::BW_NOT :return (validate_assignment_ast(ast->l, c, et, id) + " not ");
-            case NodeType::NEGATE :return (validate_assignment_ast(ast->l, c, et, id) + " ! "  );
+            
+            //  This is where we convert NodeType to the Assignment type. This should make it so we can change the actual tokens in the language
+            //  without having to modify this statement
+
+            case NodeType::ADD    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " ADD    " );  
+            case NodeType::SUB    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " SUB    " );
+            case NodeType::DIV    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " DIV    " );
+            case NodeType::MUL    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " MUL    " );
+            case NodeType::MOD    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " MOD    " );
+            case NodeType::POW    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " POW    " );
+            case NodeType::LTE    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " LTE    " );
+            case NodeType::GTE    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " GTE    " );
+            case NodeType::GT     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " GT     " );
+            case NodeType::LT     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " LT     " );
+            case NodeType::EQ     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " EQ     " );
+            case NodeType::NE     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " NE     " );
+            case NodeType::LSH    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " LSH    " );
+            case NodeType::RSH    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " RSH    " );
+            case NodeType::BW_OR  :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " BW_OR  " );
+            case NodeType::BW_XOR :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " BW_XOR " );
+            case NodeType::BW_AND :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " BW_AND " );
+            case NodeType::OR     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " OR     " );
+            case NodeType::AND    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " AND    " );
+            case NodeType::BW_NOT :return (validate_assignment_ast(ast->l, c, et, id) + " BW_NOT ");
+            case NodeType::NEGATE :return (validate_assignment_ast(ast->l, c, et, id) + " NEGATE "  );
             case NodeType::ROOT   : error_man.report_custom("Analyzer", "ROOT NODE found in arithmetic exp", true);
             case NodeType::VAL : 
             { 

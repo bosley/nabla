@@ -26,7 +26,7 @@ namespace DEL
             ADD, SUB, DIV, 
             MUL, RSH, LSH, 
             
-            BW_OR, NOT, XOR, BW_AND,
+            BW_OR, BW_NOT, BW_XOR, BW_AND,
 
             // Comparison
             LTE, LT, GTE, GT, EQ, NE, OR, AND, NEGATE, 

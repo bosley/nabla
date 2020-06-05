@@ -26,6 +26,8 @@ namespace DEL
 
         void end_function();
 
+        void add_build_in_math_functions();
+
         void assignment(Intermediate::Assignment assignment);
 
     private:
@@ -33,6 +35,8 @@ namespace DEL
         SymbolTable & symbol_table; // Symbol table
         Memory & memory_man;        // Memory manager
         bool building_function;
+
+        bool has_included_math_functions;
     };
 }
 

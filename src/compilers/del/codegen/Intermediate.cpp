@@ -80,7 +80,7 @@ namespace DEL
         if(d_list[0] == "ID")
         {
             uint64_t start_pos = std::stoll(d_list[1]);
-            uint64_t end_pos   = std::stoll(d_list[2]);
+            uint64_t end_pos   = start_pos + std::stoll(d_list[2]);
 
             while(start_pos < end_pos)
             {
@@ -164,31 +164,27 @@ namespace DEL
 
     Intermediate::InstructionSet Intermediate::get_operation(std::string token)
     {
-        // Defined by use in del_parser.yy
-        if(token == "+") { return Intermediate::InstructionSet::ADD; }
-        if(token == "-") { return Intermediate::InstructionSet::SUB; }
-        if(token == "*") { return Intermediate::InstructionSet::MUL; }
-        if(token == "/") { return Intermediate::InstructionSet::DIV; }
-        if(token == "%") { return Intermediate::InstructionSet::MOD; }
-        if(token == "^") { return Intermediate::InstructionSet::POW; }
-
-        // Defined in del_lexer.l
-        if(token == "<=" ) { return Intermediate::InstructionSet::LTE;    }
-        if(token == "<"  ) { return Intermediate::InstructionSet::LT;     }
-        if(token == ">=" ) { return Intermediate::InstructionSet::GTE;    }
-        if(token == ">"  ) { return Intermediate::InstructionSet::GT;     }
-        if(token == "==" ) { return Intermediate::InstructionSet::EQ;     }
-        if(token == "!=" ) { return Intermediate::InstructionSet::NE;     }
-        if(token == "<<" ) { return Intermediate::InstructionSet::LSH;    }
-        if(token == ">>" ) { return Intermediate::InstructionSet::RSH;    }
-        if(token == "!"  ) { return Intermediate::InstructionSet::NEGATE; }
-        if(token == "||" ) { return Intermediate::InstructionSet::OR;     }
-        if(token == "&&" ) { return Intermediate::InstructionSet::AND;    }
-        if(token == "or" ) { return Intermediate::InstructionSet::BW_OR;  }
-        if(token == "xor") { return Intermediate::InstructionSet::XOR;    }
-        if(token == "and") { return Intermediate::InstructionSet::BW_AND; }
-        if(token == "not") { return Intermediate::InstructionSet::NOT;    }
-
+        if(token == "ADD"   ) { return Intermediate::InstructionSet::ADD;    }
+        if(token == "SUB"   ) { return Intermediate::InstructionSet::SUB;    }
+        if(token == "MUL"   ) { return Intermediate::InstructionSet::MUL;    }
+        if(token == "DIV"   ) { return Intermediate::InstructionSet::DIV;    }
+        if(token == "MOD"   ) { return Intermediate::InstructionSet::MOD;    }
+        if(token == "POW"   ) { return Intermediate::InstructionSet::POW;    }
+        if(token == "LTE"   ) { return Intermediate::InstructionSet::LTE;    }
+        if(token == "LT"    ) { return Intermediate::InstructionSet::LT;     }
+        if(token == "GTE"   ) { return Intermediate::InstructionSet::GTE;    }
+        if(token == "GT"    ) { return Intermediate::InstructionSet::GT;     }
+        if(token == "EQ"    ) { return Intermediate::InstructionSet::EQ;     }
+        if(token == "NE"    ) { return Intermediate::InstructionSet::NE;     }
+        if(token == "LSH"   ) { return Intermediate::InstructionSet::LSH;    }
+        if(token == "RSH"   ) { return Intermediate::InstructionSet::RSH;    }
+        if(token == "NEGATE") { return Intermediate::InstructionSet::NEGATE; }
+        if(token == "OR"    ) { return Intermediate::InstructionSet::OR;     }
+        if(token == "AND"   ) { return Intermediate::InstructionSet::AND;    }
+        if(token == "BW_OR" ) { return Intermediate::InstructionSet::BW_OR;  }
+        if(token == "BW_XOR") { return Intermediate::InstructionSet::BW_XOR; }
+        if(token == "BW_AND") { return Intermediate::InstructionSet::BW_AND; }
+        if(token == "BW_NOT") { return Intermediate::InstructionSet::BW_NOT; }
         std::cerr << "Developer error : Intermediate::InstructionSet Intermediate::get_integer_operation(std::string token)" << std::endl;
         exit(EXIT_FAILURE);
     }
