@@ -7,9 +7,11 @@
 
 namespace DEL
 {
-   DEL_Driver::DEL_Driver() : error_man(tracker), 
-                              code_gen(error_man, symbol_table),
-                              analyzer(error_man, symbol_table, code_gen)
+   DEL_Driver::DEL_Driver() : 
+                              error_man(tracker), 
+                              symbol_table(error_man, memory_man),
+                              code_gen(error_man, symbol_table, memory_man),
+                              analyzer(error_man, symbol_table, code_gen, memory_man)
    {
       symbol_table.new_context("global");
    }

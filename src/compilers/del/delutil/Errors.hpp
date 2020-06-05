@@ -2,7 +2,7 @@
 #define DEL_ERRORS_HPP
 
 #include <string>
-
+#include <stdint.h>
 #include "Tracker.hpp"
 
 namespace DEL
@@ -19,12 +19,15 @@ namespace DEL
 
         void report_unallowed_type(std::string id, bool is_fatal=true);
 
+        void report_out_of_memory(std::string symbol, uint64_t size, int max_memory);
+
         void report_custom(std::string from, std::string error, bool is_fatal=true);
 
     private:
         Tracker &tracker;
 
         std::string get_error_start(bool is_fatal);
+        std::string get_line_no();
     };
 }
 #endif

@@ -39,7 +39,7 @@
    #include <stdint.h>
    #include <vector>
 
-   #include "ast.hpp"
+   #include "Ast.hpp"
    
    #include "del_driver.hpp"
 
@@ -53,7 +53,7 @@
 %define parse.assert
 
 %token INT REAL CHAR DEF ARROW RETURN LTE GTE GT LT EQ NE BW_NOT 
-%token LSH RSH BW_OR BW_AND BW_XOR AND OR NEGATE
+%token LSH RSH BW_OR BW_AND BW_XOR AND OR NEGATE SEMI
 
 %type<DEL::Element*> stmt;
 %type<DEL::Element*> assignment;
@@ -142,17 +142,17 @@ identifiers
    ;
 
 assignment
-   : INT  identifiers '=' expression   { $$ = new DEL::Assignment(DEL::ValType::INTEGER, $2, $4); }
-   | REAL identifiers '=' expression   { $$ = new DEL::Assignment(DEL::ValType::REAL,    $2, $4); }
-   | CHAR identifiers '=' primary_char { $$ = new DEL::Assignment(DEL::ValType::CHAR,    $2, $4); }
+   : INT  identifiers '=' expression   SEMI { $$ = new DEL::Assignment(DEL::ValType::INTEGER, $2, $4); }
+   | REAL identifiers '=' expression   SEMI { $$ = new DEL::Assignment(DEL::ValType::REAL,    $2, $4); }
+   | CHAR identifiers '=' primary_char SEMI { $$ = new DEL::Assignment(DEL::ValType::CHAR,    $2, $4); }
    ;
 
 reassignment
-   : identifiers '=' expression        { $$ = new DEL::Assignment(DEL::ValType::REQ_CHECK, $1, $3); }
-   | identifiers '=' CHAR_LITERAL      { $$ = new DEL::Assignment(
-                                           DEL::ValType::REQ_CHECK,
-                                           $1,
-                                           new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, DEL::ValType::CHAR,    $3)
+   : identifiers '=' expression   SEMI     { $$ = new DEL::Assignment(DEL::ValType::REQ_CHECK, $1, $3); }
+   | identifiers '=' CHAR_LITERAL SEMI     { $$ = new DEL::Assignment(
+                                             DEL::ValType::REQ_CHECK,
+                                             $1,
+                                             new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, DEL::ValType::CHAR,    $3)
                                         ); }
    ;
 

@@ -1,7 +1,7 @@
 #ifndef DEL_ANALYZER_HPP
 #define DEL_ANALYZER_HPP
 
-#include "ast.hpp"
+#include "Ast.hpp"
 #include "Errors.hpp"
 #include "SymbolTable.hpp"
 #include "Codegen.hpp"
@@ -17,7 +17,7 @@ namespace DEL
         //! \brief Construct an analyzer
         //! \param err The error manager
         //! \param The symbol table
-        Analyzer(Errors & err, SymbolTable & symbolTable, Codegen & code_gen);
+        Analyzer(Errors & err, SymbolTable & symbolTable, Codegen & code_gen, Memory & memory);
 
         //! \brief Deconstruct tha analyzer
         ~Analyzer();
@@ -46,6 +46,7 @@ namespace DEL
         Errors & error_man;             // Error manager
         SymbolTable & symbol_table;     // Symbol table
         Codegen & code_gen;             // Code generator
+        Memory & memory_man;            // Memory manager
 
         Intermediate intermediate_rep;
     };

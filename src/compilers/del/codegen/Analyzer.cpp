@@ -5,24 +5,15 @@
 
 namespace DEL
 {
-    namespace
-    {
-        template<typename Numeric>
-        inline static bool is_number(const std::string& s)
-        {
-            Numeric n;
-            return((std::istringstream(s) >> n >> std::ws).eof());
-        }
-    }
-
     // ----------------------------------------------------------
     //
     // ----------------------------------------------------------
 
-    Analyzer::Analyzer(Errors & err, SymbolTable & symbolTable, Codegen & code_gen) : 
+    Analyzer::Analyzer(Errors & err, SymbolTable & symbolTable, Codegen & code_gen, Memory & memory) : 
                                                                         error_man(err), 
                                                                         symbol_table(symbolTable),
-                                                                        code_gen(code_gen)
+                                                                        code_gen(code_gen),
+                                                                        memory_man(memory)
     {
 
     }
@@ -132,13 +123,9 @@ namespace DEL
         for(auto & el : function->elements)
         {
             // Visiting elements will trigger analyzer to check particular element
-            // for any errors that may be present
+            // for any errors that may be present, and then analyzer will ask Intermediate to
+            // generate instructions for the Codegen / Send the instructions to code gen
             el->visit(*this);
-
-            // If no errors are present in the current statement, then we trigger code generation
-
-            // --- This might be removed in-place of a simplified object being passed to codegen so it doesn't have to parse trees, but idk yet!
-          //  el->visit(code_gen);
 
             // Now that the item is constructed, we free the memory
             delete el;
@@ -146,6 +133,10 @@ namespace DEL
 
         // Tell code generator that we are done constructin the current function
         code_gen.end_function();
+
+        // Clear the symbol table for the given function so elements cant be accessed externally
+        // We dont delete the context though, that way can confirm existence later
+        symbol_table.clear_existing_context(function->name);
 
         // Function is constructed - and elements have been freed
         delete function;
@@ -164,6 +155,11 @@ namespace DEL
             If this is active, we need to ensure it exists in reach and ensure that the type 
             allows us to do assignments. 
         */
+
+
+        Memory::MemAlloc memory_info;
+
+        bool requires_allocation_in_symbol_table = true;
         if(stmt.data_type == ValType::REQ_CHECK)
         {
             // Check that the rhs is in context and is a type that we are allowing for assignment
@@ -172,6 +168,17 @@ namespace DEL
 
             // Now we know it exists, we set the data type to what it states in the map
             stmt.data_type = get_id_type(stmt.lhs);
+
+            // We already checked symbol table if this exists, and symbol table is what 
+            // handles allocation of memory for the target, so this is safe
+            memory_info = memory_man.get_mem_info(stmt.lhs);
+
+            requires_allocation_in_symbol_table = false;
+        }
+        else
+        {
+            // If this isn't a reassignment, we need to ensure that the value is unique
+            ensure_unique_symbol(stmt.lhs);
         }
 
         /*
@@ -185,15 +192,24 @@ namespace DEL
 
         std::cout << "Resulting eq: " << stmt.lhs << " = " << postfix_expression << std::endl;
 
-        /*
+        // The unique value doesn't exist yet and needs some memory allocated and 
+        // needs to be added to the symbol table
+        if(requires_allocation_in_symbol_table)
+        {
+            // If this fails, we all fail. add_symbol will figure out data size 
+            // and add to memory manager (Until we build more complicated structs
+            // then we will have to update this call ) <<<<<<<<<<<<<<<<<<<<<<<<, TODO
+            symbol_table.add_symbol(stmt.lhs, stmt.data_type);
 
-            TODO : Need to get address of LHS, or determine if its new and populate the location_info struct below
-        
-        */
-        Intermediate::Location location_info;
+            // No longer requires allocation
+            requires_allocation_in_symbol_table = false;
+
+            // Retrieve the generated memory information
+            memory_info = memory_man.get_mem_info(stmt.lhs);
+        }
 
         // Generate the instructions for code generation
-        Intermediate::Assignment assignment_command = intermediate_rep.encode_postfix_assignment_expression(location_info, postfix_expression);
+        Intermediate::Assignment assignment_command = intermediate_rep.encode_postfix_assignment_expression(memory_info, classification, postfix_expression);
 
         // Call into code generation to create assignment ASM
         code_gen.assignment(assignment_command);
@@ -236,19 +252,6 @@ namespace DEL
                 if(et != ValType::CHAR)   { error_man.report_unallowed_type(id, true); } // If Assignee isn't a char, we need to die
                 break;
             }
-
-            /*
-                These are values of things that will be added in later and will need to be handled once they are created in the grammar
-
-                Structs - LHS of assignment will be required to be a struct of the same type
-                Function call - Return type will need to be the same as the LHS of assignment
-                Ptr - Will need to check that LHS is also a pointer
-                Ref - Will need to ensure that LHS is the same type as the reference value and that the reference exists
-            */
-            case ValType::STRUCT        : error_man.report_custom("Analyzer::DEV", "An item not yet create has shown up in the assignment analyzer", true);
-            case ValType::FUNCTION_CALL : error_man.report_custom("Analyzer::DEV", "An item not yet create has shown up in the assignment analyzer", true);
-            case ValType::PTR           : error_man.report_custom("Analyzer::DEV", "An item not yet create has shown up in the assignment analyzer", true); 
-            case ValType::REF           : error_man.report_custom("Analyzer::DEV", "An item not yet create has shown up in the assignment analyzer", true);
         }
     }
 
@@ -271,15 +274,11 @@ namespace DEL
                 // Make sure that the known value of the identifier is one valid given the current assignemnt
                 check_value_is_valid_for_assignment(id_type, c, et, id);
 
-                /*
-                        TODO : 
+                // Get the memory address of the ID
+                Memory::MemAlloc mem_info = memory_man.get_mem_info(ast->value);
 
-                                Need to encode ID information into the returned string so the Intermediate class
-                                can determine what information to encode for the code generator
-            
-                */
-
-                return ast->value;
+                // Build a string for the intermediate layer to determine what to load and how much to load
+                return "#ID:" + std::to_string(mem_info.start_pos) + ":" + std::to_string(mem_info.bytes_alloced);
             }
             case NodeType::ADD    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " + "  );  
             case NodeType::SUB    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " - "  );

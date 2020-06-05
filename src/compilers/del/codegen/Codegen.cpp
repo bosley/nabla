@@ -9,8 +9,10 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Codegen::Codegen(Errors & err, SymbolTable & symbolTable) : error_man(err), 
+    Codegen::Codegen(Errors & err, SymbolTable & symbolTable, Memory & memory) : 
+                                                                error_man(err), 
                                                                 symbol_table(symbolTable), 
+                                                                memory_man(memory),
                                                                 building_function(false)
     {
 
@@ -68,5 +70,12 @@ namespace DEL
     void Codegen::assignment(Intermediate::Assignment assignment)
     {
         std::cout << "CODEGEN : Assignement!" << std::endl;
+
+        /*
+            assignment.id                    -> The name of the thing we are assigning for comments
+            assignemnt.memory_info           -> Where we need to store the thing
+            assignment.assignment_classifier -> How to treat the given data (int, char, real)
+            assignment.instructions          -> What to do to the data in RPN form
+        */
     }
 }

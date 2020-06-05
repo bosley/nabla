@@ -30,6 +30,16 @@ namespace DEL
         }
     }
 
+    void Errors::report_out_of_memory(std::string symbol, uint64_t size, int max_memory)
+    {
+        std::cerr << get_error_start(true) 
+                  << "Allocation of \"" << symbol << "\" (size:" << size 
+                  << ") causes mapped memory to exceed target's maximum allowable memory of (" 
+                  << max_memory << ") bytes.";
+
+        exit(EXIT_FAILURE);
+    }
+
     void Errors::report_custom(std::string from, std::string error, bool is_fatal)
     {
         std::cerr << get_error_start(is_fatal) << "[" << from << "]" << error << std::endl; 
@@ -52,16 +62,18 @@ namespace DEL
             exit(EXIT_FAILURE);
         }        
     }
+    
 
     std::string Errors::get_error_start(bool is_fatal)
     {
         std::string level = (is_fatal) ? "<FATAL>" : "<WARNING>";
 
-        //std::string es = "[Error] " + level + " (line " + std::to_string(tracker.lines_count) + ") : ";
-
-        // I've disabled lines here until we get something in place for tracking all lines and columns with the tracker
-        
         std::string es = "[Error] " + level + " : ";
         return es;
+    }
+
+    std::string Errors::get_line_no()
+    {
+        return std::to_string(tracker.get_lines_tracked());
     }
 }

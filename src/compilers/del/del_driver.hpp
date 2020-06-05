@@ -6,12 +6,13 @@
 #include <istream>
 #include <vector>
 
-#include "ast.hpp"
+#include "Ast.hpp"
 #include "Analyzer.hpp"
 #include "Errors.hpp"
 #include "Codegen.hpp"
 #include "Tracker.hpp"
 #include "SymbolTable.hpp"
+#include "Memory.hpp"
 #include "del_scanner.hpp"
 #include "del_parser.tab.hh"
 
@@ -46,8 +47,9 @@ namespace DEL
    private:
 
       DEL::Tracker tracker;            // Line / col tracker
-      DEL::SymbolTable symbol_table;   // Symbols found in the language
+      DEL::Memory  memory_man;         // Memory manager
       DEL::Errors error_man;           // Error manager
+      DEL::SymbolTable symbol_table;   // Symbols found in the language
       DEL::Codegen code_gen;           // Code generator
       DEL::Analyzer analyzer;          // Code analyzer
 

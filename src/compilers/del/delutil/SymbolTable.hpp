@@ -4,13 +4,16 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "ast.hpp"
+#include "Ast.hpp"
+#include "Memory.hpp"
+#include "Errors.hpp"
+
 namespace DEL
 {
     class SymbolTable
     {
     public:
-        SymbolTable();
+        SymbolTable(Errors & error_man, Memory & memory_man);
         ~SymbolTable();
 
         void new_context(std::string name, bool remove_previous=false);
@@ -21,13 +24,18 @@ namespace DEL
 
         bool is_existing_symbol_of_type(std::string symbol, ValType type);
 
-        void add_symbol(std::string symbol, DEL::ValType);
+        void add_symbol(std::string symbol, DEL::ValType, uint64_t memory=0);
+
+        void clear_existing_context(std::string context);
 
         DEL::ValType get_value_type(std::string symbol);
 
         std::string get_current_context_name() const;
 
     private:
+    
+        Errors & error_man;
+        Memory & memory_man;
 
         class Context
         {

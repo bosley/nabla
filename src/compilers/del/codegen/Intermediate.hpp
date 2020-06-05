@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "Memory.hpp"
 
 namespace DEL
 {
@@ -13,48 +14,66 @@ namespace DEL
         Intermediate();
         ~Intermediate();
 
+
         enum class AssignmentClassifier
         {
-            INTEGER, DOUBLE, CHAR, FUNCTION //, STRUCT, STRING
+            INTEGER, DOUBLE, CHAR //, STRUCT, STRING
         };
 
-        enum class LocationClassifier
+        enum class InstructionSet
         {
-            NEW,
-            ADDRESS
-        };
+            // Arithmatic
+            ADD, SUB, DIV, 
+            MUL, RSH, LSH, 
+            
+            BW_OR, NOT, XOR, BW_AND,
 
-        enum class ArithmeticInstruction
-        {
-            // Native
-            ADD, ADD_D, SUB, SUB_D, DIV, DIV_D, 
-            MUL, MUL_D, RSH, LSH, AND, OR, NOT, XOR,
+            // Comparison
+            LTE, LT, GTE, GT, EQ, NE, OR, AND, NEGATE, 
 
             // Built-in
-            POW 
+            POW,
+
+            MOD,
+
+            // Load / Store
+            LOAD_BYTE,
+            STORE_BYTE,
+            LOAD_WORD,
+            STORE_WORD,
+
+            CALL,
+
+            USE_RAW,        // Use the given value (int or str val)
+ 
+            GET_RESULT,     // Obtain the result of the function call
         };
 
-        struct Location
-        {
-            LocationClassifier classification;
-            uint64_t address;
-        };
 
         struct AssignemntInstruction
         {
-            Intermediate::ArithmeticInstruction instruction;
+            Intermediate::InstructionSet instruction;
             std::string value;
         };
         
         struct Assignment
         {
             std::string id;
-            Location assignment_location;
+            Memory::MemAlloc memory_info;
             AssignmentClassifier assignment_classifier;
             std::vector<AssignemntInstruction> instructions;
         };
 
-        Assignment encode_postfix_assignment_expression(Location location, std::string expression);
+        Assignment encode_postfix_assignment_expression(Memory::MemAlloc memory_info, AssignmentClassifier classification, std::string expression);
+    
+    
+    private:
+
+        void build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token);
+
+        Assignment build_assignment(std::vector<std::string> & tokens);
+
+        InstructionSet get_operation(std::string token);
     };
 }
 

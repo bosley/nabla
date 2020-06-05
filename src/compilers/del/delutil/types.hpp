@@ -33,6 +33,18 @@ namespace DEL
         AND,
         NEGATE
 
+        /*
+            see Analyzer::validate_assignment_ast 
+            for why these belong here
+             and Analyzer::check_value_is_valid_for_assignment
+             for why they might need to be also represented as a ValType
+
+            POINTER
+            REFERENCE
+            FUNCTION CALL
+            STRUCT
+        */
+
     };
 
     enum class ValType
@@ -40,17 +52,15 @@ namespace DEL
         INTEGER,    // An actual integer
         REAL,       // An actual real
         CHAR,       // An actual char
-
-        STRUCT,
-        FUNCTION_CALL,
-
-        PTR,
-        REF,
-
+        
         STRING,     // Identifiers
         FUNCTION,   // A function declaration
         REQ_CHECK,  // Requires check by analyzer for value type (reassignment)
         NONE        // Nothing
+
+        /*
+            STRUCT
+        */
     };
 
     struct FunctionParam
@@ -70,10 +80,6 @@ namespace DEL
         case ValType::FUNCTION      : return "Function";
         case ValType::NONE          : return "None";
         case ValType::REQ_CHECK     : return "RequiresCheck";
-        case ValType::STRUCT        : return "Struct";
-        case ValType::FUNCTION_CALL : return "FunctionCall";
-        case ValType::PTR           : return "Pointer";
-        case ValType::REF           : return "Reference";
         default                     : return "Unknown";
         }
         return "Unknown";

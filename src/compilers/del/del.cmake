@@ -18,9 +18,10 @@ set(DEL_INCLUDE_DIRS
 
 set(DEL_COMPILER_HEADERS
     ${DEL_COMPILER_DIR}
-    ${DEL_COMPILER_DIR}/delutil/ast.hpp
+    ${DEL_COMPILER_DIR}/delutil/Ast.hpp
     ${DEL_COMPILER_DIR}/delutil/Errors.hpp
     ${DEL_COMPILER_DIR}/delutil/SymbolTable.hpp
+    ${DEL_COMPILER_DIR}/delutil/Memory.hpp
     ${DEL_COMPILER_DIR}/delutil/Tracker.hpp
     ${DEL_COMPILER_DIR}/codegen/Codegen.hpp
     ${DEL_COMPILER_DIR}/codegen/Analyzer.hpp
@@ -30,9 +31,10 @@ set(DEL_COMPILER_HEADERS
 )
 
 set(DEL_COMPILER_SOURCES
-    ${DEL_COMPILER_DIR}/delutil/ast.cpp
+    ${DEL_COMPILER_DIR}/delutil/Ast.cpp
     ${DEL_COMPILER_DIR}/delutil/Errors.cpp
     ${DEL_COMPILER_DIR}/delutil/SymbolTable.cpp
+    ${DEL_COMPILER_DIR}/delutil/Memory.cpp
     ${DEL_COMPILER_DIR}/delutil/Tracker.cpp
     ${DEL_COMPILER_DIR}/codegen/Codegen.cpp
     ${DEL_COMPILER_DIR}/codegen/Analyzer.cpp
