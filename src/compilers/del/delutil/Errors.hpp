@@ -19,6 +19,8 @@ namespace DEL
 
         void report_unallowed_type(std::string id, bool is_fatal=true);
 
+        void report_custom(std::string from, std::string error, bool is_fatal=true);
+
     private:
         Tracker &tracker;
 

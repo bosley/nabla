@@ -30,6 +30,15 @@ namespace DEL
         }
     }
 
+    void Errors::report_custom(std::string from, std::string error, bool is_fatal)
+    {
+        std::cerr << get_error_start(is_fatal) << "[" << from << "]" << error << std::endl; 
+
+        if(is_fatal)
+        {
+            exit(EXIT_FAILURE);
+        }        
+    }
 
     void Errors::report_unallowed_type(std::string id, bool is_fatal)
     {

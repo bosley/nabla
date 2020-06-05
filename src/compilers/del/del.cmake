@@ -24,6 +24,7 @@ set(DEL_COMPILER_HEADERS
     ${DEL_COMPILER_DIR}/delutil/Tracker.hpp
     ${DEL_COMPILER_DIR}/codegen/Codegen.hpp
     ${DEL_COMPILER_DIR}/codegen/Analyzer.hpp
+    ${DEL_COMPILER_DIR}/codegen/Intermediate.hpp
     ${DEL_COMPILER_DIR}/del_driver.hpp
     ${DEL_COMPILER_DIR}/del_scanner.hpp
 )
@@ -35,6 +36,7 @@ set(DEL_COMPILER_SOURCES
     ${DEL_COMPILER_DIR}/delutil/Tracker.cpp
     ${DEL_COMPILER_DIR}/codegen/Codegen.cpp
     ${DEL_COMPILER_DIR}/codegen/Analyzer.cpp
+    ${DEL_COMPILER_DIR}/codegen/Intermediate.cpp
     ${DEL_COMPILER_DIR}/del_driver.cpp
     ${FLEX_del_lexer_OUTPUTS}
     ${BISON_del_parser_OUTPUTS}

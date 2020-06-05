@@ -55,6 +55,8 @@ using token = DEL::DEL_Parser::token;
 "not"       { return token::BW_NOT; }
 
 
+"//"[^\n]*  { driver.inc_line(); }
+
 [ \t]+      { /* Eat WS */  }
 
 [\n]+       { loc->lines(); driver.inc_line(); }

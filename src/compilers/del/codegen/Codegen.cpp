@@ -65,10 +65,8 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    void Codegen::accept(Assignment &stmt)
+    void Codegen::assignment(Intermediate::Assignment assignment)
     {
-        // Analyzer should have checked to ensure that all symbols required to construct statement exist, 
-        // and everything is the correct type. Assume analyzer did its job and now generate some code
+        std::cout << "CODEGEN : Assignement!" << std::endl;
     }
-    
 }

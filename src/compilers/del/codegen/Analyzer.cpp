@@ -1,9 +1,20 @@
 #include "Analyzer.hpp"
 
 #include <iostream>
+#include <sstream>
 
 namespace DEL
 {
+    namespace
+    {
+        template<typename Numeric>
+        inline static bool is_number(const std::string& s)
+        {
+            Numeric n;
+            return((std::istringstream(s) >> n >> std::ws).eof());
+        }
+    }
+
     // ----------------------------------------------------------
     //
     // ----------------------------------------------------------
@@ -48,6 +59,12 @@ namespace DEL
         {
             // Reports the error and true marks the program for death
             error_man.report_unknown_id(id, true);
+        }
+
+        // If allowed is empty, we just wanted to make sure the thing existed
+        if(allowed.size() == 0)
+        {
+            return;
         }
 
         // Ensure type is one of the allowed types
@@ -134,99 +151,167 @@ namespace DEL
         delete function;
     }
 
-    // ----------------------------------------------------------
+    // -----------------------------------------------------------------------------------------
+    // 
+    //                              Visitor Methods
     //
-    // ----------------------------------------------------------
+    // -----------------------------------------------------------------------------------------
 
     void Analyzer::accept(Assignment &stmt)
     {
-        // Check assignment to see if data_type requires check
-            // A check represents reassignment, so need to ensure that lhs
-            // is reachable within the current context
-            // If it requires check, we need to ensure that the ast represents
-            // data that the type can handle, if it needs promotion
+        /*
+            If the assignment is a reassignment, it will be indicated via REQ_CHECK. 
+            If this is active, we need to ensure it exists in reach and ensure that the type 
+            allows us to do assignments. 
+        */
+        if(stmt.data_type == ValType::REQ_CHECK)
+        {
+            // Check that the rhs is in context and is a type that we are allowing for assignment
+            // NOTE : When functions are allowed in asssignment this will have to be updated <<<<<<<<<<<<<<<<<<
+            ensure_id_in_current_context(stmt.lhs, {ValType::INTEGER, ValType::REAL, ValType::CHAR});
 
-        // GO over ast and ensure that all data is the same type as we expect. If a string is found
-        // for int/real item it better be a symbol in the variable map or we need to die
+            // Now we know it exists, we set the data type to what it states in the map
+            stmt.data_type = get_id_type(stmt.lhs);
+        }
+
+        /*
+            Call the validation method to walk the assignment AST and build an instruction set for the 
+            code generator while analyzing the data to ensure that all variables exist and to pull the type
+            that the resulting operation would be
+        */
+        Intermediate::AssignmentClassifier classification = Intermediate::AssignmentClassifier::INTEGER; // Assume int 
+        
+        std::string postfix_expression = validate_assignment_ast(stmt.rhs, classification, stmt.data_type, stmt.lhs);
+
+        std::cout << "Resulting eq: " << stmt.lhs << " = " << postfix_expression << std::endl;
+
+        /*
+
+            TODO : Need to get address of LHS, or determine if its new and populate the location_info struct below
+        
+        */
+        Intermediate::Location location_info;
+
+        // Generate the instructions for code generation
+        Intermediate::Assignment assignment_command = intermediate_rep.encode_postfix_assignment_expression(location_info, postfix_expression);
+
+        // Call into code generation to create assignment ASM
+        code_gen.assignment(assignment_command);
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // 
+    //                              Assignment Validation Methods
+    //
+    // -----------------------------------------------------------------------------------------
+
+    void Analyzer::check_value_is_valid_for_assignment(ValType type_to_check, Intermediate::AssignmentClassifier & c, ValType & et, std::string & id)
+    {
+        switch(type_to_check)
+        {
+            case ValType::STRING   :    error_man.report_custom("Analyzer", " STRING found in arithmetic exp",    true); // Grammar should have
+            case ValType::REQ_CHECK:    error_man.report_custom("Analyzer", " REQ_CHECK found in arithmetic exp", true); // filteres these out
+            case ValType::NONE     :    error_man.report_custom("Analyzer", " NONE found in arithmetic exp",      true);
+            case ValType::FUNCTION :    error_man.report_custom("Analyzer", " FUNCTION found in arithmetic exp",  true);
+            case ValType::REAL     : 
+            {
+                // Promote to Double if any double is present
+                c = Intermediate::AssignmentClassifier::DOUBLE;
+
+                if((et != ValType::REAL) && (et != ValType::REAL)) { error_man.report_unallowed_type(id, true); }
+
+                break;
+            }
+            case ValType::INTEGER  :
+            {
+                // We assume its an integer to start with so we dont set type (because we allow ints inside double exprs)
+                if(et != ValType::INTEGER) { error_man.report_unallowed_type(id, true); }
+                break;
+            }
+            case ValType::CHAR     :
+            {
+                
+                c = Intermediate::AssignmentClassifier::CHAR;
+
+                if(et != ValType::CHAR)   { error_man.report_unallowed_type(id, true); } // If Assignee isn't a char, we need to die
+                break;
+            }
+
+            /*
+                These are values of things that will be added in later and will need to be handled once they are created in the grammar
+
+                Structs - LHS of assignment will be required to be a struct of the same type
+                Function call - Return type will need to be the same as the LHS of assignment
+                Ptr - Will need to check that LHS is also a pointer
+                Ref - Will need to ensure that LHS is the same type as the reference value and that the reference exists
+            */
+            case ValType::STRUCT        : error_man.report_custom("Analyzer::DEV", "An item not yet create has shown up in the assignment analyzer", true);
+            case ValType::FUNCTION_CALL : error_man.report_custom("Analyzer::DEV", "An item not yet create has shown up in the assignment analyzer", true);
+            case ValType::PTR           : error_man.report_custom("Analyzer::DEV", "An item not yet create has shown up in the assignment analyzer", true); 
+            case ValType::REF           : error_man.report_custom("Analyzer::DEV", "An item not yet create has shown up in the assignment analyzer", true);
+        }
+    }
+
+    // ----------------------------------------------------------
+    // Assignee's expected type abbreviated to 'et' 
+    // ----------------------------------------------------------
+
+    std::string Analyzer::validate_assignment_ast(AST * ast, Intermediate::AssignmentClassifier & c, ValType & et, std::string & id)
+    {
+        switch(ast->node_type)
+        {
+            case NodeType::ID  : 
+            { 
+                // Ensure the ID is within current context. Allowing any type
+                ensure_id_in_current_context(ast->value, {});
+
+                // Check for promotion
+                ValType id_type = get_id_type(ast->value);
+
+                // Make sure that the known value of the identifier is one valid given the current assignemnt
+                check_value_is_valid_for_assignment(id_type, c, et, id);
+
+                /*
+                        TODO : 
+
+                                Need to encode ID information into the returned string so the Intermediate class
+                                can determine what information to encode for the code generator
+            
+                */
+
+                return ast->value;
+            }
+            case NodeType::ADD    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " + "  );  
+            case NodeType::SUB    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " - "  );
+            case NodeType::DIV    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " / "  );
+            case NodeType::MUL    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " * "  );
+            case NodeType::MOD    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " % "  );
+            case NodeType::POW    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " ^ "  );
+            case NodeType::LTE    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " <= "  );
+            case NodeType::GTE    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " >= "  );
+            case NodeType::GT     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " > "  );
+            case NodeType::LT     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " < "  );
+            case NodeType::EQ     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " == "  );
+            case NodeType::NE     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " != "  );
+            case NodeType::LSH    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " << " );
+            case NodeType::RSH    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " >> " );
+            case NodeType::BW_OR  :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " or " );
+            case NodeType::BW_XOR :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " xor ");
+            case NodeType::BW_AND :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " and ");
+            case NodeType::OR     :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " || " );
+            case NodeType::AND    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " && " );
+            case NodeType::BW_NOT :return (validate_assignment_ast(ast->l, c, et, id) + " not ");
+            case NodeType::NEGATE :return (validate_assignment_ast(ast->l, c, et, id) + " ! "  );
+            case NodeType::ROOT   : error_man.report_custom("Analyzer", "ROOT NODE found in arithmetic exp", true);
+            case NodeType::VAL : 
+            { 
+                // Check that the raw value is one that is valid within the current assignment
+                check_value_is_valid_for_assignment(ast->val_type, c, et, id);
+                return ast->value;
+            }
+            default:
+            return "Its dead, jim";
+        }
+        return "Complete";
     }
 }
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-   void DEL_Driver::handle_assignment(Assignment * assignment)
-   {
-      std::cout << "Handle assignment for : " << assignment->lhs << std::endl;
-
-      std::string r = evaluate(assignment->rhs);
-
-      std::cout << "RES : " << r << std::endl;
-
-      symbol_table.add_symbol(assignment->lhs, assignment->data_type);
-
-   }
-
-   std::string DEL_Driver::evaluate(AST * ast)
-   {
-      switch(ast->node_type)
-      {
-         case NodeType::ROOT: 
-         { 
-            return "root";
-            break;
-         }
-         case NodeType::ADD : 
-         { 
-            std::cout << "Add : " << evaluate(ast->l) << " + " << evaluate(ast->r) << std::endl;
-            break;
-         }  
-         case NodeType::SUB : 
-         { 
-            std::cout << "Sub : " << evaluate(ast->l) << " - " << evaluate(ast->r) << std::endl;
-            break;
-         }
-         case NodeType::DIV : 
-         { 
-            std::cout << "Div : " << evaluate(ast->l) << " / " << evaluate(ast->r) << std::endl;
-            break;
-         }
-         case NodeType::MUL : 
-         { 
-            std::cout << "Mul : " << evaluate(ast->l) << " * " << evaluate(ast->r) << std::endl;
-            break;
-         }
-         case NodeType::MOD : 
-         { 
-            std::cout << "Mod : " << evaluate(ast->l) << " % " << evaluate(ast->r) << std::endl;
-            break;
-         }
-         case NodeType::POW : 
-         { 
-            std::cout << "Pow : " << evaluate(ast->l) << " ^ " << evaluate(ast->r) << std::endl;
-            break;
-         }
-         case NodeType::VAL : 
-         { 
-            return ast->value;
-         }
-         case NodeType::ID  : 
-         { 
-            return ast->value;
-         }
-         default:
-            return "Its dead, jim";
-      }
-      return "Complete";
-   }
-
-
-*/

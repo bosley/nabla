@@ -4,13 +4,15 @@
 #include "ast.hpp"
 #include "Errors.hpp"
 #include "SymbolTable.hpp"
+#include "Intermediate.hpp"
 
 namespace DEL
 {
     //! \brief Code generator
-    class Codegen : public Visitor
+    class Codegen
     {
     public:
+    
         //! \brief Construct a code generator
         //! \param err The error manager
         //! \param symbolTable The program symbol table
@@ -23,8 +25,7 @@ namespace DEL
 
         void end_function();
 
-        // From visitor
-        void accept(Assignment &stmt) override;
+        void assignment(Intermediate::Assignment assignment);
 
     private:
         Errors & error_man;         // Error manager

@@ -126,14 +126,14 @@ factor
    ;
 
 primary
-    : INT_LITERAL                     { $$ = new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, DEL::ValType::INTEGER, $1); }
-    | REAL_LITERAL                    { $$ = new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, DEL::ValType::REAL,    $1); }
-    | identifiers                     { $$ = new DEL::AST(DEL::NodeType::ID,  nullptr, nullptr, DEL::ValType::STRING,  $1); }
+    : INT_LITERAL                { $$ = new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, DEL::ValType::INTEGER, $1); }
+    | REAL_LITERAL               { $$ = new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, DEL::ValType::REAL,    $1); }
+    | identifiers                { $$ = new DEL::AST(DEL::NodeType::ID,  nullptr, nullptr, DEL::ValType::STRING,  $1); }
     ;
 
 primary_char
-   : CHAR_LITERAL                     { $$ = new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, DEL::ValType::CHAR,    $1); }
-   | identifiers                      { $$ = new DEL::AST(DEL::NodeType::ID,  nullptr, nullptr, DEL::ValType::STRING,  $1); }
+   : CHAR_LITERAL                { $$ = new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, DEL::ValType::CHAR,    $1); }
+   | identifiers                 { $$ = new DEL::AST(DEL::NodeType::ID,  nullptr, nullptr, DEL::ValType::STRING,  $1); }
    ;
 
 identifiers

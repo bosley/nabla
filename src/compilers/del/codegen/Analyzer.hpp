@@ -5,6 +5,7 @@
 #include "Errors.hpp"
 #include "SymbolTable.hpp"
 #include "Codegen.hpp"
+#include "Intermediate.hpp"
 
 namespace DEL
 {
@@ -36,10 +37,17 @@ namespace DEL
 
         ValType get_id_type(std::string id);
 
+        // Check that a given value is valid within the scope of an assignment 
+        void check_value_is_valid_for_assignment(ValType type_to_check, Intermediate::AssignmentClassifier & classifier, ValType & assignee_type, std::string & id);
+
+        // Validate an assignment ast
+        std::string validate_assignment_ast(AST * ast, Intermediate::AssignmentClassifier & classifier, ValType & assignee_type, std::string & id);
+
         Errors & error_man;             // Error manager
         SymbolTable & symbol_table;     // Symbol table
         Codegen & code_gen;             // Code generator
 
+        Intermediate intermediate_rep;
     };
 }
 

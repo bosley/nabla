@@ -37,13 +37,20 @@ namespace DEL
 
     enum class ValType
     {
-        INTEGER,
-        REAL,
-        CHAR,
-        STRING,
-        FUNCTION,
-        REQ_CHECK,
-        NONE
+        INTEGER,    // An actual integer
+        REAL,       // An actual real
+        CHAR,       // An actual char
+
+        STRUCT,
+        FUNCTION_CALL,
+
+        PTR,
+        REF,
+
+        STRING,     // Identifiers
+        FUNCTION,   // A function declaration
+        REQ_CHECK,  // Requires check by analyzer for value type (reassignment)
+        NONE        // Nothing
     };
 
     struct FunctionParam
@@ -56,14 +63,18 @@ namespace DEL
     {
         switch(v)
         {
-        case ValType::INTEGER  : return "Integer";
-        case ValType::REAL     : return "Real";
-        case ValType::CHAR     : return "Char";
-        case ValType::STRING   : return "String";
-        case ValType::FUNCTION : return "Function";
-        case ValType::NONE     : return "None";
-        case ValType::REQ_CHECK: return "RequiresCheck";
-        default                : return "Unknown";
+        case ValType::INTEGER       : return "Integer";
+        case ValType::REAL          : return "Real";
+        case ValType::CHAR          : return "Char";
+        case ValType::STRING        : return "String";
+        case ValType::FUNCTION      : return "Function";
+        case ValType::NONE          : return "None";
+        case ValType::REQ_CHECK     : return "RequiresCheck";
+        case ValType::STRUCT        : return "Struct";
+        case ValType::FUNCTION_CALL : return "FunctionCall";
+        case ValType::PTR           : return "Pointer";
+        case ValType::REF           : return "Reference";
+        default                     : return "Unknown";
         }
         return "Unknown";
     }
