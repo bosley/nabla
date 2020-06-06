@@ -193,7 +193,6 @@ namespace DEL
             error_man.report_custom("SymbolTable", "Item given to symbol table already exists within the memory map. This is a developer error", true);
         }
 
-        std::cout << "Alloc " << mem_request << " for " << symbol << std::endl;
         // Attempt to 'allocate' memory
         if(!memory_man.alloc_mem(symbol, mem_request))
         {

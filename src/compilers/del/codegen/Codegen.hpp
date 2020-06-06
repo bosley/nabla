@@ -37,6 +37,13 @@ namespace DEL
         bool building_function;
 
         bool has_included_math_functions;
+
+        std::vector<std::string> program_init;
+        std::vector<std::string> program_instructions;
+
+        void setup_integer(std::string id, std::string value);
+        void setup_double(std::string id, std::string value);
+        void setup_string(std::string id, std::string value);
     };
 }
 

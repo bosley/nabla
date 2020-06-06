@@ -212,6 +212,8 @@ namespace DEL
         // Generate the instructions for code generation
         Intermediate::Assignment assignment_command = intermediate_rep.encode_postfix_assignment_expression(memory_info, classification, postfix_expression);
 
+        assignment_command.id = stmt.lhs;
+
         // Call into code generation to create assignment ASM
         code_gen.assignment(assignment_command);
     }
