@@ -120,7 +120,7 @@ namespace DEL
             );
             assignment.instructions.push_back(
                 {
-                    InstructionSet::GET_RESULT, // Get the result of the function call for assignment 
+                    InstructionSet::STORE_WORD, // Get the result of the function call for assignment 
                     "" // No info for this
                 }
             );
@@ -173,7 +173,7 @@ namespace DEL
         // End of assignment trigger storage of result
         assignment.instructions.push_back(
             {
-                Intermediate::InstructionSet::GET_RESULT,
+                Intermediate::InstructionSet::STORE_WORD,
                 ""
             }
         );

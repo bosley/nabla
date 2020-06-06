@@ -54,6 +54,25 @@ namespace DEL
 
             return instructions;
         }
+
+        //  Setup a conditional check a < 3; a || b etc
+        //
+        std::vector<std::string> setup_check(uint64_t label_id, std::string comparison, std::string removal)
+        {
+            std::vector<std::string> instructions;
+            std::string label = "conditional_check_" + std::to_string(label_id);
+            std::string complete = "conditional_complete_" + std::to_string(label_id);
+            comparison = comparison + label + "\n\n";
+            instructions.push_back(removal + "\n");
+            instructions.push_back(comparison);
+            instructions.push_back("\tmov r8 $0\t; False\n\n");
+            instructions.push_back("\tjmp " + complete + "\n");
+            instructions.push_back("\n" + label + ":\n");
+            instructions.push_back("\tmov r8 $1\t; True\n");
+            instructions.push_back("\n" + complete + ":\n");
+            instructions.push_back("\n\tpushw ls r8 \t ; Put result into ls\n");
+            return instructions;
+        }
     }
 
     // ----------------------------------------------------------
@@ -65,7 +84,8 @@ namespace DEL
                                                                 symbol_table(symbolTable), 
                                                                 memory_man(memory),
                                                                 building_function(false),
-                                                                has_included_math_functions(false)
+                                                                has_included_math_functions(false),
+                                                                label_id(0)
     {
 
     }
@@ -115,6 +135,7 @@ namespace DEL
         }
 
         building_function = false;
+        label_id = 0;
 
         std::cout << "Codegen >>> end_function()" << std::endl;
     }
@@ -154,6 +175,13 @@ namespace DEL
             assignment.assignment_classifier -> How to treat the given data (int, char, real)
             assignment.instructions          -> What to do to the data in RPN form
         */
+
+       /*
+            Raw numbers : we build them with shifts and ors, then place them in the local function stack for calculation
+            Operations  : Pop the ls to acquire the LHS and RHS of the calculation, perform the calculation, then store the result in ls by pushing
+            Saving      : If we are saving the value, we build the given address using shifts and ors, pop the value off ls, then store the word at its address
+            Loading     : We build the address, get the item into a register using ldw, then push it onto the local stack so the next operation can use it
+       */
 
        std::string remove_words_for_calc = "\n\tpopw r9 ls \t ; Calculation RHS\n\tpopw r8 ls \t ; Calculation LHS\n";
 
@@ -229,17 +257,112 @@ namespace DEL
                     program_instructions.push_back(remove_words_for_calc + ( "\tand " + calculation_chunk));
                     break;                                          
                 }
-                case Intermediate::InstructionSet::LTE:        error_man.report_custom("Codegen", "Developer: LTE not completed"); break;
-                case Intermediate::InstructionSet::LT:         error_man.report_custom("Codegen", "Developer: LT not completed"); break;
-                case Intermediate::InstructionSet::GTE:        error_man.report_custom("Codegen", "Developer: GTE not completed"); break;
-                case Intermediate::InstructionSet::GT:         error_man.report_custom("Codegen", "Developer: GT not completed"); break;
-                case Intermediate::InstructionSet::EQ:         error_man.report_custom("Codegen", "Developer: EQ not completed"); break;
-                case Intermediate::InstructionSet::NE:         error_man.report_custom("Codegen", "Developer: NE not completed"); break;
-                case Intermediate::InstructionSet::OR:         error_man.report_custom("Codegen", "Developer: OR not completed"); break;
-                case Intermediate::InstructionSet::AND:        error_man.report_custom("Codegen", "Developer: AND not completed"); break;
+                case Intermediate::InstructionSet::LTE:        
+                {
+                    program_instructions.push_back("\n\t; <<< LTE >>> \n");
+                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tblte.d r8 r9 " : "\tblte r8 r9 ";
+                    std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
+                    program_instructions.insert(program_instructions.end(), c.begin(), c.end());
+                    label_id++;
+                    break;
+                }
+                case Intermediate::InstructionSet::LT:  
+                {
+                    program_instructions.push_back("\n\t; <<< LT >>> \n");
+                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tblt.d r8 r9 " : "\tblt r8 r9 ";
+                    std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
+                    program_instructions.insert(program_instructions.end(), c.begin(), c.end());
+                    label_id++;
+                    break;
+                }
+                case Intermediate::InstructionSet::GTE: 
+                {
+                    program_instructions.push_back("\n\t; <<< GTE >>> \n");
+                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tbgte.d r8 r9 " : "\tbgte r8 r9 ";
+                    std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
+                    program_instructions.insert(program_instructions.end(), c.begin(), c.end());
+                    label_id++;
+                    break;
+                }
+                case Intermediate::InstructionSet::GT:  
+                {
+                    program_instructions.push_back("\n\t; <<< GT >>> \n");
+                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tbgt.d r8 r9 " : "\tbgt r8 r9 ";
+                    std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
+                    program_instructions.insert(program_instructions.end(), c.begin(), c.end());
+                    label_id++;
+                    break;
+                }
+                case Intermediate::InstructionSet::EQ:  
+                {
+                    program_instructions.push_back("\n\t; <<< EQ >>> \n");
+                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tbeq.d r8 r9 " : "\tbeq r8 r9 ";
+                    std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
+                    program_instructions.insert(program_instructions.end(), c.begin(), c.end());
+                    label_id++;
+                    break;
+                }
+                case Intermediate::InstructionSet::NE:  
+                {
+                    program_instructions.push_back("\n\t; <<< NE >>> \n");
+                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tbne.d r8 r9 " : "\tbne r8 r9 ";
+                    std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
+                    program_instructions.insert(program_instructions.end(), c.begin(), c.end());
+                    label_id++;
+                    break;
+                }
+                case Intermediate::InstructionSet::OR:
+                {
+                    program_instructions.push_back("\n\t; <<< OR >>> \n");
+                    program_instructions.push_back(remove_words_for_calc);
+                    program_instructions.push_back("\n\tmov r7 $0\t; Comparison value");
+                    std::string true_label = "OR_is_true_"    + std::to_string(label_id);
+                    std::string complete   = "OR_is_complete_" + std::to_string(label_id);
+                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
+                    program_instructions.push_back("\n\n\t" + comparison + "r8 r7 " + true_label);
+                    program_instructions.push_back("\n\t" + comparison + "r9 r7 " + true_label);
+                    program_instructions.push_back("\n\n\tmov r8 $0 ; False");
+                    program_instructions.push_back("\n\tjmp " + complete + "\n\n");
+                    program_instructions.push_back(true_label + ":\n");
+                    program_instructions.push_back("\n\tmov r8 $1 ; False\n\n");
+                    program_instructions.push_back(complete + ":\n");
+                    program_instructions.push_back("\n\tpushw ls r8 \t ; Put result into ls\n");
+                    label_id++;
+                    break;
+                }
+                case Intermediate::InstructionSet::AND:
+                {
+                    program_instructions.push_back("\n\t; <<< AND >>> \n");
+                    program_instructions.push_back(remove_words_for_calc);
+                    program_instructions.push_back("\n\tmov r7 $0\t; Comparison value\n\n");
+                    std::string first_true  = "AND_first_true_" + std::to_string(label_id);
+                    std::string second_true = "AND_second_true_" + std::to_string(label_id);
+                    std::string complete    = "AND_complete_" + std::to_string(label_id);
+                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
+
+                    program_instructions.push_back("\t" + comparison + "r8 r7 " + first_true + "\n\n");
+                    program_instructions.push_back("\tmov r8 $0\t; False\n\n");
+                    program_instructions.push_back("\tjmp " + complete + "\n\n");
+
+                    program_instructions.push_back(first_true + ":\n\n");
+
+                    program_instructions.push_back("\t" + comparison + "r9 r7 " + second_true + "\n\n");
+                    program_instructions.push_back("\tmov r8 $0\t; False\n\n");
+                    program_instructions.push_back("\tjmp " + complete + "\n\n");
+
+
+                    program_instructions.push_back(second_true + ":\n\n");
+                    program_instructions.push_back("\tmov r8 $1\n\n");
+
+                    program_instructions.push_back(complete + ":\n\n");
+
+                    program_instructions.push_back("\n\tpushw ls r8 \t ; Put result into ls\n");
+
+                    label_id++;
+                    break;
+                }
                 case Intermediate::InstructionSet::NEGATE:     error_man.report_custom("Codegen", "Developer: NEGATE not completed"); break;
                 case Intermediate::InstructionSet::LOAD_BYTE:  error_man.report_custom("Codegen", "Developer: LOAD_BYTE not completed"); break;
-                case Intermediate::InstructionSet::STORE_BYTE: error_man.report_custom("Codegen", "Developer: STORE_BYTE not completed"); break;
                 case Intermediate::InstructionSet::LOAD_WORD:
                 {
                     program_instructions.push_back("\n\t; <<< LOAD WORD >>> \n");
@@ -254,11 +377,10 @@ namespace DEL
                     program_instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
-                case Intermediate::InstructionSet::STORE_WORD: error_man.report_custom("Codegen", "Developer: STORE_WORD not completed"); break;
-                case Intermediate::InstructionSet::CALL:       error_man.report_custom("Codegen", "Developer: CALL not completed"); break;
-                case Intermediate::InstructionSet::GET_RESULT:  
+                case Intermediate::InstructionSet::STORE_BYTE: error_man.report_custom("Codegen", "Developer: STORE_BYTE not completed"); break;
+                case Intermediate::InstructionSet::STORE_WORD:  
                 {
-                    program_instructions.push_back("\n\t; <<< GET RESULT >>> \n");
+                    program_instructions.push_back("\n\t; <<< STORE WORD >>> \n");
 
                     // Get the memory information for destination
                     uint64_t mem_start = ENDIAN::conditional_to_le_64(assignment.memory_info.start_pos);
@@ -315,6 +437,7 @@ namespace DEL
                     error_man.report_custom("Codegen", "Developer: MOD not completed"); break;
                     break;
                 }
+                case Intermediate::InstructionSet::CALL:       error_man.report_custom("Codegen", "Developer: CALL not completed"); break;
                 default:
                     error_man.report_custom("Codegen", "Developer error : Default accessed in assignment", true);
                     break;

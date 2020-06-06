@@ -6,12 +6,17 @@ def main() -> int {
    // int my_int = 3 + 2 * (4 + A) ; // 25
 
 
-    real A = 7.0;
+    //real A = 7.0;
     //real B = 3.0;
     //real C = A + B;
    
-    real my_real = 3.0 + 2.0 * (4.0 + A) ;
+  //  real my_real = 3.0 + 2.0 * (4.0 + A) ;
 
+
+    int l = 0;
+    int r = 4;
+
+    int c = r && l;
 
 /*
     char my_char = "3";

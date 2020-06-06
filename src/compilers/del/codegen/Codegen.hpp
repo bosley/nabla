@@ -38,6 +38,8 @@ namespace DEL
 
         bool has_included_math_functions;
 
+        uint64_t label_id;
+
         std::vector<std::string> program_init;
         std::vector<std::string> program_instructions;
 

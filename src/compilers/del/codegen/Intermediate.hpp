@@ -44,9 +44,8 @@ namespace DEL
 
             CALL,
 
-            USE_RAW,        // Use the given value (int or str val)
- 
-            GET_RESULT,     // Obtain the result of the function call
+            USE_RAW        // Use the given value (int or str val)
+
         };
 
 
