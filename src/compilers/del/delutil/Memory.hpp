@@ -15,6 +15,9 @@ namespace DEL
     public:
         static constexpr int MAX_GLOBAL_MEMORY = NABLA::VSYS::NABLA_VSYS_SETTINGS_GLOBAL_MEMORY_BYTES;
 
+        // Address space start so we can pack some info in front at end of compile
+        static constexpr int START_ADDRESS_SPACE = 64;
+
         Memory();
         ~Memory();
 
@@ -29,6 +32,7 @@ namespace DEL
 
         MemAlloc get_mem_info(std::string id);
 
+        uint64_t get_currently_allocated_bytes_amnt() const;
 
         friend SymbolTable;
         

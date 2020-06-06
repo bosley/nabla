@@ -64,7 +64,18 @@ namespace DEL
         std::vector<std::string> tokens(beg, end);
 
         // Build instructions for assignment
-        Assignment assignment = build_assignment(tokens);
+        Assignment assignment;
+
+        // We want to be particular about chars
+        if(classification == AssignmentClassifier::CHAR)
+        {
+            assignment = build_assignment(tokens, 1);
+        }
+        else
+        {
+            assignment = build_assignment(tokens, memory_info.bytes_alloced);
+        }
+
 
         // Indicate how raw values should be interpd
         assignment.assignment_classifier = classification;
@@ -79,7 +90,7 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    void Intermediate::build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token)
+    void Intermediate::build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token, uint64_t byte_len)
     {
         // Remove the directive indicator
         directive_token = directive_token.substr(1, directive_token.size());
@@ -99,15 +110,27 @@ namespace DEL
             uint64_t start_pos = std::stoull(d_list[1]);
             uint64_t end_pos   = start_pos + std::stoull(d_list[2]);
 
-            while(start_pos < end_pos)
+            if(byte_len == 1)
             {
                 assignment.instructions.push_back(
                     {
-                        InstructionSet::LOAD_WORD,
+                        InstructionSet::LOAD_BYTE,
                         std::to_string(start_pos)
                     }
                 );
-                start_pos += 8; // Inc by word
+            }
+            else
+            {
+                while(start_pos < end_pos)
+                {
+                    assignment.instructions.push_back(
+                        {
+                            InstructionSet::LOAD_WORD,
+                            std::to_string(start_pos)
+                        }
+                    );
+                    start_pos += 8; // Inc by word
+                }
             }
         }
         else if(d_list[0] == "FCALL")
@@ -136,7 +159,7 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Intermediate::Assignment Intermediate::build_assignment(std::vector<std::string> & tokens)
+    Intermediate::Assignment Intermediate::build_assignment(std::vector<std::string> & tokens, uint64_t byte_len)
     {
         Intermediate::Assignment assignment;
 
@@ -146,10 +169,10 @@ namespace DEL
             // Check for a directive
             if(token[0] == '#')
             {
-                build_assignment_directive(assignment, token);
+                build_assignment_directive(assignment, token, byte_len);
             }
             // Check for char || int || double (raw values)
-            else if(token[0] == '"' || is_only_number(token))
+            else if(token[0] == '"' || is_only_number(token) )
             {
                 assignment.instructions.push_back(
                     {
@@ -170,10 +193,12 @@ namespace DEL
             }
         }
 
+        Intermediate::InstructionSet final = (byte_len < 8) ? Intermediate::InstructionSet::STORE_BYTE : Intermediate::InstructionSet::STORE_WORD;
+
         // End of assignment trigger storage of result
         assignment.instructions.push_back(
             {
-                Intermediate::InstructionSet::STORE_WORD,
+                final,
                 ""
             }
         );

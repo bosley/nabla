@@ -8,7 +8,8 @@ namespace DEL
     // ----------------------------------------------------------
 
     SymbolTable::SymbolTable(Errors & error_man, Memory & mm) : error_man(error_man),
-                                                                memory_man(mm)
+                                                                memory_man(mm),
+                                                                is_locked(false)
     {
 
     }
@@ -28,6 +29,8 @@ namespace DEL
 
     void SymbolTable::new_context(std::string name, bool remove_previous)
     {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+
         if(remove_previous)
         {
             // Don't allow the removal of the global context
@@ -50,6 +53,8 @@ namespace DEL
 
     bool SymbolTable::does_symbol_exist(std::string symbol, bool show_if_found)
     {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+        
         for(auto & c : contexts)
         {
             if(c != nullptr)
@@ -78,6 +83,8 @@ namespace DEL
 
     bool SymbolTable::does_context_exist(std::string context)
     {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+        
         for(auto & c : contexts)
         {
             if(c != nullptr)
@@ -97,6 +104,8 @@ namespace DEL
 
     void SymbolTable::clear_existing_context(std::string context)
     {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+        
         for(auto & c : contexts)
         {
             if(c != nullptr)
@@ -117,6 +126,8 @@ namespace DEL
 
     bool SymbolTable::is_existing_symbol_of_type(std::string symbol, ValType type)
     {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+        
         for(auto & c : contexts)
         {
             if(c != nullptr)
@@ -143,6 +154,8 @@ namespace DEL
 
     void SymbolTable::add_symbol(std::string symbol, DEL::ValType type, uint64_t memory)
     {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+        
         contexts.back()->symbol_map[symbol] = type;
 
         // A stop-gap to ensure we know why things break as stuff is expanded
@@ -161,7 +174,7 @@ namespace DEL
         {
         case ValType::INTEGER:       mem_request = (memory == 0) ? 8 : memory; break;
         case ValType::REAL:          mem_request = (memory == 0) ? 8 : memory; break;
-        case ValType::CHAR:          mem_request = (memory == 0) ? 8 : memory; break;
+        case ValType::CHAR:          mem_request = (memory == 0) ? 1 : memory; break;   // We only request one, but memory guy will probrably round up to 8
         case ValType::FUNCTION:      error_man.report_custom("SymbolTable", " FUNCTION given to symbol table", true);
         case ValType::REQ_CHECK:     error_man.report_custom("SymbolTable", " REQ CHECK given to symbol table", true);
         case ValType::NONE:          error_man.report_custom("SymbolTable", " NONE given to symbol table", true);
@@ -206,6 +219,8 @@ namespace DEL
 
     DEL::ValType SymbolTable::get_value_type(std::string symbol)
     {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+        
         for(auto & c : contexts)
         {
             if(c != nullptr)
@@ -225,6 +240,19 @@ namespace DEL
 
     std::string SymbolTable::get_current_context_name() const
     {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+        
         return contexts.back()->context_name;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void SymbolTable::lock()
+    {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+        
+        is_locked = true;
     }
 }

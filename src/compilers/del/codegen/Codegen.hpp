@@ -22,6 +22,9 @@ namespace DEL
         //! \brief Deconstrut the code generator
         ~Codegen();
 
+        //! \brief Complete the generation of code, and return the raw ASM
+        std::vector<std::string> indicate_complete();
+
         void begin_function(std::string name, std::vector<FunctionParam> params);
 
         void end_function();
@@ -45,7 +48,7 @@ namespace DEL
 
         void setup_integer(std::string id, std::string value);
         void setup_double(std::string id, std::string value);
-        void setup_string(std::string id, std::string value);
+        void setup_char(std::string id, std::string value);
     };
 }
 

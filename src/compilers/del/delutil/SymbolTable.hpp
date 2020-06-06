@@ -10,6 +10,8 @@
 
 namespace DEL
 {
+    class Codegen;
+
     class SymbolTable
     {
     public:
@@ -32,10 +34,17 @@ namespace DEL
 
         std::string get_current_context_name() const;
 
+        friend Codegen;
+
     private:
     
+
         Errors & error_man;
         Memory & memory_man;
+        
+        bool is_locked;
+
+        void lock();
 
         class Context
         {

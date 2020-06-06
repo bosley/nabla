@@ -116,6 +116,14 @@ namespace DEL
 
    void DEL_Driver::indicate_complete()
    {
+      std::vector<std::string> ASM = code_gen.indicate_complete();
+
+      /*
+         TODO : Need params to see if the user wants us to keep the dumped asm
+      */
+
+
+
       std::cout << "Complete!" << std::endl;
    }
 

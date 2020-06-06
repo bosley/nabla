@@ -12,11 +12,9 @@ def main() -> int {
    
   //  real my_real = 3.0 + 2.0 * (4.0 + A) ;
 
+    char my_char = "3";
 
-    int l = 0;
-    int r = 4;
-
-    int c = r && l;
+    char my_other_char = my_char;
 
 /*
     char my_char = "3";

@@ -68,9 +68,9 @@ namespace DEL
     
     private:
 
-        void build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token);
+        void build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token, uint64_t byte_len);
 
-        Assignment build_assignment(std::vector<std::string> & tokens);
+        Assignment build_assignment(std::vector<std::string> & tokens, uint64_t byte_len);
 
         InstructionSet get_operation(std::string token);
     };

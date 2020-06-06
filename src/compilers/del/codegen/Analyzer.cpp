@@ -264,6 +264,13 @@ namespace DEL
 
     std::string Analyzer::validate_assignment_ast(AST * ast, Intermediate::AssignmentClassifier & c, ValType & et, std::string & id)
     {
+        /*
+            Note:
+                I know that using the tree to build a big string expression that is tokenized and parsed again isn't ideal. This is my first 
+                venture into using ASTs and I thought it would make it easier on me to have an RPN expression that I can build instructions for
+                the code generator around. Once the code generator is completed, and optimized as-per the note at the top of the Codegen.cpp
+                file, then I would like to revisit this to see what I can do about making this better
+        */
         switch(ast->node_type)
         {
             case NodeType::ID  : 
