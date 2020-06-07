@@ -6,6 +6,7 @@
 #include "SymbolTable.hpp"
 #include "Memory.hpp"
 #include "Intermediate.hpp"
+#include "AsmSupport.hpp"
 
 namespace DEL
 {
@@ -29,8 +30,6 @@ namespace DEL
 
         void end_function();
 
-        void add_build_in_math_functions();
-
         void assignment(Intermediate::Assignment assignment);
 
     private:
@@ -38,8 +37,7 @@ namespace DEL
         SymbolTable & symbol_table; // Symbol table
         Memory & memory_man;        // Memory manager
         bool building_function;
-
-        bool has_included_math_functions;
+        AsmSupport asm_support;
 
         uint64_t label_id;
 

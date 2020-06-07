@@ -34,6 +34,8 @@ namespace DEL
 
         std::string get_current_context_name() const;
 
+        std::string generate_unique_return_symbol();
+
         friend Codegen;
 
     private:
@@ -43,6 +45,7 @@ namespace DEL
         Memory & memory_man;
         
         bool is_locked;
+        uint64_t unique_counter;
 
         void lock();
 

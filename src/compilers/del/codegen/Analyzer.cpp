@@ -1,6 +1,7 @@
 #include "Analyzer.hpp"
 
 #include <iostream>
+#include <regex>
 #include <sstream>
 
 namespace DEL
@@ -119,6 +120,9 @@ namespace DEL
         // Tell code generator to start function with given parametrs
         code_gen.begin_function(function->name, function->params);
 
+        // So elements can access function information as we visit them
+        current_function = function;
+
         // Iterate over function elements and visit them with *this
         for(auto & el : function->elements)
         {
@@ -137,6 +141,8 @@ namespace DEL
         // Clear the symbol table for the given function so elements cant be accessed externally
         // We dont delete the context though, that way can confirm existence later
         symbol_table.clear_existing_context(function->name);
+
+        current_function = nullptr;
 
         // Function is constructed - and elements have been freed
         delete function;
@@ -218,6 +224,23 @@ namespace DEL
         code_gen.assignment(assignment_command);
     }
 
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Analyzer::accept(ReturnStmt & stmt)
+    {
+        // Create a 'variable assignment' for the return so we can copy the value or whatever
+        std::string variable_for_return = symbol_table.generate_unique_return_symbol();
+
+        // Create an assignment for the return, this will execute the return withing code gen as we set a RETURN node type that is processed by the assignment
+        Assignment * return_assignment = new Assignment(current_function->return_type, variable_for_return, new DEL::AST(DEL::NodeType::RETURN, stmt.rhs, nullptr));
+
+        this->accept(*return_assignment);
+
+        delete return_assignment;
+    }
+
     // -----------------------------------------------------------------------------------------
     // 
     //                              Assignment Validation Methods
@@ -237,7 +260,18 @@ namespace DEL
                 // Promote to Double if any double is present
                 c = Intermediate::AssignmentClassifier::DOUBLE;
 
-                if((et != ValType::REAL) && (et != ValType::REAL)) { error_man.report_unallowed_type(id, true); }
+                if((et != ValType::REAL) && (et != ValType::REAL)) 
+                {
+                    std::string error_message = id;
+
+                    // There are better ways to do this, but if it happens at all it will only happen once during the compiler run
+                    // as we are about to die
+                    if(std::regex_match(id, std::regex("(__return__assignment__).*")))
+                    {
+                        error_message = "Function (" + current_function->name + ")";
+                    } 
+                    error_man.report_unallowed_type(error_message, true); 
+                }
 
                 break;
             }
@@ -315,6 +349,7 @@ namespace DEL
             case NodeType::AND    :return (validate_assignment_ast(ast->l, c, et, id) + " " + validate_assignment_ast(ast->r, c, et, id) + " AND    " );
             case NodeType::BW_NOT :return (validate_assignment_ast(ast->l, c, et, id) + " BW_NOT ");
             case NodeType::NEGATE :return (validate_assignment_ast(ast->l, c, et, id) + " NEGATE "  );
+            case NodeType::RETURN :return (validate_assignment_ast(ast->l, c, et, id) + " RETURN "  );
             case NodeType::ROOT   : error_man.report_custom("Analyzer", "ROOT NODE found in arithmetic exp", true);
             case NodeType::VAL : 
             { 

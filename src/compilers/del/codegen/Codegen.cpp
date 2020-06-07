@@ -1,15 +1,13 @@
 /*
     This file is getting large, so I think its a good idea to write a comment up top to describe somethings that still need to be done and what is done. 
 
-    What is done now :  int / char / double expressions are all complete with the exception of the MODULUS and POWER operators. 
+    What is done now :  int / char / double expressions are all complete
         Those two things need to have some functions generated to support them. 
         Other than that : - + * / || && ! xor and not or lsh rsh LT LTE GT GTE EQ NE have been fleshed out
         They have been mostly hand tested. Once the remainind 'assignment' operations have been completed, we will need to setup a test mechanism to ensure
         that all of these compile into things that actually work. 
 
-        New variables and reassignments are all taken care of with the exception of the things above
-
-        Getting values from function calls has not yet been completed either. That is below and will trigger the error manager to laugh at us if we attempt
+        Getting values from function calls has not yet been completed. That is below and will trigger the error manager to laugh at us if we attempt
         to use a function call anywhere in an expression. At this point I'm pretty sure the grammer doesn't even let us do that, but once it does we will 
         DEFINITELY be laughed at by the code generator. 
 
@@ -22,7 +20,6 @@
 */
 
 #include "Codegen.hpp"
-#include "AsmBuiltIn.hpp"
 #include <iostream>
 #include <vector>
 #include <limits>
@@ -113,7 +110,6 @@ namespace DEL
                                                                 symbol_table(symbolTable), 
                                                                 memory_man(memory),
                                                                 building_function(false),
-                                                                has_included_math_functions(false),
                                                                 label_id(0)
     {
 
@@ -140,7 +136,8 @@ namespace DEL
         symbol_table.lock();
 
         std::vector<std::string> result; 
-        result.push_back(BUILT_IN::ASM_FILE_START);
+        
+        asm_support.import_init_start(result);
 
         uint64_t memory_alloc = memory_man.get_currently_allocated_bytes_amnt();
 
@@ -148,10 +145,10 @@ namespace DEL
         // Right now its set to 64 bytes
 
         // 8 bytes
-        result.push_back("\n\n.int64 __MEM_ALLOC_COUNTER__ " + std::to_string(memory_alloc) + "\n\n");
+        result.push_back(".int64 __MEM_ALLOC_COUNTER__ " + std::to_string(memory_alloc) + "\n");
 
         // Add the init function - All globals in reserved space must be pushed before this
-        result.push_back(BUILT_IN::ASM_INIT_FUNCTION); 
+        asm_support.import_init_func(result);
 
         // Add the functions that were triggered to be added by something that the user was doing (math or something lame)
         result.insert(result.end(), program_init.begin(), program_init.end());
@@ -183,7 +180,7 @@ namespace DEL
 
         std::cout << "Codegen >>> begin_function : " << name << std::endl;
 
-        program_instructions.push_back("<" + name + ": \n\n");
+        program_instructions.push_back("<" + name + ":\n");
     }
 
     // ----------------------------------------------------------
@@ -206,25 +203,6 @@ namespace DEL
 
 
         program_instructions.push_back("> \n\n");
-    }
-    
-    // ----------------------------------------------------------
-    //
-    // ----------------------------------------------------------
-
-    void Codegen::add_build_in_math_functions()
-    {
-        if(has_included_math_functions)
-        {
-            return;
-        }
-
-        has_included_math_functions = true;
-
-        program_init.push_back(BUILT_IN::ASM_MOD);
-        program_init.push_back(BUILT_IN::ASM_POW);
-        program_init.push_back(BUILT_IN::ASM_MOD_D);
-        program_init.push_back(BUILT_IN::ASM_POW_D);
     }
 
     // ----------------------------------------------------------
@@ -516,40 +494,39 @@ namespace DEL
                 case Intermediate::InstructionSet::POW:
                 {
                     program_instructions.push_back("\n\t; <<< POW >>> \n");
-
-                    if(!has_included_math_functions){ add_build_in_math_functions(); }
-
                     program_instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
 
+                    std::string function_name;
                     if(assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE)
                     {
-                        program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_POW_D_FUNCTION_NAME + " ; Call to perfom power\n\n");
+                        asm_support.import_math(AsmSupport::Math::POW_D, function_name, program_init);
+
                     }
                     else
                     {
-                        program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_POW_FUNCTION_NAME + " ; Call to perfom power\n\n");
+                        asm_support.import_math(AsmSupport::Math::POW_I, function_name, program_init);
                     }
 
+                    program_instructions.push_back("\n\tcall " + function_name + " ; Call to perfom power\n\n");
                     program_instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
                 case Intermediate::InstructionSet::MOD:
                 {
                     program_instructions.push_back("\n\t; <<< MOD >>> \n");
-
-                    if(!has_included_math_functions){ add_build_in_math_functions(); }
-
                     program_instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
 
+                    std::string function_name;
                     if(assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE)
                     {
-                        program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_MOD_D_FUNCTION_NAME + " ; Call to perfom modulus\n\n");
+                        asm_support.import_math(AsmSupport::Math::MOD_D, function_name, program_init);
                     }
                     else
                     {
-                        program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_MOD_FUNCTION_NAME + " ; Call to perfom modulus\n\n");
+                        asm_support.import_math(AsmSupport::Math::MOD_I, function_name, program_init);
                     }
 
+                    program_instructions.push_back("\n\tcall " + function_name + " ; Call to perfom modulus\n\n");
                     program_instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
@@ -560,6 +537,17 @@ namespace DEL
                 
                 */
                 case Intermediate::InstructionSet::CALL:       error_man.report_custom("Codegen", "Developer: CALL not completed"); break;
+
+                case Intermediate::InstructionSet::RETURN:
+                {
+                    // The expression of the return should be on the local stack now, so all we have to do is pop it off into r0
+                    program_instructions.push_back("\n\t; <<< RETURN >>> \n");
+
+                    program_instructions.push_back("\tpopw r0 ls\n");
+
+                    program_instructions.push_back("\tret\n");
+                    break;
+                }
                 default:
                     error_man.report_custom("Codegen", "Developer error : Default accessed in assignment", true);
                     break;

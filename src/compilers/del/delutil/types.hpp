@@ -31,7 +31,9 @@ namespace DEL
         BW_NOT,
         OR,
         AND,
-        NEGATE
+        NEGATE,
+
+        RETURN
 
         /*
             see Analyzer::validate_assignment_ast 

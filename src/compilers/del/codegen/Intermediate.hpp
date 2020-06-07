@@ -44,6 +44,8 @@ namespace DEL
 
             CALL,
 
+            RETURN,
+
             USE_RAW        // Use the given value (int or str val)
 
         };

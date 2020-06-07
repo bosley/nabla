@@ -9,7 +9,8 @@ namespace DEL
 
     SymbolTable::SymbolTable(Errors & error_man, Memory & mm) : error_man(error_man),
                                                                 memory_man(mm),
-                                                                is_locked(false)
+                                                                is_locked(false),
+                                                                unique_counter(0)
     {
 
     }
@@ -243,6 +244,34 @@ namespace DEL
         if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
         
         return contexts.back()->context_name;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    std::string SymbolTable::generate_unique_return_symbol()
+    {
+        std::string return_label = "__return__assignment__" + std::to_string(unique_counter);
+
+        // Whis should never happen unless a user decides to use "__return__assignment__" as a variable name, which I guess we COULD deny, but why would we? 
+        // its a perfectly good name.
+        uint64_t stop_count = 0;
+        while(does_symbol_exist(return_label, false))
+        {
+            unique_counter++;
+            return_label = "__return__assignment__" + std::to_string(unique_counter);
+
+            stop_count++;
+            if(stop_count == 2048)
+            {
+                // If a user ever gets this message they are doing something silly and should probrably investigate their live choices
+                error_man.report_custom("SymbolTable", "2048 Attempts were made to generate a unique return symbol. If you're seeing this, you're doing something silly. Stop it.", true);
+            }
+        }
+        unique_counter++;
+
+        return return_label;
     }
 
     // ----------------------------------------------------------

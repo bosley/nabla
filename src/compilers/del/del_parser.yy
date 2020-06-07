@@ -58,6 +58,7 @@
 %type<DEL::Element*> stmt;
 %type<DEL::Element*> assignment;
 %type<DEL::Element*> reassignment;
+%type<DEL::Element*> return_stmt;
 %type<DEL::Function*> function_stmt;
 %type<std::string> identifiers;
 
@@ -156,9 +157,14 @@ reassignment
                                         ); }
    ;
 
+return_stmt
+   : RETURN expression SEMI { $$ = new DEL::ReturnStmt($2); }
+   ;
+
 stmt
    : assignment   { $$ = $1; }
    | reassignment { $$ = $1; }
+   | return_stmt  { $$ = $1; }
    ;
 
 multiple_statements

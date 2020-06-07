@@ -126,6 +126,7 @@ namespace DEL
          but for the moment this will do just fine. 
       
       */
+
       bool assemble_verbose = true;
       std::string asm_output_file = DEFAULT_ASM_OUT;
       std::string bin_output_file = DEFAULT_BIN_OUT;
@@ -146,6 +147,7 @@ namespace DEL
          ASM.clear();
       }
 
+      /*
       std::vector<uint8_t> binary_data;
 
       if(!ASSEMBLER::ParseAsm(asm_output_file, binary_data, assemble_verbose))
@@ -168,6 +170,7 @@ namespace DEL
          bin_out.close();
          binary_data.clear();
       }
+      */
    }
 
    // ----------------------------------------------------------

@@ -77,6 +77,20 @@ namespace DEL
     };
 
     //
+    //  A return statement
+    //
+    class ReturnStmt : public Element
+    {
+    public:
+        ReturnStmt(AST * rhs) : data_type(ValType::REQ_CHECK), rhs(rhs){}
+
+        virtual void visit(Visitor &visit) override;
+
+        ValType data_type;
+        AST * rhs;
+    };
+
+    //
     //  A function
     //
     class Function
@@ -98,6 +112,7 @@ namespace DEL
     {
     public:
         virtual void accept(Assignment &stmt) = 0;
+        virtual void accept(ReturnStmt &stmt) = 0;
     };
 
 

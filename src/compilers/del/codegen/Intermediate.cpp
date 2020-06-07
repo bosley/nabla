@@ -193,6 +193,12 @@ namespace DEL
             }
         }
 
+        // If its a return statement, we don't want to add a store command
+        if(assignment.instructions.back().instruction == Intermediate::InstructionSet::RETURN)
+        {
+            return assignment;
+        }
+
         Intermediate::InstructionSet final = (byte_len < 8) ? Intermediate::InstructionSet::STORE_BYTE : Intermediate::InstructionSet::STORE_WORD;
 
         // End of assignment trigger storage of result
@@ -232,6 +238,7 @@ namespace DEL
         if(token == "BW_XOR") { return Intermediate::InstructionSet::BW_XOR; }
         if(token == "BW_AND") { return Intermediate::InstructionSet::BW_AND; }
         if(token == "BW_NOT") { return Intermediate::InstructionSet::BW_NOT; }
+        if(token == "RETURN") { return Intermediate::InstructionSet::RETURN; }
         std::cerr << "Developer error : Intermediate::InstructionSet Intermediate::get_integer_operation(std::string token)" << std::endl;
         exit(EXIT_FAILURE);
     }

@@ -6,4 +6,9 @@ namespace DEL
     {
         visitor.accept(*this);
     }
+
+    void ReturnStmt::visit(Visitor &visitor)
+    {
+        visitor.accept(*this);
+    }
 }

@@ -28,6 +28,7 @@ namespace DEL
 
         // From visitor
         void accept(Assignment &stmt) override;
+        void accept(ReturnStmt &stmt) override;
 
     private:
 
@@ -49,6 +50,14 @@ namespace DEL
         Memory & memory_man;            // Memory manager
 
         Intermediate intermediate_rep;
+
+        Function * current_function;
+
+        struct FunctionInformation
+        {
+            bool has_return;
+
+        };
     };
 }
 
