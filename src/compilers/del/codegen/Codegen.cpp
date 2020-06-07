@@ -222,17 +222,9 @@ namespace DEL
         has_included_math_functions = true;
 
         program_init.push_back(BUILT_IN::ASM_MOD);
-
-        /*
-            TODO 
-
-            Need to load built_ins.asm
-
-            These built-ins will support POW and MOD, but they need to be written to conform to DEL specifications
-
-            consider adding them directly into source code so we don't have to rely on them for compiling 
-        
-        */
+        program_init.push_back(BUILT_IN::ASM_POW);
+        program_init.push_back(BUILT_IN::ASM_MOD_D);
+        program_init.push_back(BUILT_IN::ASM_POW_D);
     }
 
     // ----------------------------------------------------------
@@ -527,13 +519,18 @@ namespace DEL
 
                     if(!has_included_math_functions){ add_build_in_math_functions(); }
 
-                    // TODO 
-                    
-                    // Need to load things into registers used for power function
-                    // Call that function
-                    // Get the resul and store 
+                    program_instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
 
-                    error_man.report_custom("Codegen", "Developer: POW not completed"); break;
+                    if(assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE)
+                    {
+                        program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_POW_D_FUNCTION_NAME + " ; Call to perfom power\n\n");
+                    }
+                    else
+                    {
+                        program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_POW_FUNCTION_NAME + " ; Call to perfom power\n\n");
+                    }
+
+                    program_instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
                 case Intermediate::InstructionSet::MOD:
@@ -543,10 +540,17 @@ namespace DEL
                     if(!has_included_math_functions){ add_build_in_math_functions(); }
 
                     program_instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
-                    program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_MOD_FUNCTION_NAME + " ; Call to perfom modulus\n\n");
-                    program_instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
 
-                    error_man.report_custom("Codegen", "Developer: MOD not completed"); break;
+                    if(assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE)
+                    {
+                        program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_MOD_D_FUNCTION_NAME + " ; Call to perfom modulus\n\n");
+                    }
+                    else
+                    {
+                        program_instructions.push_back("\n\tcall " + BUILT_IN::ASM_MOD_FUNCTION_NAME + " ; Call to perfom modulus\n\n");
+                    }
+
+                    program_instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
 

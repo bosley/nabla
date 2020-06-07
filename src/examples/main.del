@@ -2,6 +2,9 @@
 
 def main() -> int {
 
+
+  int a = 2 ^ 4;
+
    // int A = 7;
    // int my_int = 3 + 2 * (4 + A) ; // 25
 
@@ -12,9 +15,9 @@ def main() -> int {
    
   //  real my_real = 3.0 + 2.0 * (4.0 + A) ;
 
-    char my_char = "3";
+    //char my_char = "3";
 
-    char my_other_char = my_char;
+   // char my_other_char = my_char;
 
 /*
     char my_char = "3";

@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <string>
+#include <libnabla/assembler.hpp>
 #include "del_driver.hpp"
 
 namespace DEL
@@ -119,12 +120,54 @@ namespace DEL
       std::vector<std::string> ASM = code_gen.indicate_complete();
 
       /*
-         TODO : Need params to see if the user wants us to keep the dumped asm
+         TODO : 
+
+         Eventually I would like to move the followign code to a class that handles all the FILE IO and cleanup,
+         but for the moment this will do just fine. 
+      
       */
+      bool assemble_verbose = true;
+      std::string asm_output_file = DEFAULT_ASM_OUT;
+      std::string bin_output_file = DEFAULT_BIN_OUT;
 
+      // output ASM
+      {
+         std::ofstream asm_out;
+         asm_out.open(asm_output_file);
+         if(!asm_out.is_open())
+         {
+            error_man.report_unable_to_open_result_out(asm_output_file);
+         }
+         for(auto & l : ASM)
+         {
+            asm_out << l;
+         }
+         asm_out.close();
+         ASM.clear();
+      }
 
+      std::vector<uint8_t> binary_data;
 
-      std::cout << "Complete!" << std::endl;
+      if(!ASSEMBLER::ParseAsm(asm_output_file, binary_data, assemble_verbose))
+      {
+         error_man.report_custom("DEL::Driver", "Developer Error : Generated ASM code would not assemble", true);
+      }
+
+      // output BYTE CODE
+      {
+         std::ofstream bin_out;
+         bin_out.open(bin_output_file);
+         if(!bin_out.is_open())
+         {
+            error_man.report_unable_to_open_result_out(bin_output_file);
+         }
+         for(auto & l : ASM)
+         {
+            bin_out << l;
+         }
+         bin_out.close();
+         binary_data.clear();
+      }
    }
 
    // ----------------------------------------------------------

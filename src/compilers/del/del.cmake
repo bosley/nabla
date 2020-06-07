@@ -23,6 +23,7 @@ set(DEL_COMPILER_HEADERS
     ${DEL_COMPILER_DIR}/delutil/SymbolTable.hpp
     ${DEL_COMPILER_DIR}/delutil/Memory.hpp
     ${DEL_COMPILER_DIR}/delutil/Tracker.hpp
+    ${DEL_COMPILER_DIR}/codegen/AsmBuiltIn.hpp
     ${DEL_COMPILER_DIR}/codegen/Codegen.hpp
     ${DEL_COMPILER_DIR}/codegen/Analyzer.hpp
     ${DEL_COMPILER_DIR}/codegen/Intermediate.hpp

@@ -21,6 +21,8 @@ namespace DEL
 
         void report_out_of_memory(std::string symbol, uint64_t size, int max_memory);
 
+        void report_unable_to_open_result_out(std::string name_used, bool is_fatal=true);
+
         void report_custom(std::string from, std::string error, bool is_fatal=true);
 
     private:

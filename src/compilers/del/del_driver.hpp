@@ -23,6 +23,9 @@ namespace DEL
    {
    public:
 
+      const std::string DEFAULT_ASM_OUT = "del.asm";
+      const std::string DEFAULT_BIN_OUT = "del.out";
+
       DEL_Driver();
 
       //! \brief Deconstruct

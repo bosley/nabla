@@ -62,8 +62,17 @@ namespace DEL
             exit(EXIT_FAILURE);
         }        
     }
-    
 
+    
+    void Errors::report_unable_to_open_result_out(std::string name_used, bool is_fatal)
+    {
+        std::cerr << get_error_start(is_fatal) << "Unable to open \"" << name_used << "\" for resulting output!" << std::endl;
+        if(is_fatal)
+        {
+            exit(EXIT_FAILURE);
+        } 
+    }
+    
     std::string Errors::get_error_start(bool is_fatal)
     {
         std::string level = (is_fatal) ? "<FATAL>" : "<WARNING>";
