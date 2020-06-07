@@ -123,6 +123,9 @@ namespace DEL
         // So elements can access function information as we visit them
         current_function = function;
 
+        // Keep an eye out for pieces that we enforce in a function
+        function_watcher.has_return = false;
+
         // Iterate over function elements and visit them with *this
         for(auto & el : function->elements)
         {
@@ -141,6 +144,11 @@ namespace DEL
         // Clear the symbol table for the given function so elements cant be accessed externally
         // We dont delete the context though, that way can confirm existence later
         symbol_table.clear_existing_context(function->name);
+
+        if(!function_watcher.has_return)
+        {
+            error_man.report_no_return(function->name);
+        }
 
         current_function = nullptr;
 
@@ -239,6 +247,8 @@ namespace DEL
         this->accept(*return_assignment);
 
         delete return_assignment;
+
+        function_watcher.has_return = true;
     }
 
     // -----------------------------------------------------------------------------------------

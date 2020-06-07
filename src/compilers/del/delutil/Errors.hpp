@@ -25,6 +25,8 @@ namespace DEL
 
         void report_custom(std::string from, std::string error, bool is_fatal=true);
 
+        void report_no_return(std::string function);
+
     private:
         Tracker &tracker;
 

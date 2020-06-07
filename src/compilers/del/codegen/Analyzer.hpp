@@ -53,11 +53,13 @@ namespace DEL
 
         Function * current_function;
 
-        struct FunctionInformation
+        struct FunctionWatch
         {
             bool has_return;
-
         };
+
+        FunctionWatch function_watcher;
+
     };
 }
 

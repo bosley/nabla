@@ -85,4 +85,10 @@ namespace DEL
     {
         return std::to_string(tracker.get_lines_tracked());
     }
+
+    void Errors::report_no_return(std::string f )
+    {
+        std::cerr << get_error_start(true) << "Expected 'return <type>' for function :  " << f << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }

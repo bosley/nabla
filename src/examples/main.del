@@ -1,10 +1,18 @@
 
+def do_math() -> int {
+
+  int b = 3;
+
+  b = 4;
+
+  return b;
+}
+
 
 def main() -> int {
 
 
   int a = 2 ^ 4;
-
 
   return 0;
 }
