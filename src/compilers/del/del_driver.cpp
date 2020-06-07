@@ -147,13 +147,13 @@ namespace DEL
          ASM.clear();
       }
 
-      /*
       std::vector<uint8_t> binary_data;
 
       if(!ASSEMBLER::ParseAsm(asm_output_file, binary_data, assemble_verbose))
       {
          error_man.report_custom("DEL::Driver", "Developer Error : Generated ASM code would not assemble", true);
       }
+      std::cout << " complete" << std::endl;
 
       // output BYTE CODE
       {
@@ -163,14 +163,13 @@ namespace DEL
          {
             error_man.report_unable_to_open_result_out(bin_output_file);
          }
-         for(auto & l : ASM)
+         for(auto & l : binary_data)
          {
             bin_out << l;
          }
          bin_out.close();
          binary_data.clear();
       }
-      */
    }
 
    // ----------------------------------------------------------

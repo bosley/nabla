@@ -14,6 +14,7 @@ set(DEL_INCLUDE_DIRS
     ${DEL_COMPILER_DIR}/delutil
     ${DEL_COMPILER_DIR}/codegen
     ${DEL_COMPILER_DIR}/codegen/asm
+    ${DEL_COMPILER_DIR}/codegen/parts
     ${FLEX_INCLUDE_DIRS}
 )
 
@@ -29,6 +30,8 @@ set(DEL_COMPILER_HEADERS
     ${DEL_COMPILER_DIR}/codegen/Intermediate.hpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmMath.hpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmSupport.hpp
+    ${DEL_COMPILER_DIR}/codegen/parts/FunctionRepresentation.hpp
+    ${DEL_COMPILER_DIR}/codegen/parts/Generators.hpp
     ${DEL_COMPILER_DIR}/del_driver.hpp
     ${DEL_COMPILER_DIR}/del_scanner.hpp
 )
@@ -43,6 +46,7 @@ set(DEL_COMPILER_SOURCES
     ${DEL_COMPILER_DIR}/codegen/Analyzer.cpp
     ${DEL_COMPILER_DIR}/codegen/Intermediate.cpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmSupport.cpp
+    ${DEL_COMPILER_DIR}/codegen/parts/FunctionRepresentation.cpp
     ${DEL_COMPILER_DIR}/del_driver.cpp
     ${FLEX_del_lexer_OUTPUTS}
     ${BISON_del_parser_OUTPUTS}

@@ -8,7 +8,7 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Memory::Memory() : currently_allocated_bytes(START_ADDRESS_SPACE)
+    Memory::Memory() : currently_allocated_bytes(0)
     {
 
     }
@@ -48,7 +48,7 @@ namespace DEL
 
         //std::cout << "MEM : " << id << " not found " << std::endl;
 
-        return MemAlloc{ 0, 0, START_ADDRESS_SPACE};
+        return MemAlloc{ 0, 0, 0};
     }
 
     // ----------------------------------------------------------
@@ -58,6 +58,16 @@ namespace DEL
     uint64_t Memory::get_currently_allocated_bytes_amnt() const
     {
         return currently_allocated_bytes;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Memory::reset()
+    {
+        memory_map.clear();
+        currently_allocated_bytes = 0;
     }
 
     // ----------------------------------------------------------

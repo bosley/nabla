@@ -25,16 +25,6 @@ static const std::string ASM_INIT_FUNCTION = R"init(
 
 <__del__program__init:
 
-    ; Allocate the space required for the GS
-    ; Codegen put the number in GS 0 for us. 
-    mov r0 $0
-    ldw r1 $0(gs) 
-    mov r2 $0
-top:
-    add r0 r0 $1    ; Add to the counter
-    pushw gs r2     ; Expand GS by a byte
-    blt r0 r1 top   ; Loop until complete
-
     call main       ; Entry to the user's application
 
     exit

@@ -152,6 +152,9 @@ namespace DEL
 
         current_function = nullptr;
 
+        // Reset the memory manager for alloc variables in new space
+        memory_man.reset();
+
         // Function is constructed - and elements have been freed
         delete function;
     }

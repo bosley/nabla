@@ -8,6 +8,8 @@
 #include "Intermediate.hpp"
 #include "AsmSupport.hpp"
 
+#include "FunctionRepresentation.hpp"
+
 namespace DEL
 {
     //! \brief Code generator
@@ -43,6 +45,8 @@ namespace DEL
 
         std::vector<std::string> program_init;
         std::vector<std::string> program_instructions;
+
+        PARTS::FunctionRepresentation * current_function;
 
         void setup_integer(std::string id, std::string value);
         void setup_double(std::string id, std::string value);
