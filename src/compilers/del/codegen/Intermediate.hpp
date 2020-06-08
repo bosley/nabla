@@ -8,18 +8,25 @@
 
 namespace DEL
 {
+    //! \class Intermediate
+    //! \brief The intermediate step generator that builds instructions for code generator to
+    //!        ... generate code...
     class Intermediate
     {
     public:
+        //! \brief Create the Intermediate 
         Intermediate();
+
+        //! \brief Destruct the Intermediate
         ~Intermediate();
 
-
+        //! \brief Classification of an assignment (what it should result in)
         enum class AssignmentClassifier
         {
             INTEGER, DOUBLE, CHAR //, STRUCT, STRING
         };
 
+        //! \brief A set of instructions for the code generator to use in the processing of tokens
         enum class InstructionSet
         {
             // Arithmatic
@@ -50,13 +57,14 @@ namespace DEL
 
         };
 
-
+        //! \brief An instruction / value pair
         struct AssignemntInstruction
         {
             Intermediate::InstructionSet instruction;
             std::string value;
         };
         
+        //! \brief An assignment representation for the codegen to create an assignment
         struct Assignment
         {
             std::string id;
@@ -65,8 +73,11 @@ namespace DEL
             std::vector<AssignemntInstruction> instructions;
         };
 
+        //! \brief Take a postfix (RPN) instruction and create an Intermediate::Assignment 
+        //! \param memory_info The memory information for the resulting assignment
+        //! \param classification The classification of the assignment
+        //! \param expression The expression to be generated into an assignment
         Assignment encode_postfix_assignment_expression(Memory::MemAlloc memory_info, AssignmentClassifier classification, std::string expression);
-    
     
     private:
 

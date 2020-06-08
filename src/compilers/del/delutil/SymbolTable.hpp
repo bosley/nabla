@@ -82,6 +82,8 @@ namespace DEL
         bool is_locked;
         uint64_t unique_counter;
 
+        // This is a silly thing I added while we develop so when the codegen is told we're done it uses this to 
+        // lock functionality. Once we get things done this should be removed.
         void lock();
 
         class Context
