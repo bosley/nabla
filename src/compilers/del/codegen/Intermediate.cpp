@@ -212,6 +212,26 @@ namespace DEL
     }
 
     // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    std::vector<Intermediate::AddressedFunctionParam> Intermediate::convert_call_params(std::vector<FunctionParam> params)
+    {
+        /*
+        
+            We need to convert to addressed info so when we build a call we can get thea addresses of things over
+        
+        */
+        std::vector<AddressedFunctionParam> addressed;
+
+        std::cout << "Intermediate::convert_call_params() not yet complete" << std::endl;
+
+        exit(EXIT_FAILURE);
+
+        return addressed;
+    }
+
+    // ----------------------------------------------------------
     // There HAS TO BE A BETTER WAY TO DO THIS
     // ----------------------------------------------------------
 

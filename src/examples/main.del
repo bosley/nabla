@@ -1,11 +1,11 @@
 
-def do_math() -> int {
+// Parameters are passed given an address and loaded when needed.
+// This also means that an operation done on a parameter will be reflected elsewhere
+def do_math(int some_int) -> int {
 
   int b = 3;
 
-  b = 4;
-
-  return b;
+  return b + some_int;
 }
 
 

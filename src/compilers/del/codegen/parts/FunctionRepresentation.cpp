@@ -4,15 +4,35 @@
 
 #  define N_UNUSED(x) (void)x;
 
+/*
+
+    Parameters are passed by address. 
+
+    Local stack setup
+                                   Addresses of 
+        Word 0          Word 1     Parameters 
+     ________________________________________________
+    |             |              |   |   |   |   |
+    |  GS Offset  |  GS Fn Size  | 0 | . | . | N |
+    |_____________|______________|___|___|___|___|___
+
+    GS Offset   - Offset for GS at the time of function loading
+    GS Fn Size  - The size that the function will take up for variable storage in memory , used to free the global stack on return
+
+    When a function is called, the call will access the caller's stack 
+
+*/
+
 namespace DEL
 {
 namespace PARTS
 {
-    FunctionRepresentation::FunctionRepresentation(std::string name, std::vector<FunctionParam> params) : name(name), params(params), bytes_required(0)
+    FunctionRepresentation::FunctionRepresentation(std::string name, std::vector<FunctionParam> params) : name(name), 
+                                                                                                          params(params), 
+                                                                                                          bytes_required(0)
     {
         // Allocate a WORD for each parameter
         //
-        // Once we get more complicated data types like 'struct' we'll need to ask someone how many bytes each thing will be, but for now this is fine
         for(auto & p : params)
         {
             N_UNUSED(p)

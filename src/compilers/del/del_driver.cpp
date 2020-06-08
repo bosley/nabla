@@ -146,7 +146,7 @@ namespace DEL
          asm_out.close();
          ASM.clear();
       }
-
+/*
       std::vector<uint8_t> binary_data;
 
       if(!ASSEMBLER::ParseAsm(asm_output_file, binary_data, assemble_verbose))
@@ -170,6 +170,7 @@ namespace DEL
          bin_out.close();
          binary_data.clear();
       }
+*/
    }
 
    // ----------------------------------------------------------
