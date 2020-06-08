@@ -97,8 +97,15 @@ namespace DEL
 
         // 8 bytes
         result.push_back(".int64 __STACK_FRAME_OFFSET__ " + std::to_string(Memory::START_ADDRESS_SPACE) + "\n");
-
         result.push_back(".int64 __MEM_ALLOC_COUNTER__ " + std::to_string(memory_alloc) + "\n");
+
+        // These are reserved by the memory manager and need to be populated for correctness, used or not
+        result.push_back(".int64 __PLACE_HOLDER__0__ 0\n");
+        result.push_back(".int64 __PLACE_HOLDER__1__ 0\n");
+        result.push_back(".int64 __PLACE_HOLDER__2__ 0\n");
+        result.push_back(".int64 __PLACE_HOLDER__3__ 0\n");
+        result.push_back(".int64 __PLACE_HOLDER__4__ 0\n");
+        result.push_back(".int64 __PLACE_HOLDER__5__ 0\n");
 
         // Add the init function - All globals in reserved space must be pushed before this
         asm_support.import_init_func(result);

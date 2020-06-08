@@ -32,8 +32,12 @@ namespace DEL
     {
         if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
 
+        std::cout << "Creating : " << name << " remove prev? : " << remove_previous << std::endl;
+
         if(remove_previous)
         {
+            std::cout << "Contexts size : " << contexts.size() << std::endl;
+            
             // Don't allow the removal of the global context
             if(contexts.size() > 1)
             {

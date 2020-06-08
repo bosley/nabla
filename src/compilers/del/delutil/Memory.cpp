@@ -89,16 +89,18 @@ namespace DEL
 
         if( additional > 0)
         {
-            minimum_size = (8 - additional);
+            minimum_size += (8 - additional);
         }
 
         //std::cout << "Bytes alloced for " << id << " " << minimum_size << std::endl;
 
         allocated.bytes_alloced = minimum_size;
 
-        allocated.start_pos = currently_allocated_bytes;;
+        allocated.start_pos = currently_allocated_bytes;
 
-        currently_allocated_bytes += (allocated.bytes_alloced + 1);
+        std::cout << "Start pos for : " << id << " is " << allocated.start_pos << std::endl;
+
+        currently_allocated_bytes += (allocated.bytes_alloced);
 
         memory_map[id] = allocated;
 

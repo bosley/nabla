@@ -259,22 +259,22 @@ int  handle_bin_exec(std::string file)
             case NABLA::VSYS::ExecutionReturns::INSTRUCTION_NOT_FOUND :
             {
                 std::cerr << "Instruction not found" << std::endl;
-                break;
+                return 1;
             }
             case NABLA::VSYS::ExecutionReturns::UNKNOWN_INSTRUCTION :
             {
                 std::cerr << "Unknown instruction" << std::endl;
-                break;
+                return 1;
             }
             case NABLA::VSYS::ExecutionReturns::FAILED_TO_SPAWN_EXECUTION_CONTEXT :
             {
                 std::cerr << "Failed to spawn new execution context" << std::endl;
-                break;
+                return 1;
             }
             case NABLA::VSYS::ExecutionReturns::EXECUTION_ERROR :
             {
                 std::cerr << "Exectuion error" << std::endl;
-                break;
+                return 1;
             }
         }
 
