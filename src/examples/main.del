@@ -1,4 +1,10 @@
 
+
+def some_routine() -> nil {
+
+  return;
+}
+
 // Parameters are passed given an address and loaded when needed.
 // This also means that an operation done on a parameter will be reflected elsewhere
 def do_math(int some_int) -> int {
@@ -13,6 +19,11 @@ def main() -> int {
 
 
   int a = 2 ^ 4;
+  int b = a + 10;
+
+  do_math(a);
+
+  //int b = do_math(a);
 
   return 0;
 }

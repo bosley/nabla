@@ -55,6 +55,20 @@ namespace DEL
         //!        of memory for the type will be asked for, if there is a default
         void add_symbol(std::string symbol, DEL::ValType type, uint64_t memory=0);
 
+        //! \brief Add parameters to the current context
+        //! \param params The parameters to add to the context
+        //! \note  This assumes that parameters don't yet exist. If they do, they'll be overwritten
+        void add_parameters_to_current_context(std::vector<FunctionParam> params);
+
+        //! \brief Get the parameters for a given context
+        //! \param context The name of the context to get the parameters of
+        std::vector<FunctionParam> get_context_parameters(std::string context);
+
+
+        void add_return_type_to_current_context(ValType type);
+
+        ValType get_return_type_of_context(std::string context);
+
         //! \brief Clear the existing context of all symbols
         //! \param context The context to clear
         void clear_existing_context(std::string context);
@@ -89,9 +103,11 @@ namespace DEL
         class Context
         {
         public:
-            Context(std::string name) : context_name(name){}
+            Context(std::string name) : context_name(name), return_type(ValType::NONE) {}
             std::string context_name;
             std::map< std::string, DEL::ValType > symbol_map; 
+            std::vector<FunctionParam> context_parameters;
+            ValType return_type;
         };
 
         std::vector<Context * > contexts; 

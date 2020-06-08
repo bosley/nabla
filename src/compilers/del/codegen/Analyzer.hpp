@@ -29,6 +29,7 @@ namespace DEL
         // From visitor
         void accept(Assignment &stmt) override;
         void accept(ReturnStmt &stmt) override;
+        void accept(Call       &stmt) override;
 
     private:
 
@@ -37,6 +38,8 @@ namespace DEL
         void ensure_id_in_current_context(std::string id, std::vector<ValType> allowed);
 
         ValType get_id_type(std::string id);
+
+        void validate_call(Call & stmt);
 
         // Check that a given value is valid within the scope of an assignment 
         void check_value_is_valid_for_assignment(ValType type_to_check, Intermediate::AssignmentClassifier & classifier, ValType & assignee_type, std::string & id);

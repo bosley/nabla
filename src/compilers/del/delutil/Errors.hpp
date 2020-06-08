@@ -47,6 +47,17 @@ namespace DEL
         //! \param is_fatal Triggers exit if true
         void report_unable_to_open_result_out(std::string name_used, bool is_fatal=true);
 
+        //! \brief Report that something called doesn't exist
+        //! \param name_called The name of the calld method
+        void report_callee_doesnt_exist(std::string name_called);
+
+        //! \brief Report parameter length mismatch
+        //! \param caller The name of the caller
+        //! \param callee The name of the callee
+        //! \param caller_params The number of parameters the caller is attempting to send
+        //! \param callee_params The number of parameters the callee is expecting
+        void report_mismatched_param_length(std::string caller, std::string callee, uint64_t caller_params, uint64_t callee_params);
+
         //! \brief Report a custom error
         //! \param from Where the error originates
         //! \param error The error to output
@@ -59,6 +70,12 @@ namespace DEL
         //! \param function The function name / details to output
         //! \post This method is a default fatal that will trigger exit
         void report_no_return(std::string function);
+
+        //! \brief Report that a call's return type isn't handled
+        //! \param caller_function The function where the call originated
+        //! \param callee The function being called
+        //! \param is_fatal Triggers exist if true
+        void report_calls_return_value_unhandled(std::string caller_function, std::string callee, bool is_fatal=false);
 
     private:
         Tracker &tracker;

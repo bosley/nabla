@@ -4,6 +4,8 @@
 #include <iterator>
 #include <vector>
 #include <iostream>
+#include <libnabla/endian.hpp>
+#include <libnabla/util.hpp>
 
 #define N_UNUSED(x) (void)x;
 
@@ -38,7 +40,7 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Intermediate::Intermediate()
+    Intermediate::Intermediate(SymbolTable & symbol_table, Memory & memory_man) : symbol_table(symbol_table), memory_man(memory_man)
     {
 
     }
@@ -215,18 +217,53 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
+    Intermediate::Call Intermediate::create_call(std::string callee, std::vector<FunctionParam> params)
+    {
+        Intermediate::Call call;
+        call.params = convert_call_params(params);
+        call.destination = callee;
+        return call;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
     std::vector<Intermediate::AddressedFunctionParam> Intermediate::convert_call_params(std::vector<FunctionParam> params)
     {
-        /*
-        
-            We need to convert to addressed info so when we build a call we can get thea addresses of things over
-        
-        */
         std::vector<AddressedFunctionParam> addressed;
 
-        std::cout << "Intermediate::convert_call_params() not yet complete" << std::endl;
-
-        exit(EXIT_FAILURE);
+        for(auto & p : params)
+        {
+            // If the item isn't a symbol, use the direct item
+            if(!symbol_table.does_symbol_exist(p.id))
+            {
+                if(p.type == ValType::INTEGER)
+                {
+                    addressed.push_back({p.id, static_cast<uint64_t>(std::stoll(p.id)), false});
+                }
+                else if (p.type == ValType::REAL)
+                {
+                    addressed.push_back({p.id, ENDIAN::conditional_to_le_64(UTIL::convert_double_to_uint64(std::stod(p.id))), false});
+                }
+                else if (p.type == ValType::CHAR)
+                {
+                    char c_val = p.id[1];
+                    uint32_t u_val = static_cast<uint32_t>(c_val);
+                    addressed.push_back({p.id, u_val, false});
+                }
+                else
+                {
+                    std::cerr << "Developer Error in Intermediate::convert_call_params - Unknown value " << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                Memory::MemAlloc mem_info = memory_man.get_mem_info(p.id);
+                addressed.push_back({p.id, mem_info.start_pos, true});
+            }
+        }
 
         return addressed;
     }
@@ -262,5 +299,8 @@ namespace DEL
         std::cerr << "Developer error : Intermediate::InstructionSet Intermediate::get_integer_operation(std::string token)" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+
+
 
 }

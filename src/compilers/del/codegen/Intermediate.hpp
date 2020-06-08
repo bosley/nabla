@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "Memory.hpp"
+#include "SymbolTable.hpp"
 #include "types.hpp"
 
 namespace DEL
@@ -16,7 +17,7 @@ namespace DEL
     {
     public:
         //! \brief Create the Intermediate 
-        Intermediate();
+        Intermediate(SymbolTable & symbol_table, Memory & memory_man);
 
         //! \brief Destruct the Intermediate
         ~Intermediate();
@@ -78,22 +79,32 @@ namespace DEL
         struct AddressedFunctionParam
         {
             std::string id;
-            uint64_t size;
-            uint64_t address;
+            uint64_t value;
+            bool is_address;
+        };
+
+        struct Call
+        {
+            std::string destination;
+            std::vector<AddressedFunctionParam> params;
         };
 
         //! \brief Take a postfix (RPN) instruction and create an Intermediate::Assignment 
         //! \param memory_info The memory information for the resulting assignment
         //! \param classification The classification of the assignment
         //! \param expression The expression to be generated into an assignment
-        Assignment encode_postfix_assignment_expression(Memory::MemAlloc memory_info, AssignmentClassifier classification, std::string expression);
+        Intermediate::Assignment encode_postfix_assignment_expression(Memory::MemAlloc memory_info, AssignmentClassifier classification, std::string expression);
     
-        //! \brief Convert a list of function call parameters to an addressed parameter
+        //! \brief Create a function call instruction for code gen
         //! \param params The parameters to convert
-        //! \returns Returns a list of addressed parameters
-        std::vector<AddressedFunctionParam> convert_call_params(std::vector<FunctionParam> params);
+        Intermediate::Call  create_call(std::string callee, std::vector<FunctionParam> params);
 
     private:
+
+        SymbolTable & symbol_table;
+        Memory & memory_man;
+
+        std::vector<AddressedFunctionParam> convert_call_params(std::vector<FunctionParam> params);
 
         void build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token, uint64_t byte_len);
 

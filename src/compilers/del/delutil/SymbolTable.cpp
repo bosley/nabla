@@ -32,8 +32,6 @@ namespace DEL
     {
         if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
 
-        std::cout << "Creating : " << name << " remove prev? : " << remove_previous << std::endl;
-
         if(remove_previous)
         {
             std::cout << "Contexts size : " << contexts.size() << std::endl;
@@ -101,6 +99,29 @@ namespace DEL
             }
         }
         return false;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    std::vector<FunctionParam> SymbolTable::get_context_parameters(std::string context)
+    {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+
+        for(auto & c : contexts)
+        {
+            if(c != nullptr)
+            {
+                if(c->context_name == context)
+                {
+                    return c->context_parameters;
+                }
+            }
+        }
+        error_man.report_custom("SymbolTable", "Developer error: Asked to get parameters from a context that did not exist", true);
+
+        return std::vector<FunctionParam>(); // For the compiler
     }
 
     // ----------------------------------------------------------
@@ -182,7 +203,7 @@ namespace DEL
         case ValType::CHAR:          mem_request = (memory == 0) ? 1 : memory; break;   // We only request one, but memory guy will probrably round up to 8
         case ValType::FUNCTION:      error_man.report_custom("SymbolTable", " FUNCTION given to symbol table", true);
         case ValType::REQ_CHECK:     error_man.report_custom("SymbolTable", " REQ CHECK given to symbol table", true);
-        case ValType::NONE:          error_man.report_custom("SymbolTable", " NONE given to symbol table", true);
+        case ValType::NONE:          mem_request = 0; break;
         case ValType::STRING:
         {
             // Strings and structs need to have a size given to us
@@ -222,6 +243,16 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
+    void SymbolTable::add_parameters_to_current_context(std::vector<FunctionParam> params)
+    {
+        contexts.back()->context_parameters.clear();
+        contexts.back()->context_parameters = params;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
     DEL::ValType SymbolTable::get_value_type(std::string symbol)
     {
         if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
@@ -237,6 +268,39 @@ namespace DEL
             }
         }
         return ValType::NONE;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void SymbolTable::add_return_type_to_current_context(DEL::ValType type)
+    {
+        contexts.back()->return_type = type;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    DEL::ValType SymbolTable::get_return_type_of_context(std::string context)
+    {
+        if(is_locked) { error_man.report_custom("SymbolTable", "Symbol table has been locked by the code generator", true); }
+
+        for(auto & c : contexts)
+        {
+            if(c != nullptr)
+            {
+                if(c->context_name == context)
+                {
+                    return c->return_type;
+                }
+            }
+        }
+
+        error_man.report_custom("SymbolTable", "Developer error: Asked to get parameters from a context that did not exist", true);
+
+        return ValType::NONE; // For the compiler
     }
 
     // ----------------------------------------------------------

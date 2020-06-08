@@ -103,7 +103,28 @@ namespace DEL
             exit(EXIT_FAILURE);
         } 
     }
-    
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Errors::report_callee_doesnt_exist(std::string name_called)
+    {
+        std::cerr << get_error_start(true) << "Unknown function call to \"" << name_called << "\"" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Errors::report_mismatched_param_length(std::string caller, std::string callee, uint64_t caller_params, uint64_t callee_params)
+    {
+        std::cerr << get_error_start(true) << "Function \"" << callee << "\" expects (" << callee_params 
+                  << ") parameters, but call from function \"" << caller << "\" gave (" << caller_params << ")" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     // ----------------------------------------------------------
     //
     // ----------------------------------------------------------
@@ -114,6 +135,20 @@ namespace DEL
 
         std::string es = "[Error] " + level + " : ";
         return es;
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Errors::report_calls_return_value_unhandled(std::string caller_function, std::string callee, bool is_fatal)
+    {
+        std::cerr << get_error_start(is_fatal) << "Function call to \"" << callee << "\" in function \"" << caller_function << "\" has a return value that is not handled" << std::endl;
+
+        if(is_fatal)
+        {
+            exit(EXIT_FAILURE);
+        }  
     }
 
     // ----------------------------------------------------------

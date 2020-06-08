@@ -11,4 +11,9 @@ namespace DEL
     {
         visitor.accept(*this);
     }
+
+    void Call::visit(Visitor &visitor)
+    {
+        visitor.accept(*this);
+    }
 }

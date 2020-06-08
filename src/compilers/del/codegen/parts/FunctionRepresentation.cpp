@@ -78,7 +78,7 @@ namespace PARTS
         return lines;
     }
 
-    void FunctionRepresentation::build_return()
+    void FunctionRepresentation::build_return(bool return_item)
     {
         // The expression of the return should be on the local stack now, so all we have to do is pop it off into r0
         instructions.push_back("\n\t; <<< RETURN >>> \n");
@@ -93,11 +93,14 @@ namespace PARTS
         instructions.push_back("\n\tadd r1 r1 $1\n");
         instructions.push_back("\tpopw r7 gs\n");
         instructions.push_back("\n\tblt r1 r9 function_dealloc_gs\n");
-        instructions.push_back("\n\t; Get result for return \n");
 
-        instructions.push_back("\tpopw r0 ls \t; Return result\n");
+        if(return_item)
+        {
+            instructions.push_back("\n\t; Get result for return \n");
+            instructions.push_back("\tpopw r0 ls \t; Return result\n");
+        }
+        
         instructions.push_back("\tret\n");
-
     }
 }
 }

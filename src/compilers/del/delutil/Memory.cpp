@@ -98,7 +98,7 @@ namespace DEL
 
         allocated.start_pos = currently_allocated_bytes;
 
-        std::cout << "Start pos for : " << id << " is " << allocated.start_pos << std::endl;
+       // std::cout << "Start pos for : " << id << " is " << allocated.start_pos << std::endl;
 
         currently_allocated_bytes += (allocated.bytes_alloced);
 

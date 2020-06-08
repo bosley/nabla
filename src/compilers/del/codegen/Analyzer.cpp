@@ -14,7 +14,8 @@ namespace DEL
                                                                         error_man(err), 
                                                                         symbol_table(symbolTable),
                                                                         code_gen(code_gen),
-                                                                        memory_man(memory)
+                                                                        memory_man(memory),
+                                                                        intermediate_rep(symbolTable, memory)
     {
 
     }
@@ -107,15 +108,26 @@ namespace DEL
             error_man.report_previously_declared(function->name);
         }
 
+        if(function->params.size() > 7)
+        {
+            error_man.report_custom("Analyzer::build_function", " Given function exceeds current limit of '7' parameters", true);
+        }
+
         // Create function context
-        // Remove the last function's context
-        symbol_table.new_context(function->name, true);
+        // Don't remove previous context.. we clear the variables out later
+        symbol_table.new_context(function->name, false );
 
         // Place function parameters into context
         for(auto & p : function->params)
         {
             symbol_table.add_symbol(p.id, p.type);
         }
+
+        // Add parameters to the context
+        symbol_table.add_parameters_to_current_context(function->params);
+
+        // Add return type to the context
+        symbol_table.add_return_type_to_current_context(function->return_type);
 
         // Tell code generator to start function with given parametrs
         code_gen.begin_function(function->name, function->params);
@@ -244,21 +256,106 @@ namespace DEL
         // Create a 'variable assignment' for the return so we can copy the value or whatever
         std::string variable_for_return = symbol_table.generate_unique_return_symbol();
 
+        function_watcher.has_return = true;
+
+        // Handle NIL / NONE Return
+        if(stmt.data_type == ValType::NONE)
+        {
+            code_gen.null_return();
+            return;
+        }
+
         // Create an assignment for the return, this will execute the return withing code gen as we set a RETURN node type that is processed by the assignment
         Assignment * return_assignment = new Assignment(current_function->return_type, variable_for_return, new DEL::AST(DEL::NodeType::RETURN, stmt.rhs, nullptr));
 
         this->accept(*return_assignment);
 
         delete return_assignment;
+    }
 
-        function_watcher.has_return = true;
+    // ----------------------------------------------------------
+    // This is a call statment on its own, not in an expression
+    // ----------------------------------------------------------
+
+    void Analyzer::accept(Call & stmt)
+    {
+        validate_call(stmt);
+
+        ValType callee_type = symbol_table.get_return_type_of_context(stmt.name);
+
+        if(callee_type != ValType::NONE)
+        {
+            error_man.report_calls_return_value_unhandled(current_function->name, stmt.name);
+        }
+
+        code_gen.create_call(intermediate_rep.create_call(stmt.name, stmt.params));
     }
 
     // -----------------------------------------------------------------------------------------
     // 
-    //                              Assignment Validation Methods
+    //                              Validation Methods
     //
     // -----------------------------------------------------------------------------------------
+
+    void Analyzer::validate_call(Call & stmt)
+    {
+        // Disallow recursion until it is handled
+        if(stmt.name == current_function->name)
+        {
+            error_man.report_custom("Analyzer", "Function recursion has not yet been implemented in Del", true);
+        }
+
+        // Ensure that the called method exists
+        if(!symbol_table.does_context_exist(stmt.name))
+        {
+            error_man.report_callee_doesnt_exist(stmt.name);
+        }
+
+        if(stmt.params.size() > 7)
+        {
+            error_man.report_custom("Analyzer::validate_call", " Given call exceeds current limit of '7' parameters", true);
+        }
+
+        // Get the callee params
+        std::vector<FunctionParam> callee_params = symbol_table.get_context_parameters(stmt.name);
+
+        // Ensure number of params match
+        if(stmt.params.size() != callee_params.size())
+        {
+            error_man.report_mismatched_param_length(current_function->name, stmt.name, callee_params.size(), stmt.params.size());
+        }
+
+        // Ensure all paramters exist
+        for(auto & p : stmt.params)
+        {
+            // If we need to get the type, get the type now that we know it exists
+            if(p.type == ValType::REQ_CHECK)
+            {
+                // Ensure the thing exists, because REQ_CHECK dictates that the parameter is a variable, not a raw
+                if(!symbol_table.does_symbol_exist(p.id))
+                {
+                    std::cerr << "Paramter in call to \"" << stmt.name << "\" does not exist in the current context" << std::endl;
+                    error_man.report_unknown_id(p.id, true);
+                }
+
+                p.type = get_id_type(p.id);
+            }
+        }
+
+        // Check that the param types match
+        for(uint16_t i = 0; i < stmt.params.size(); i++ )
+        {
+            if(stmt.params[i].type != callee_params[i].type)
+            {
+                std::cerr << "Parameter \"" << stmt.params[i].id << "\" does not match expected type in paramter list of function \"" << stmt.name << "\"" << std::endl;
+                error_man.report_unallowed_type(stmt.params[i].id, true);
+            }
+        }
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
 
     void Analyzer::check_value_is_valid_for_assignment(ValType type_to_check, Intermediate::AssignmentClassifier & c, ValType & et, std::string & id)
     {

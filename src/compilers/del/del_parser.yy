@@ -17,6 +17,7 @@
       class AST;
       class Element;
       class Function;
+      struct FunctionParam;
    }
 
 # ifndef YY_NULLPTR
@@ -40,10 +41,12 @@
    #include <vector>
 
    #include "Ast.hpp"
+   #include "types.hpp"
    
    #include "del_driver.hpp"
 
    std::vector<DEL::FunctionParam> r_params;
+   std::vector<DEL::FunctionParam> c_params;
 
 #undef yylex
 #define yylex scanner.yylex
@@ -53,14 +56,16 @@
 %define parse.assert
 
 %token INT REAL CHAR DEF ARROW RETURN LTE GTE GT LT EQ NE BW_NOT 
-%token LSH RSH BW_OR BW_AND BW_XOR AND OR NEGATE SEMI
+%token LSH RSH BW_OR BW_AND BW_XOR AND OR NEGATE SEMI NIL
 
 %type<DEL::Element*> stmt;
 %type<DEL::Element*> assignment;
 %type<DEL::Element*> reassignment;
 %type<DEL::Element*> return_stmt;
+%type<DEL::Element*> function_call;
 %type<DEL::Function*> function_stmt;
 %type<std::string> identifiers;
+%type<DEL::FunctionParam*> call_item;
 
 %type<DEL::AST*>  expression;
 %type<DEL::AST*> term;
@@ -159,12 +164,14 @@ reassignment
 
 return_stmt
    : RETURN expression SEMI { $$ = new DEL::ReturnStmt($2); }
+   | RETURN SEMI            { $$ = new DEL::ReturnStmt();   }
    ;
 
 stmt
-   : assignment   { $$ = $1; }
-   | reassignment { $$ = $1; }
-   | return_stmt  { $$ = $1; }
+   : assignment    { $$ = $1; }
+   | reassignment  { $$ = $1; }
+   | return_stmt   { $$ = $1; }
+   | function_call { $$ = $1;}
    ;
 
 multiple_statements
@@ -182,15 +189,33 @@ recv_params
    | recv_params ',' value_types IDENTIFIER {r_params.push_back({static_cast<DEL::ValType>($3), $4});}
    ;
 
+call_item
+   : IDENTIFIER   { $$ = new DEL::FunctionParam(DEL::ValType::REQ_CHECK, $1); }
+   | INT_LITERAL  { $$ = new DEL::FunctionParam(DEL::ValType::INTEGER,   $1); }
+   | REAL_LITERAL { $$ = new DEL::FunctionParam(DEL::ValType::REAL,      $1); }
+   | CHAR_LITERAL { $$ = new DEL::FunctionParam(DEL::ValType::CHAR,      $1); }
+   ;
+
+call_params
+   : call_item { c_params.clear(); c_params.push_back(*($1)); delete $1; }
+   | call_params ',' call_item   { c_params.push_back(*($3)); delete $3; }
+   ;
+
 value_types
    : INT    { $$ = static_cast<int>(DEL::ValType::INTEGER); }
    | REAL   { $$ = static_cast<int>(DEL::ValType::REAL   ); }
    | CHAR   { $$ = static_cast<int>(DEL::ValType::CHAR   ); }
+   | NIL    { $$ = static_cast<int>(DEL::ValType::NONE   ); }
    ;
 
 function_stmt
    : DEF identifiers '(' ')' ARROW value_types block             { $$ = new DEL::Function($2, r_params, static_cast<DEL::ValType>($6), $7); }
    | DEF identifiers '(' recv_params ')' ARROW value_types block { $$ = new DEL::Function($2, r_params, static_cast<DEL::ValType>($7), $8); r_params.clear(); }
+   ;
+
+function_call
+   : identifiers '(' ')' SEMI             { $$ = new DEL::Call($1, c_params); }
+   | identifiers '(' call_params ')' SEMI { $$ = new DEL::Call($1, c_params); c_params.clear(); }
    ;
 
 %%

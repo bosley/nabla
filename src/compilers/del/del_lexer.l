@@ -38,6 +38,7 @@ using token = DEL::DEL_Parser::token;
 "int"       { return token::INT;    }
 "real"      { return token::REAL;   }
 "char"      { return token::CHAR;   }
+"nil"       { return token::NIL;    }
 "def"       { return token::DEF;    }
 "->"        { return token::ARROW;  }
 "return"    { return token::RETURN; }

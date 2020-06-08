@@ -67,6 +67,7 @@ namespace DEL
 
     struct FunctionParam
     {
+        FunctionParam(ValType t, std::string id) : type(t), id(id) {}
         ValType type;
         std::string id;
     };

@@ -83,11 +83,26 @@ namespace DEL
     {
     public:
         ReturnStmt(AST * rhs) : data_type(ValType::REQ_CHECK), rhs(rhs){}
+        ReturnStmt() : data_type(ValType::NONE), rhs(nullptr){}
 
         virtual void visit(Visitor &visit) override;
 
         ValType data_type;
         AST * rhs;
+    };
+
+    //
+    //  A call 
+    //
+    class Call : public Element // , public Node // We need to make this a node for call assignments
+    {
+    public:
+        Call(std::string name, std::vector<FunctionParam> params) : name(name), params(params) {}
+
+        virtual void visit(Visitor &visit) override;
+
+        std::string name;
+        std::vector<FunctionParam> params;
     };
 
     //
@@ -113,6 +128,7 @@ namespace DEL
     public:
         virtual void accept(Assignment &stmt) = 0;
         virtual void accept(ReturnStmt &stmt) = 0;
+        virtual void accept(Call       &stmt) = 0;
     };
 
 

@@ -18,7 +18,7 @@ namespace PARTS
 
         std::vector<std::string>  building_complete();
 
-        void build_return();
+        void build_return(bool return_item=true);
 
         std::string name;
         std::vector<FunctionParam> params;
