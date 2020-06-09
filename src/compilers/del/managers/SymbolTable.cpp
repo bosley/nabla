@@ -320,26 +320,43 @@ namespace DEL
 
     std::string SymbolTable::generate_unique_return_symbol()
     {
-        std::string return_label = "__return__assignment__" + std::to_string(unique_counter);
+        return generate_unique("__return__assignment__");
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    std::string SymbolTable::generate_unique_call_param_symbol()
+    {
+        return generate_unique("__call__param__");
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    std::string SymbolTable::generate_unique(std::string start)
+    {
+        std::string unique_label = start + std::to_string(unique_counter);
 
         // Whis should never happen unless a user decides to use "__return__assignment__" as a variable name, which I guess we COULD deny, but why would we? 
         // its a perfectly good name.
         uint64_t stop_count = 0;
-        while(does_symbol_exist(return_label, false))
+        while(does_symbol_exist(unique_label, false))
         {
             unique_counter++;
-            return_label = "__return__assignment__" + std::to_string(unique_counter);
+            unique_label = start + std::to_string(unique_counter);
 
             stop_count++;
             if(stop_count == 2048)
             {
-                // If a user ever gets this message they are doing something silly and should probrably investigate their live choices
-                error_man.report_custom("SymbolTable", "2048 Attempts were made to generate a unique return symbol. If you're seeing this, you're doing something silly. Stop it.", true);
+                error_man.report_custom("SymbolTable", "2048 Attempts were made to generate a unique symbol. If you're seeing this, you're doing something silly. Stop it.", true);
             }
         }
         unique_counter++;
 
-        return return_label;
+        return unique_label;
     }
 
     // ----------------------------------------------------------

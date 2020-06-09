@@ -334,7 +334,34 @@ namespace DEL
                     error_man.report_unknown_id(p.id, true);
                 }
 
+                // Set the type to the type of the known variable
                 p.type = get_id_type(p.id);
+            }
+
+            // If we didn't need to get the type, then it came in raw and we need to make a variable for it
+            else
+            {
+                // Generate a unique label for the raw parameter
+                std::string param_label = symbol_table.generate_unique_call_param_symbol();
+
+                // Create an assignment for the variable
+                Assignment * raw_parameter_assignment = new Assignment(p.type, param_label, 
+                    new DEL::AST(DEL::NodeType::VAL, nullptr, nullptr, p.type, p.id)
+                );
+
+                this->accept(*raw_parameter_assignment);
+
+                delete raw_parameter_assignment;
+
+                if(!symbol_table.does_symbol_exist(param_label))
+                {
+                    std::cerr << "Auto generated parameter variable in call to \"" << stmt.name << "\" did not exist after assignment" << std::endl;
+                    error_man.report_unknown_id(param_label); 
+                }
+
+                // If the call works, which it should, then we update the id to the name of the varaible
+                // so we can reference it later
+                p.id = param_label;
             }
         }
 
@@ -404,13 +431,6 @@ namespace DEL
 
     std::string Analyzer::validate_assignment_ast(AST * ast, Intermediate::AssignmentClassifier & c, ValType & et, std::string & id)
     {
-        /*
-            Note:
-                I know that using the tree to build a big string expression that is tokenized and parsed again isn't ideal. This is my first 
-                venture into using ASTs and I thought it would make it easier on me to have an RPN expression that I can build instructions for
-                the code generator around. Once the code generator is completed, and optimized as-per the note at the top of the Codegen.cpp
-                file, then I would like to revisit this to see what I can do about making this better
-        */
         switch(ast->node_type)
         {
             case NodeType::ID  : 
@@ -424,11 +444,8 @@ namespace DEL
                 // Make sure that the known value of the identifier is one valid given the current assignemnt
                 check_value_is_valid_for_assignment(id_type, c, et, id);
 
-                // Get the memory address of the ID
-                Memory::MemAlloc mem_info = memory_man.get_mem_info(ast->value);
-
-                // Build a string for the intermediate layer to determine what to load and how much to load
-                return "#ID:" + std::to_string(mem_info.start_pos) + ":" + std::to_string(mem_info.bytes_alloced);
+                // Encode the identifier information so we can handle it in the intermediate layer
+                return endecoder.encode_identifier(ast->value);
             }
             
             case NodeType::CALL :
@@ -436,19 +453,20 @@ namespace DEL
                 // We know its a call, so lets treat it like a call
                 Call * call = static_cast<Call*>(ast);
 
+                // This call to validate_call will ensure that all parameters within the call exist in the system as variables
+                // and it will update the current object to the new information we need to pull addresses
                 validate_call(*call);
 
-                // TOOD: 
-
-                // >>>> Iterate over call params. call 'check_value_is_valid_for_assignment' on the ValType of the parameter
-                //      to ensure we promote the expression if needed, and stop compiling if something is incorrect
-
-                // WRITE THE ENDECODED ENCODE CALL 
-
-                error_man.report_custom("Analyzer", " >>>>> CALL NOT DONE", true);
-
+                // Ensure that the return type of the call is valid for the assignment
+                // Our call to validate_call made sure that call->name exists as a context within symbol table
+                // so we can use that value directly
+                check_value_is_valid_for_assignment(
+                    symbol_table.get_return_type_of_context(call->name)
+                    , c, et, id
+                );
+                
                 // Encode the call to something we can handle in the intermediate layer
-                return endecoder.encode(call);
+                return endecoder.encode_call(call);
             }
 
             case NodeType::VAL : 

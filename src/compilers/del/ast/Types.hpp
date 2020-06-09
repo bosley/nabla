@@ -74,14 +74,6 @@ namespace DEL
         std::string id; // The param name
     };
 
-    struct CallParam
-    {
-        CallParam(ValType t, std::string id, bool is_raw) : type(t), id(id), is_raw(is_raw) {}
-        ValType type;   // Type
-        std::string id; // The value of the param (name, or raw value)
-        bool is_raw;    // We encode raw values here so we can preserve that information after changing ValType to associated variable type info
-    };
-
     static inline std::string ValType_to_string(ValType v)
     {
         switch(v)

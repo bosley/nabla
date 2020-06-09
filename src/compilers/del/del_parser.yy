@@ -18,7 +18,6 @@
       class Element;
       class Function;
       struct FunctionParam;
-      struct CallParam;
    }
 
 # ifndef YY_NULLPTR
@@ -47,7 +46,7 @@
    #include "del_driver.hpp"
 
    std::vector<DEL::FunctionParam> r_params;
-   std::vector<DEL::CallParam> c_params;
+   std::vector<DEL::FunctionParam> c_params;
 
 #undef yylex
 #define yylex scanner.yylex
@@ -66,7 +65,7 @@
 %type<DEL::Element*> direct_function_call;
 %type<DEL::Function*> function_stmt;
 %type<std::string> identifiers;
-%type<DEL::CallParam*> call_item;
+%type<DEL::FunctionParam*> call_item;
 
 %type<DEL::AST*> expr_function_call;
 %type<DEL::AST*> expression;
@@ -198,10 +197,10 @@ recv_params
    ;
 
 call_item
-   : IDENTIFIER   { $$ = new DEL::CallParam(DEL::ValType::REQ_CHECK, $1, false); }
-   | INT_LITERAL  { $$ = new DEL::CallParam(DEL::ValType::INTEGER,   $1, true);  }
-   | REAL_LITERAL { $$ = new DEL::CallParam(DEL::ValType::REAL,      $1, true);  }
-   | CHAR_LITERAL { $$ = new DEL::CallParam(DEL::ValType::CHAR,      $1, true);  }
+   : IDENTIFIER   { $$ = new DEL::FunctionParam(DEL::ValType::REQ_CHECK, $1);  }
+   | INT_LITERAL  { $$ = new DEL::FunctionParam(DEL::ValType::INTEGER,   $1);  }
+   | REAL_LITERAL { $$ = new DEL::FunctionParam(DEL::ValType::REAL,      $1);  }
+   | CHAR_LITERAL { $$ = new DEL::FunctionParam(DEL::ValType::CHAR,      $1);  }
    ;
 
 call_params

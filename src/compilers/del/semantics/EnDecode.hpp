@@ -4,6 +4,7 @@
 #include <string>
 #include "Ast.hpp"
 #include "Memory.hpp"
+#include "Intermediate.hpp"
 
 /*
     Analyzer needs help encoding complex data types in a way that the intermediate layer can make sense of them
@@ -20,17 +21,21 @@ namespace DEL
     class EnDecode
     {
     public:
-
-
         EnDecode(Memory & memory_man);
         ~EnDecode();
 
+        std::string encode_identifier(std::string identifier);
 
-        std::string encode(Call * function_call);
+        std::string encode_call(Call * function_call);
 
+        Intermediate::Directive decode_directive(std::string encoded_call);
 
     private:
         Memory & memory_man;
+
+        std::string encode_token(std::string token_id);
+
+        Intermediate::DirectiveAllocation decode_allocation(std::string allocation);
     };
 }
 

@@ -52,6 +52,7 @@ namespace DEL
             STORE_WORD,
 
             CALL,
+            LOAD_PARAM,
 
             RETURN,
 
@@ -59,11 +60,38 @@ namespace DEL
 
         };
 
+        enum class DirectiveType
+        {
+            ID, CALL
+        };
+
+        struct DirectiveAllocation
+        {
+            uint64_t start_pos;
+            uint64_t end_pos;
+        };
+
+        struct Directive
+        {
+            DirectiveType type;
+            std::vector<DirectiveAllocation> allocation;
+        };
+
+        struct ParamInfo
+        {
+            uint64_t start_pos;
+            uint64_t end_pos;
+            uint16_t param_number;
+        };
+
         //! \brief An instruction / value pair
         struct AssignemntInstruction
         {
             Intermediate::InstructionSet instruction;
             std::string value;
+
+            // If the instruction is a parameter, we need to encode some extra information
+            //ParamInfo p_info;
         };
         
         //! \brief An assignment representation for the codegen to create an assignment
@@ -73,20 +101,6 @@ namespace DEL
             Memory::MemAlloc memory_info;
             AssignmentClassifier assignment_classifier;
             std::vector<AssignemntInstruction> instructions;
-        };
-
-        //! \brief Function parameters converted and encoded for codegen
-        struct AddressedFunctionParam
-        {
-            std::string id;
-            uint64_t value;
-            bool is_address;
-        };
-
-        struct Call
-        {
-            std::string destination;
-            std::vector<AddressedFunctionParam> params;
         };
 
         //! \brief Take a postfix (RPN) instruction and create an Intermediate::Assignment 

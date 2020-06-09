@@ -98,12 +98,12 @@ namespace DEL
     {
     public:
         // Creation for something to use it as an element
-        Call(std::string name, std::vector<CallParam> params) : 
+        Call(std::string name, std::vector<FunctionParam> params) : 
             AST(NodeType::CALL, nullptr, nullptr), 
             name(name), params(params) {}
 
         // Creation for something to use it as part of an AST
-        Call(std::string name, std::vector<CallParam> params, AST * lhs, AST * rhs) : 
+        Call(std::string name, std::vector<FunctionParam> params, AST * lhs, AST * rhs) : 
             AST(NodeType::CALL, lhs, rhs, ValType::REQ_CHECK, name),
             name(name), params(params){}
 
@@ -111,7 +111,7 @@ namespace DEL
         virtual void visit(Visitor &visit) override;
 
         std::string name;
-        std::vector<CallParam> params;
+        std::vector<FunctionParam> params;
     };
 
     //

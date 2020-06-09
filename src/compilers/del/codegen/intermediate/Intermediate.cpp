@@ -7,6 +7,8 @@
 #include <libnabla/endian.hpp>
 #include <libnabla/util.hpp>
 
+#include "EnDecode.hpp"
+
 #define N_UNUSED(x) (void)x;
 
 namespace DEL
@@ -106,6 +108,52 @@ namespace DEL
 
     void Intermediate::build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token, uint64_t byte_len)
     {
+        EnDecode endecode(memory_man);
+
+        Intermediate::Directive directive = endecode.decode_directive(directive_token);
+
+        switch(directive.type)
+        {
+            // Handle an ID
+            case Intermediate::DirectiveType::ID:
+            {
+                // If the item is only 1 byte, call load byte on the start position
+                if(byte_len == 1){  assignment.instructions.push_back( { InstructionSet::LOAD_BYTE, std::to_string(directive.allocation[0].start_pos) }); }
+                else
+                {
+                    // If the item is multiple bytes, then we load words until we've loaded everything
+                    while(directive.allocation[0].start_pos < directive.allocation[0].end_pos)
+                    {
+                        assignment.instructions.push_back(
+                            {
+                                InstructionSet::LOAD_WORD,
+                                std::to_string(directive.allocation[0].start_pos)
+                            }
+                        );
+                        directive.allocation[0].start_pos += 8; // Inc by word
+                    }
+                }
+                break;
+            }
+
+            // Handle a call
+            case Intermediate::DirectiveType::CALL:
+            {
+                std::cerr << "GOT THE CALL - NOT DONE YET";
+                exit(EXIT_FAILURE);
+                break;
+            }
+
+            default:
+            {
+                // Shouldn't ever happen 
+                std::cerr << "Developer Error >>> Intermediate was handed a wonky token from the EnDecoder" << std::endl;
+                exit(EXIT_FAILURE);
+                break; 
+            }
+        }
+
+        /*
         // Remove the directive indicator
         directive_token = directive_token.substr(1, directive_token.size());
 
@@ -165,6 +213,7 @@ namespace DEL
             std::cerr << "Internal developer error in Intermediate::Assignment::build_directive" << std::endl;
             exit(EXIT_FAILURE);
         }
+        */
     }
     
     // ----------------------------------------------------------

@@ -64,9 +64,12 @@ namespace DEL
         //! \param context The name of the context to get the parameters of
         std::vector<FunctionParam> get_context_parameters(std::string context);
 
-
+        //! \brief Add a return type to the current context
+        //! \param type The type that the context is expected to return
         void add_return_type_to_current_context(ValType type);
 
+        //! \brief Get the return type of the given context
+        //! \param context The context name to get the return type of
         ValType get_return_type_of_context(std::string context);
 
         //! \brief Clear the existing context of all symbols
@@ -86,6 +89,10 @@ namespace DEL
         //! \returns Unique symbol to use as a return item in assignment
         std::string generate_unique_return_symbol();
 
+        //! \brief Generate a unique symbol for a raw item in a function call
+        //! \returns Unique symbol to use as a call parameter in a call
+        std::string generate_unique_call_param_symbol();
+
         friend Codegen;
 
     private:
@@ -99,6 +106,8 @@ namespace DEL
         // This is a silly thing I added while we develop so when the codegen is told we're done it uses this to 
         // lock functionality. Once we get things done this should be removed.
         void lock();
+
+        std::string generate_unique(std::string start);
 
         class Context
         {

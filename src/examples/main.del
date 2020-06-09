@@ -17,7 +17,10 @@ def do_math(int some_int) -> int {
 
 def main() -> int {
 
-  int a = 3 + do_math(3);
+    int a = 3 ^ 2;
+    int b = a + 2;
+
+//  int a = 3 + do_math(3);
 
   //int b = do_math(a);
 
