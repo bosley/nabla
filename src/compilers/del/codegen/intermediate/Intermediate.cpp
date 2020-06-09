@@ -108,6 +108,7 @@ namespace DEL
 
         // Issue the command
         code_gen.assignment(assignment);
+
     }
 
     // ----------------------------------------------------------
@@ -161,7 +162,7 @@ namespace DEL
             case INTERMEDIATE::TYPES::DirectiveType::ID:
             {
                 // If the item is only 1 byte, call load byte on the start position
-                if(byte_len == 1){  assignment.instructions.push_back( { INTERMEDIATE::TYPES::InstructionSet::LOAD_BYTE, std::to_string(directive.allocation[0].start_pos) }); }
+                if(byte_len == 1){  assignment.instructions.push_back( { CODEGEN::TYPES::InstructionSet::LOAD_BYTE, std::to_string(directive.allocation[0].start_pos) }); }
                 else
                 {
                     // If the item is multiple bytes, then we load words until we've loaded everything
@@ -169,7 +170,7 @@ namespace DEL
                     {
                         assignment.instructions.push_back(
                             {
-                                INTERMEDIATE::TYPES::InstructionSet::LOAD_WORD,
+                                CODEGEN::TYPES::InstructionSet::LOAD_WORD,
                                 std::to_string(directive.allocation[0].start_pos)
                             }
                         );
@@ -280,7 +281,7 @@ namespace DEL
             {
                 assignment.instructions.push_back(
                     {
-                        INTERMEDIATE::TYPES::InstructionSet::USE_RAW,
+                        CODEGEN::TYPES::InstructionSet::USE_RAW,
                         token
                     }
                 );
@@ -298,14 +299,14 @@ namespace DEL
         }
 
         // If its a return statement, we don't want to add a store command
-        if(assignment.instructions.back().instruction == INTERMEDIATE::TYPES::InstructionSet::RETURN)
+        if(assignment.instructions.back().instruction == CODEGEN::TYPES::InstructionSet::RETURN)
         {
             return assignment;
         }
 
-        INTERMEDIATE::TYPES::InstructionSet final = (byte_len < 8) ? 
-            INTERMEDIATE::TYPES::InstructionSet::STORE_BYTE : 
-            INTERMEDIATE::TYPES::InstructionSet::STORE_WORD;
+        CODEGEN::TYPES::InstructionSet final = (byte_len < 8) ? 
+            CODEGEN::TYPES::InstructionSet::STORE_BYTE : 
+            CODEGEN::TYPES::InstructionSet::STORE_WORD;
 
         // End of assignment trigger storage of result
         assignment.instructions.push_back(
@@ -321,30 +322,30 @@ namespace DEL
     // There HAS TO BE A BETTER WAY TO DO THIS
     // ----------------------------------------------------------
 
-    INTERMEDIATE::TYPES::InstructionSet Intermediate::get_operation(std::string token)
+    CODEGEN::TYPES::InstructionSet Intermediate::get_operation(std::string token)
     {
-        if(token == "ADD"   ) { return INTERMEDIATE::TYPES::InstructionSet::ADD;    }
-        if(token == "SUB"   ) { return INTERMEDIATE::TYPES::InstructionSet::SUB;    }
-        if(token == "MUL"   ) { return INTERMEDIATE::TYPES::InstructionSet::MUL;    }
-        if(token == "DIV"   ) { return INTERMEDIATE::TYPES::InstructionSet::DIV;    }
-        if(token == "MOD"   ) { return INTERMEDIATE::TYPES::InstructionSet::MOD;    }
-        if(token == "POW"   ) { return INTERMEDIATE::TYPES::InstructionSet::POW;    }
-        if(token == "LTE"   ) { return INTERMEDIATE::TYPES::InstructionSet::LTE;    }
-        if(token == "LT"    ) { return INTERMEDIATE::TYPES::InstructionSet::LT;     }
-        if(token == "GTE"   ) { return INTERMEDIATE::TYPES::InstructionSet::GTE;    }
-        if(token == "GT"    ) { return INTERMEDIATE::TYPES::InstructionSet::GT;     }
-        if(token == "EQ"    ) { return INTERMEDIATE::TYPES::InstructionSet::EQ;     }
-        if(token == "NE"    ) { return INTERMEDIATE::TYPES::InstructionSet::NE;     }
-        if(token == "LSH"   ) { return INTERMEDIATE::TYPES::InstructionSet::LSH;    }
-        if(token == "RSH"   ) { return INTERMEDIATE::TYPES::InstructionSet::RSH;    }
-        if(token == "NEGATE") { return INTERMEDIATE::TYPES::InstructionSet::NEGATE; }
-        if(token == "OR"    ) { return INTERMEDIATE::TYPES::InstructionSet::OR;     }
-        if(token == "AND"   ) { return INTERMEDIATE::TYPES::InstructionSet::AND;    }
-        if(token == "BW_OR" ) { return INTERMEDIATE::TYPES::InstructionSet::BW_OR;  }
-        if(token == "BW_XOR") { return INTERMEDIATE::TYPES::InstructionSet::BW_XOR; }
-        if(token == "BW_AND") { return INTERMEDIATE::TYPES::InstructionSet::BW_AND; }
-        if(token == "BW_NOT") { return INTERMEDIATE::TYPES::InstructionSet::BW_NOT; }
-        if(token == "RETURN") { return INTERMEDIATE::TYPES::InstructionSet::RETURN; }
+        if(token == "ADD"   ) { return CODEGEN::TYPES::InstructionSet::ADD;    }
+        if(token == "SUB"   ) { return CODEGEN::TYPES::InstructionSet::SUB;    }
+        if(token == "MUL"   ) { return CODEGEN::TYPES::InstructionSet::MUL;    }
+        if(token == "DIV"   ) { return CODEGEN::TYPES::InstructionSet::DIV;    }
+        if(token == "MOD"   ) { return CODEGEN::TYPES::InstructionSet::MOD;    }
+        if(token == "POW"   ) { return CODEGEN::TYPES::InstructionSet::POW;    }
+        if(token == "LTE"   ) { return CODEGEN::TYPES::InstructionSet::LTE;    }
+        if(token == "LT"    ) { return CODEGEN::TYPES::InstructionSet::LT;     }
+        if(token == "GTE"   ) { return CODEGEN::TYPES::InstructionSet::GTE;    }
+        if(token == "GT"    ) { return CODEGEN::TYPES::InstructionSet::GT;     }
+        if(token == "EQ"    ) { return CODEGEN::TYPES::InstructionSet::EQ;     }
+        if(token == "NE"    ) { return CODEGEN::TYPES::InstructionSet::NE;     }
+        if(token == "LSH"   ) { return CODEGEN::TYPES::InstructionSet::LSH;    }
+        if(token == "RSH"   ) { return CODEGEN::TYPES::InstructionSet::RSH;    }
+        if(token == "NEGATE") { return CODEGEN::TYPES::InstructionSet::NEGATE; }
+        if(token == "OR"    ) { return CODEGEN::TYPES::InstructionSet::OR;     }
+        if(token == "AND"   ) { return CODEGEN::TYPES::InstructionSet::AND;    }
+        if(token == "BW_OR" ) { return CODEGEN::TYPES::InstructionSet::BW_OR;  }
+        if(token == "BW_XOR") { return CODEGEN::TYPES::InstructionSet::BW_XOR; }
+        if(token == "BW_AND") { return CODEGEN::TYPES::InstructionSet::BW_AND; }
+        if(token == "BW_NOT") { return CODEGEN::TYPES::InstructionSet::BW_NOT; }
+        if(token == "RETURN") { return CODEGEN::TYPES::InstructionSet::RETURN; }
         std::cerr << "Developer error : Intermediate::InstructionSet Intermediate::get_integer_operation(std::string token)" << std::endl;
         exit(EXIT_FAILURE);
     }

@@ -8,6 +8,7 @@
 #include "Intermediate.hpp"
 #include "AsmSupport.hpp"
 
+#include "CodegenTypes.hpp"
 #include "IntermediateTypes.hpp"
 #include "FunctionRepresentation.hpp"
 

@@ -205,67 +205,67 @@ namespace DEL
        {
            switch(ins.instruction)
            {
-               case INTERMEDIATE::TYPES::InstructionSet::ADD:     
+               case CODEGEN::TYPES::InstructionSet::ADD:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< ADDITION >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ((is_double_variant) ? "\tadd.d " : "\tadd ") + calculation_chunk);
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::SUB:     
+                case CODEGEN::TYPES::InstructionSet::SUB:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< SUBTRACTION >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ((is_double_variant) ? "\tsub.d " : "\tsub ") + calculation_chunk);
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::DIV:     
+                case CODEGEN::TYPES::InstructionSet::DIV:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< DIVISION >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ((is_double_variant) ? "\tdiv.d " : "\tdiv ") + calculation_chunk);
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::MUL:     
+                case CODEGEN::TYPES::InstructionSet::MUL:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< MULTIPLICATION >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ((is_double_variant) ? "\tmul.d " : "\tmul ") + calculation_chunk);
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::RSH:     
+                case CODEGEN::TYPES::InstructionSet::RSH:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< RIGHT SHIFT >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\tlsh " + calculation_chunk));
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::LSH:     
+                case CODEGEN::TYPES::InstructionSet::LSH:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< LEFT SHIFT >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\trsh " + calculation_chunk));
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::BW_OR:   
+                case CODEGEN::TYPES::InstructionSet::BW_OR:   
                 { 
                     current_function->instructions.push_back("\n\t; <<< BITWISE OR >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\tor " + calculation_chunk ));
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::BW_NOT:  
+                case CODEGEN::TYPES::InstructionSet::BW_NOT:  
                 { 
                     current_function->instructions.push_back("\n\t; <<< BITWISE NOT >>> \n");
                     current_function->instructions.push_back(remove_single_word_for_calc + ( "\tnot " + calculate_unary));
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::BW_XOR:  
+                case CODEGEN::TYPES::InstructionSet::BW_XOR:  
                 { 
                     current_function->instructions.push_back("\n\t; <<< BITWISE XOR >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\txor " + calculation_chunk));
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::BW_AND:  
+                case CODEGEN::TYPES::InstructionSet::BW_AND:  
                 { 
                     current_function->instructions.push_back("\n\t; <<< BITWISE AND >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\tand " + calculation_chunk));
                     break;                                          
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::LTE:        
+                case CODEGEN::TYPES::InstructionSet::LTE:        
                 {
                     current_function->instructions.push_back("\n\t; <<< LTE >>> \n");
                     std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tblte.d r8 r9 " : "\tblte r8 r9 ";
@@ -274,7 +274,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::LT:  
+                case CODEGEN::TYPES::InstructionSet::LT:  
                 {
                     current_function->instructions.push_back("\n\t; <<< LT >>> \n");
                     std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tblt.d r8 r9 " : "\tblt r8 r9 ";
@@ -283,7 +283,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::GTE: 
+                case CODEGEN::TYPES::InstructionSet::GTE: 
                 {
                     current_function->instructions.push_back("\n\t; <<< GTE >>> \n");
                     std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbgte.d r8 r9 " : "\tbgte r8 r9 ";
@@ -292,7 +292,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::GT:  
+                case CODEGEN::TYPES::InstructionSet::GT:  
                 {
                     current_function->instructions.push_back("\n\t; <<< GT >>> \n");
                     std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbgt.d r8 r9 " : "\tbgt r8 r9 ";
@@ -301,7 +301,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::EQ:  
+                case CODEGEN::TYPES::InstructionSet::EQ:  
                 {
                     current_function->instructions.push_back("\n\t; <<< EQ >>> \n");
                     std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbeq.d r8 r9 " : "\tbeq r8 r9 ";
@@ -310,7 +310,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::NE:  
+                case CODEGEN::TYPES::InstructionSet::NE:  
                 {
                     current_function->instructions.push_back("\n\t; <<< NE >>> \n");
                     std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbne.d r8 r9 " : "\tbne r8 r9 ";
@@ -319,7 +319,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::OR:
+                case CODEGEN::TYPES::InstructionSet::OR:
                 {
                     current_function->instructions.push_back("\n\t; <<< OR >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc);
@@ -338,7 +338,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::AND:
+                case CODEGEN::TYPES::InstructionSet::AND:
                 {
                     current_function->instructions.push_back("\n\t; <<< AND >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc);
@@ -361,7 +361,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::NEGATE:     
+                case CODEGEN::TYPES::InstructionSet::NEGATE:     
                 {
                     current_function->instructions.push_back("\n\t; <<< NEGATE >>> \n");
                     current_function->instructions.push_back(remove_single_word_for_calc);
@@ -376,7 +376,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::LOAD_BYTE:
+                case CODEGEN::TYPES::InstructionSet::LOAD_BYTE:
                 {
                     current_function->instructions.push_back("\n\t; <<< LOAD BYTE >>> \n");
                     uint64_t word_address = std::stoull(ins.value);
@@ -394,7 +394,7 @@ namespace DEL
                     current_function->instructions.push_back("\tpush ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::LOAD_WORD:
+                case CODEGEN::TYPES::InstructionSet::LOAD_WORD:
                 {
                     current_function->instructions.push_back("\n\t; <<< LOAD WORD >>> \n");
                     uint64_t word_address = std::stoull(ins.value);
@@ -412,7 +412,7 @@ namespace DEL
                     current_function->instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::STORE_BYTE:
+                case CODEGEN::TYPES::InstructionSet::STORE_BYTE:
                 {
                     current_function->instructions.push_back("\n\t; <<< STORE BYTE >>> \n");
 
@@ -436,7 +436,7 @@ namespace DEL
                     current_function->instructions.push_back("\tstb r0(gs) r8\t ; Store in memory\n");
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::STORE_WORD:  
+                case CODEGEN::TYPES::InstructionSet::STORE_WORD:  
                 {
                     current_function->instructions.push_back("\n\t; <<< STORE WORD >>> \n");
 
@@ -460,7 +460,7 @@ namespace DEL
                     current_function->instructions.push_back("\tstw r0(gs) r8\t ; Store in memory\n");
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::USE_RAW:
+                case CODEGEN::TYPES::InstructionSet::USE_RAW:
                 {
                     switch(assignment.assignment_classifier)
                     {
@@ -473,7 +473,7 @@ namespace DEL
                     }
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::POW:
+                case CODEGEN::TYPES::InstructionSet::POW:
                 {
                     current_function->instructions.push_back("\n\t; <<< POW >>> \n");
                     current_function->instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
@@ -493,7 +493,7 @@ namespace DEL
                     current_function->instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
-                case INTERMEDIATE::TYPES::InstructionSet::MOD:
+                case CODEGEN::TYPES::InstructionSet::MOD:
                 {
                     current_function->instructions.push_back("\n\t; <<< MOD >>> \n");
                     current_function->instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
@@ -518,9 +518,9 @@ namespace DEL
                           There may be MANY bytes that come back, so a new method triggered by this one would be ideal
                 
                 */
-                case INTERMEDIATE::TYPES::InstructionSet::CALL:       error_man.report_custom("Codegen", "Developer: CALL not completed"); break;
+                case CODEGEN::TYPES::InstructionSet::CALL:       error_man.report_custom("Codegen", "Developer: CALL not completed"); break;
 
-                case INTERMEDIATE::TYPES::InstructionSet::RETURN:
+                case CODEGEN::TYPES::InstructionSet::RETURN:
                 {
                     current_function->build_return();
                     break;

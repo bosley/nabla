@@ -9,6 +9,7 @@
 #include "SymbolTable.hpp"
 #include "Types.hpp"
 #include "IntermediateTypes.hpp"
+#include "CodegenTypes.hpp"
 
 namespace DEL
 {
@@ -50,7 +51,7 @@ namespace DEL
 
         INTERMEDIATE::TYPES::Assignment build_assignment(std::vector<std::string> & tokens, uint64_t byte_len);
 
-        INTERMEDIATE::TYPES::InstructionSet get_operation(std::string token);
+        CODEGEN::TYPES::InstructionSet get_operation(std::string token);
     };
 }
 
