@@ -43,9 +43,8 @@ namespace TYPES
         LOAD_WORD,
         STORE_WORD,
 
-        CALL,
-        MOVE_BYTE,
-        MOVE_WORD,
+        CALL, // Call a function
+        MOVE, // Move data 
 
         RETURN,
 
@@ -59,6 +58,10 @@ namespace TYPES
         uint16_t param_number;
     };
 
+    //
+    //  A base instruction type that operations will use directly, and more
+    //  more detailed instructions will inherit from 
+    //
     class BaseInstruction
     {
     public:
@@ -66,27 +69,48 @@ namespace TYPES
         InstructionSet instruction;
     };
 
-    class StandardInstruction : public BaseInstruction
+    //
+    //  An instructon whose value could be any of the data classifications
+    //
+    class RawValueInstruction : public BaseInstruction
     {
     public:
-        StandardInstruction(InstructionSet instruction, std::string value) : 
+        RawValueInstruction(InstructionSet instruction, std::string value) : 
             BaseInstruction(instruction), value(value){}
 
         std::string value;
     };
 
-    class CallInstruction : public BaseInstruction
+    //
+    //  An instruction with a value that represents an address
+    //
+    class AddressValueInstruction: public BaseInstruction
     {
     public:
-        CallInstruction(InstructionSet instruction, std::string destination, std::vector<ParamInfo> params) : 
-                BaseInstruction(instruction), destination(destination), params(params) {}
+        AddressValueInstruction(InstructionSet instruction, uint64_t value) : 
+            BaseInstruction(instruction), value(value){}
 
-        std::string destination;
-        std::vector<ParamInfo> params;
+        uint64_t value;
     };
 
+    //
+    //  An instruction that instructs movement of data
+    //
+    class MoveInstruction : public BaseInstruction
+    {
+    public:
+        MoveInstruction(InstructionSet instruction, uint64_t destination, uint64_t source, uint8_t bytes) : 
+                BaseInstruction(instruction), destination(destination), source(source), bytes(bytes) {}
 
-    class Assignment
+        uint64_t destination;       // Location to
+        uint64_t source;            // Location from
+        uint8_t  bytes;             // Size of the thing to move   
+    };
+
+    //
+    //  A command given to codgen
+    //
+    class Command
     {
     public:
         std::string id;

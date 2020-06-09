@@ -41,15 +41,15 @@ namespace DEL
 
     private:
 
-        INTERMEDIATE::TYPES::Assignment encode_postfix_assignment_expression(Memory::MemAlloc memory_info, INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string expression);
+        CODEGEN::TYPES::Command encode_postfix_assignment_expression(Memory::MemAlloc memory_info, INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string expression);
     
         SymbolTable & symbol_table;
         Memory & memory_man;
         Codegen & code_gen;
 
-        void build_assignment_directive(INTERMEDIATE::TYPES::Assignment & assignment, std::string directive_token, uint64_t byte_len);
+        void build_assignment_directive(CODEGEN::TYPES::Command & command, std::string directive_token, uint64_t byte_len);
 
-        INTERMEDIATE::TYPES::Assignment build_assignment(std::vector<std::string> & tokens, uint64_t byte_len);
+        CODEGEN::TYPES::Command build_assignment(std::vector<std::string> & tokens, uint64_t byte_len);
 
         CODEGEN::TYPES::InstructionSet get_operation(std::string token);
     };

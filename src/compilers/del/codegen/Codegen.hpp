@@ -9,7 +9,6 @@
 #include "AsmSupport.hpp"
 
 #include "CodegenTypes.hpp"
-#include "IntermediateTypes.hpp"
 #include "FunctionRepresentation.hpp"
 
 namespace DEL
@@ -41,9 +40,9 @@ namespace DEL
         //! \post The code generator will be ready to begin another function
         void end_function();
 
-        //! \brief Generate an assignment
-        //! \param assignment The instructions used to build an assignment
-        void assignment(INTERMEDIATE::TYPES::Assignment assignment);
+        //! \brief Generate something based on a command
+        //! \param command The instructions used to generate code
+        void execute_command(CODEGEN::TYPES::Command command);
 
         //! \brief Create a special return that doesn't return a value
         void null_return();

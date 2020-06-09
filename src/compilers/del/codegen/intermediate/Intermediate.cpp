@@ -6,7 +6,7 @@
 #include <iostream>
 #include <libnabla/endian.hpp>
 #include <libnabla/util.hpp>
-
+#include "CodegenTypes.hpp"
 #include "EnDecode.hpp"
 
 #define N_UNUSED(x) (void)x;
@@ -103,53 +103,65 @@ namespace DEL
     void Intermediate::issue_assignment(std::string id, Memory::MemAlloc memory_info, INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string postfix_expression)
     {
         // Build the instruction set
-        INTERMEDIATE::TYPES::Assignment assignment = encode_postfix_assignment_expression(memory_info, classification, postfix_expression);
-        assignment.id = id;
+        CODEGEN::TYPES::Command command = encode_postfix_assignment_expression(memory_info, classification, postfix_expression);
+        command.id = id;
 
         // Issue the command
-        code_gen.assignment(assignment);
+        code_gen.execute_command(command);
 
+        // Clean out the instructions
+        for(auto & i : command.instructions)
+        {
+            delete i;
+        }
     }
 
     // ----------------------------------------------------------
     //
     // ----------------------------------------------------------
 
-    INTERMEDIATE::TYPES::Assignment Intermediate::encode_postfix_assignment_expression(Memory::MemAlloc memory_info,  INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string expression)
+    CODEGEN::TYPES::Command Intermediate::encode_postfix_assignment_expression(Memory::MemAlloc memory_info,  INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string expression)
     {
         // Build the expression into a string vector
         std::istringstream buf(expression);
         std::istream_iterator<std::string> beg(buf), end;
         std::vector<std::string> tokens(beg, end);
 
-        // Build instructions for assignment
-        INTERMEDIATE::TYPES::Assignment assignment;
+        // Build instructions for command
+        CODEGEN::TYPES::Command command;
 
         // We want to be particular about chars
         if(classification == INTERMEDIATE::TYPES::AssignmentClassifier::CHAR)
         {
-            assignment = build_assignment(tokens, 1);
+            command = build_assignment(tokens, 1);
         }
         else
         {
-            assignment = build_assignment(tokens, memory_info.bytes_alloced);
+            command = build_assignment(tokens, memory_info.bytes_alloced);
         }
 
-
         // Indicate how raw values should be interpd
-        assignment.assignment_classifier = classification;
+        switch(classification)
+        {
+        case INTERMEDIATE::TYPES::AssignmentClassifier::CHAR:    command.classification = CODEGEN::TYPES::DataClassification::CHAR;    break;
+        case INTERMEDIATE::TYPES::AssignmentClassifier::INTEGER: command.classification = CODEGEN::TYPES::DataClassification::INTEGER; break;
+        case INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE:  command.classification = CODEGEN::TYPES::DataClassification::DOUBLE;  break;
+        default: std::cerr << "Devloper Error >>> Intermediate::encode_postfix_assignment_expression() classification switch reached default : " << std::endl;
+                 exit(EXIT_FAILURE);
+                 break;
+        }
 
         // Information regarding where to store result
-        assignment.memory_info = memory_info;
+        command.memory_info = memory_info;
 
-        return assignment;
+        return command;
     }
 
     // ----------------------------------------------------------
     //
     // ----------------------------------------------------------
 
-    void Intermediate::build_assignment_directive(INTERMEDIATE::TYPES::Assignment & assignment, std::string directive_token, uint64_t byte_len)
+    void Intermediate::build_assignment_directive(CODEGEN::TYPES::Command & command, std::string directive_token, uint64_t byte_len)
     {
         EnDecode endecode(memory_man);
 
@@ -162,17 +174,23 @@ namespace DEL
             case INTERMEDIATE::TYPES::DirectiveType::ID:
             {
                 // If the item is only 1 byte, call load byte on the start position
-                if(byte_len == 1){  assignment.instructions.push_back( { CODEGEN::TYPES::InstructionSet::LOAD_BYTE, std::to_string(directive.allocation[0].start_pos) }); }
+                if(byte_len == 1)
+                { 
+                    command.instructions.push_back(
+                        new CODEGEN::TYPES::AddressValueInstruction(CODEGEN::TYPES::InstructionSet::LOAD_BYTE,
+                            directive.allocation[0].start_pos
+                        )
+                    );
+                }
                 else
                 {
                     // If the item is multiple bytes, then we load words until we've loaded everything
                     while(directive.allocation[0].start_pos < directive.allocation[0].end_pos)
                     {
-                        assignment.instructions.push_back(
-                            {
-                                CODEGEN::TYPES::InstructionSet::LOAD_WORD,
-                                std::to_string(directive.allocation[0].start_pos)
-                            }
+                        command.instructions.push_back(
+                            new CODEGEN::TYPES::AddressValueInstruction(CODEGEN::TYPES::InstructionSet::LOAD_WORD,
+                                directive.allocation[0].start_pos
+                            )
                         );
                         directive.allocation[0].start_pos += 8; // Inc by word
                     }
@@ -183,6 +201,9 @@ namespace DEL
             // Handle a call
             case INTERMEDIATE::TYPES::DirectiveType::CALL:
             {
+                // Go through call and create CODEGEN::TYPES::MoveInstructions to move
+                // local variables to the parameter passing zone
+
                 std::cerr << "GOT THE CALL - NOT DONE YET";
                 exit(EXIT_FAILURE);
                 break;
@@ -196,77 +217,15 @@ namespace DEL
                 break; 
             }
         }
-
-        /*
-        // Remove the directive indicator
-        directive_token = directive_token.substr(1, directive_token.size());
-
-        // Get the directive tokens
-        std::vector<std::string> d_list = split(directive_token, ':');
-
-        // These are generated by us, so if they don't match then we messed up, not the user
-        if(d_list[0] == "ID")
-        {
-            uint64_t start_pos = std::stoull(d_list[1]);
-            uint64_t end_pos   = start_pos + std::stoull(d_list[2]);
-
-            if(byte_len == 1)
-            {
-                assignment.instructions.push_back(
-                    {
-                        InstructionSet::LOAD_BYTE,
-                        std::to_string(start_pos)
-                    }
-                );
-            }
-            else
-            {
-                while(start_pos < end_pos)
-                {
-                    assignment.instructions.push_back(
-                        {
-                            InstructionSet::LOAD_WORD,
-                            std::to_string(start_pos)
-                        }
-                    );
-                    start_pos += 8; // Inc by word
-                }
-            }
-        }
-        else if(d_list[0] == "CALL")
-        {
-            assignment.instructions.push_back(
-                {
-                    InstructionSet::CALL,
-                    d_list[1]               // Should contain function name to call
-                }
-            );
-
-            
-
-
-            assignment.instructions.push_back(
-                {
-                    InstructionSet::STORE_WORD, // Get the result of the function call for assignment 
-                    "" // No info for this
-                }
-            );
-        }
-        else
-        {
-            std::cerr << "Internal developer error in INTERMEDIATE::TYPES::Assignment::build_directive" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        */
     }
     
     // ----------------------------------------------------------
     //
     // ----------------------------------------------------------
 
-    INTERMEDIATE::TYPES::Assignment Intermediate::build_assignment(std::vector<std::string> & tokens, uint64_t byte_len)
+    CODEGEN::TYPES::Command Intermediate::build_assignment(std::vector<std::string> & tokens, uint64_t byte_len)
     {
-        INTERMEDIATE::TYPES::Assignment assignment;
+        CODEGEN::TYPES::Command command;
 
         // Check all tokens for what they represent
         for(auto & token : tokens)
@@ -274,34 +233,28 @@ namespace DEL
             // Check for a directive
             if(token[0] == '#')
             {
-                build_assignment_directive(assignment, token, byte_len);
+                build_assignment_directive(command, token, byte_len);
             }
             // Check for char || int || double (raw values)
             else if(token[0] == '"' || is_only_number(token) )
             {
-                assignment.instructions.push_back(
-                    {
-                        CODEGEN::TYPES::InstructionSet::USE_RAW,
-                        token
-                    }
+                command.instructions.push_back(
+                    new CODEGEN::TYPES::RawValueInstruction(CODEGEN::TYPES::InstructionSet::USE_RAW, token)
                 );
             }
             else
             {
                 // Get the operation token
-                assignment.instructions.push_back(
-                    {
-                        get_operation(token),
-                        ""
-                    }
+                command.instructions.push_back(
+                    new CODEGEN::TYPES::BaseInstruction(get_operation(token))
                 );
             }
         }
 
         // If its a return statement, we don't want to add a store command
-        if(assignment.instructions.back().instruction == CODEGEN::TYPES::InstructionSet::RETURN)
+        if(command.instructions.back()->instruction == CODEGEN::TYPES::InstructionSet::RETURN)
         {
-            return assignment;
+            return command;
         }
 
         CODEGEN::TYPES::InstructionSet final = (byte_len < 8) ? 
@@ -309,13 +262,10 @@ namespace DEL
             CODEGEN::TYPES::InstructionSet::STORE_WORD;
 
         // End of assignment trigger storage of result
-        assignment.instructions.push_back(
-            {
-                final,
-                ""
-            }
+        command.instructions.push_back(
+            new CODEGEN::TYPES::BaseInstruction(final)
         );
-        return assignment;
+        return command;
     }
 
     // ----------------------------------------------------------

@@ -4,7 +4,7 @@
     What is done now :  int / char / double expressions are all complete
         Those two things need to have some functions generated to support them. 
         Other than that : - + * / || && ! xor and not or lsh rsh LT LTE GT GTE EQ NE have been fleshed out
-        They have been mostly hand tested. Once the remainind 'assignment' operations have been completed, we will need to setup a test mechanism to ensure
+        They have been mostly hand tested. Once the remainind 'command.' operations have been completed, we will need to setup a test mechanism to ensure
         that all of these compile into things that actually work. 
 
         Getting values from function calls has not yet been completed. That is below and will trigger the error manager to laugh at us if we attempt
@@ -172,13 +172,13 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    void Codegen::assignment(INTERMEDIATE::TYPES::Assignment assignment)
+    void Codegen::execute_command(CODEGEN::TYPES::Command command)
     {
         /*
-            assignment.id                    -> The name of the thing we are assigning for comments
-            assignemnt.memory_info           -> Where we need to store the thing
-            assignment.assignment_classifier -> How to treat the given data (int, char, real)
-            assignment.instructions          -> What to do to the data in RPN form
+            command.id                    -> The name of the thing we are assigning for comments
+            command.memory_info           -> Where we need to store the thing
+            command.classification -> How to treat the given data (int, char, real)
+            command.instructions          -> What to do to the data in RPN form
         */
 
        /*
@@ -189,7 +189,7 @@ namespace DEL
        */
 
        // Add the bytes for the function's stack frame
-       current_function->bytes_required += assignment.memory_info.bytes_alloced;
+       current_function->bytes_required += command.memory_info.bytes_alloced;
 
        std::string remove_words_for_calc = "\n\tpopw r9 ls \t ; Calculation RHS\n\tpopw r8 ls \t ; Calculation LHS\n";
 
@@ -199,11 +199,11 @@ namespace DEL
 
        std::string calculate_unary = "r8 r8 \t ; Perform unary operation, store in r8\n\tpushw ls r8 \t ; Put result into ls\n";
 
-       bool is_double_variant = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE);
+       bool is_double_variant = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE);
 
-       for(auto & ins : assignment.instructions)
+       for(auto & ins : command.instructions)
        {
-           switch(ins.instruction)
+           switch(ins->instruction)
            {
                case CODEGEN::TYPES::InstructionSet::ADD:     
                 { 
@@ -268,7 +268,7 @@ namespace DEL
                 case CODEGEN::TYPES::InstructionSet::LTE:        
                 {
                     current_function->instructions.push_back("\n\t; <<< LTE >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tblte.d r8 r9 " : "\tblte r8 r9 ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "\tblte.d r8 r9 " : "\tblte r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
@@ -277,7 +277,7 @@ namespace DEL
                 case CODEGEN::TYPES::InstructionSet::LT:  
                 {
                     current_function->instructions.push_back("\n\t; <<< LT >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tblt.d r8 r9 " : "\tblt r8 r9 ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "\tblt.d r8 r9 " : "\tblt r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
@@ -286,7 +286,7 @@ namespace DEL
                 case CODEGEN::TYPES::InstructionSet::GTE: 
                 {
                     current_function->instructions.push_back("\n\t; <<< GTE >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbgte.d r8 r9 " : "\tbgte r8 r9 ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "\tbgte.d r8 r9 " : "\tbgte r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
@@ -295,7 +295,7 @@ namespace DEL
                 case CODEGEN::TYPES::InstructionSet::GT:  
                 {
                     current_function->instructions.push_back("\n\t; <<< GT >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbgt.d r8 r9 " : "\tbgt r8 r9 ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "\tbgt.d r8 r9 " : "\tbgt r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
@@ -304,7 +304,7 @@ namespace DEL
                 case CODEGEN::TYPES::InstructionSet::EQ:  
                 {
                     current_function->instructions.push_back("\n\t; <<< EQ >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbeq.d r8 r9 " : "\tbeq r8 r9 ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "\tbeq.d r8 r9 " : "\tbeq r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
@@ -313,7 +313,7 @@ namespace DEL
                 case CODEGEN::TYPES::InstructionSet::NE:  
                 {
                     current_function->instructions.push_back("\n\t; <<< NE >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbne.d r8 r9 " : "\tbne r8 r9 ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "\tbne.d r8 r9 " : "\tbne r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
@@ -326,7 +326,7 @@ namespace DEL
                     current_function->instructions.push_back("\n\tmov r7 $0\t; Comparison value");
                     std::string true_label = "OR_is_true_"    + std::to_string(label_id);
                     std::string complete   = "OR_is_complete_" + std::to_string(label_id);
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "bgt.d " : "bgt ";
                     current_function->instructions.push_back("\n\n\t" + comparison + "r8 r7 " + true_label);
                     current_function->instructions.push_back("\n\t" + comparison + "r9 r7 " + true_label);
                     current_function->instructions.push_back("\n\n\tmov r8 $0 ; False");
@@ -346,7 +346,7 @@ namespace DEL
                     std::string first_true  = "AND_first_true_" + std::to_string(label_id);
                     std::string second_true = "AND_second_true_" + std::to_string(label_id);
                     std::string complete    = "AND_complete_" + std::to_string(label_id);
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "bgt.d " : "bgt ";
                     current_function->instructions.push_back("\t" + comparison + "r8 r7 " + first_true + "\n\n");
                     current_function->instructions.push_back("\tmov r8 $0\t; False\n\n");
                     current_function->instructions.push_back("\tjmp " + complete + "\n\n");
@@ -366,7 +366,7 @@ namespace DEL
                     current_function->instructions.push_back("\n\t; <<< NEGATE >>> \n");
                     current_function->instructions.push_back(remove_single_word_for_calc);
                     current_function->instructions.push_back("\n\tmov r7 $0\t; Comparison\n\n");
-                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
+                    std::string comparison = (command.classification == CODEGEN::TYPES::DataClassification::DOUBLE) ? "bgt.d " : "bgt ";
                     std::string set_zero = "NEGATE_set_zero_" + std::to_string(label_id);
                     std::string set_comp = "NEGATE_complete_" + std::to_string(label_id);
                     current_function->instructions.push_back("\t" + comparison + " r8 r7 " + set_zero + "\n\n");
@@ -378,8 +378,10 @@ namespace DEL
                 }
                 case CODEGEN::TYPES::InstructionSet::LOAD_BYTE:
                 {
+                    CODEGEN::TYPES::AddressValueInstruction * avins = static_cast<CODEGEN::TYPES::AddressValueInstruction*>(ins);
+
                     current_function->instructions.push_back("\n\t; <<< LOAD BYTE >>> \n");
-                    uint64_t word_address = std::stoull(ins.value);
+                    uint64_t word_address = avins->value;
 
                     // Generate a register with the address for the destination
                     std::vector<std::string> store_ins = PARTS::generate_store_64(8, word_address, "Address of thing in expression");
@@ -396,8 +398,10 @@ namespace DEL
                 }
                 case CODEGEN::TYPES::InstructionSet::LOAD_WORD:
                 {
+                    CODEGEN::TYPES::AddressValueInstruction * avins = static_cast<CODEGEN::TYPES::AddressValueInstruction*>(ins);
+
                     current_function->instructions.push_back("\n\t; <<< LOAD WORD >>> \n");
-                    uint64_t word_address = std::stoull(ins.value);
+                    uint64_t word_address = avins->value;
 
                     // Generate a register with the address for the destination
                     std::vector<std::string> store_ins = PARTS::generate_store_64(8, word_address, "Address of thing in expression");
@@ -417,10 +421,10 @@ namespace DEL
                     current_function->instructions.push_back("\n\t; <<< STORE BYTE >>> \n");
 
                     // Get the memory information for destination
-                    uint64_t mem_start = ENDIAN::conditional_to_le_64(assignment.memory_info.start_pos);
+                    uint64_t mem_start = ENDIAN::conditional_to_le_64(command.memory_info.start_pos);
                 
                     // Generate a register with the address for the destination
-                    std::vector<std::string> store_ins = PARTS::generate_store_64(8, mem_start, ("Address for [" + assignment.id + "]"));
+                    std::vector<std::string> store_ins = PARTS::generate_store_64(8, mem_start, ("Address for [" + command.id + "]"));
                     current_function->instructions.insert(current_function->instructions.end(), store_ins.begin(), store_ins.end());
 
                     // Add the relative address of the item to the start position of the function in memory to acquire the actual destination
@@ -441,10 +445,10 @@ namespace DEL
                     current_function->instructions.push_back("\n\t; <<< STORE WORD >>> \n");
 
                     // Get the memory information for destination
-                    uint64_t mem_start = ENDIAN::conditional_to_le_64(assignment.memory_info.start_pos);
+                    uint64_t mem_start = ENDIAN::conditional_to_le_64(command.memory_info.start_pos);
                 
                     // Generate a register with the address for the destination
-                    std::vector<std::string> store_ins = PARTS::generate_store_64(8, mem_start, ("Address for [" + assignment.id + "]"));
+                    std::vector<std::string> store_ins = PARTS::generate_store_64(8, mem_start, ("Address for [" + command.id + "]"));
                     current_function->instructions.insert(current_function->instructions.end(), store_ins.begin(), store_ins.end());
 
                     // Add the relative address of the item to the start position of the function in memory to acquire the actual destination
@@ -462,13 +466,15 @@ namespace DEL
                 }
                 case CODEGEN::TYPES::InstructionSet::USE_RAW:
                 {
-                    switch(assignment.assignment_classifier)
+                    CODEGEN::TYPES::RawValueInstruction * rvins = static_cast<CODEGEN::TYPES::RawValueInstruction*>(ins);
+
+                    switch(command.classification)
                     {
-                    case INTERMEDIATE::TYPES::AssignmentClassifier::INTEGER:  setup_integer(assignment.id, ins.value);  break;
-                    case INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE:   setup_double(assignment.id, ins.value );  break;
-                    case INTERMEDIATE::TYPES::AssignmentClassifier::CHAR:     setup_char(assignment.id, ins.value );    break;
+                    case CODEGEN::TYPES::DataClassification::INTEGER:  setup_integer(command.id, rvins->value);  break;
+                    case CODEGEN::TYPES::DataClassification::DOUBLE:   setup_double(command.id, rvins->value );  break;
+                    case CODEGEN::TYPES::DataClassification::CHAR:     setup_char(command.id, rvins->value );    break;
                     default:
-                        error_man.report_custom("Codegen", "Developer error: Assignment Classifier switch reached default", true);
+                        error_man.report_custom("Codegen", "Developer error: Command Classifier switch reached default", true);
                         break;
                     }
                     break;
@@ -479,7 +485,7 @@ namespace DEL
                     current_function->instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
 
                     std::string function_name;
-                    if(assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE)
+                    if(command.classification == CODEGEN::TYPES::DataClassification::DOUBLE)
                     {
                         asm_support.import_math(AsmSupport::Math::POW_D, function_name, program_init);
 
@@ -499,7 +505,7 @@ namespace DEL
                     current_function->instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
 
                     std::string function_name;
-                    if(assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE)
+                    if(command.classification == CODEGEN::TYPES::DataClassification::DOUBLE)
                     {
                         asm_support.import_math(AsmSupport::Math::MOD_D, function_name, program_init);
                     }
@@ -526,7 +532,7 @@ namespace DEL
                     break;
                 }
                 default:
-                    error_man.report_custom("Codegen", "Developer error : Default accessed in assignment", true);
+                    error_man.report_custom("Codegen", "Developer error : Default accessed in command.", true);
                     break;
            }
        }
