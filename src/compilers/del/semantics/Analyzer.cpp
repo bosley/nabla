@@ -15,6 +15,7 @@ namespace DEL
                                                                         symbol_table(symbolTable),
                                                                         code_gen(code_gen),
                                                                         memory_man(memory),
+                                                                        endecoder(memory_man),
                                                                         intermediate_rep(symbolTable, memory)
     {
 
@@ -288,7 +289,7 @@ namespace DEL
             error_man.report_calls_return_value_unhandled(current_function->name, stmt.name);
         }
 
-        code_gen.create_call(intermediate_rep.create_call(stmt.name, stmt.params));
+        //code_gen.create_call(intermediate_rep.create_call(stmt.name, stmt.params));
     }
 
     // -----------------------------------------------------------------------------------------
@@ -309,11 +310,6 @@ namespace DEL
         if(!symbol_table.does_context_exist(stmt.name))
         {
             error_man.report_callee_doesnt_exist(stmt.name);
-        }
-
-        if(stmt.params.size() > 7)
-        {
-            error_man.report_custom("Analyzer::validate_call", " Given call exceeds current limit of '7' parameters", true);
         }
 
         // Get the callee params
@@ -435,6 +431,33 @@ namespace DEL
                 return "#ID:" + std::to_string(mem_info.start_pos) + ":" + std::to_string(mem_info.bytes_alloced);
             }
             
+            case NodeType::CALL :
+            {
+                // We know its a call, so lets treat it like a call
+                Call * call = static_cast<Call*>(ast);
+
+                validate_call(*call);
+
+                // TOOD: 
+
+                // >>>> Iterate over call params. call 'check_value_is_valid_for_assignment' on the ValType of the parameter
+                //      to ensure we promote the expression if needed, and stop compiling if something is incorrect
+
+                // WRITE THE ENDECODED ENCODE CALL 
+
+                error_man.report_custom("Analyzer", " >>>>> CALL NOT DONE", true);
+
+                // Encode the call to something we can handle in the intermediate layer
+                return endecoder.encode(call);
+            }
+
+            case NodeType::VAL : 
+            { 
+                // Check that the raw value is one that is valid within the current assignment
+                check_value_is_valid_for_assignment(ast->val_type, c, et, id);
+                return ast->value;
+            }
+            
             //  This is where we convert NodeType to the Assignment type. This should make it so we can change the actual tokens in the language
             //  without having to modify this statement
 
@@ -460,13 +483,7 @@ namespace DEL
             case NodeType::BW_NOT :return (validate_assignment_ast(ast->l, c, et, id) + " BW_NOT ");
             case NodeType::NEGATE :return (validate_assignment_ast(ast->l, c, et, id) + " NEGATE "  );
             case NodeType::RETURN :return (validate_assignment_ast(ast->l, c, et, id) + " RETURN "  );
-            case NodeType::ROOT   : error_man.report_custom("Analyzer", "ROOT NODE found in arithmetic exp", true);
-            case NodeType::VAL : 
-            { 
-                // Check that the raw value is one that is valid within the current assignment
-                check_value_is_valid_for_assignment(ast->val_type, c, et, id);
-                return ast->value;
-            }
+            case NodeType::ROOT   : error_man.report_custom("Analyzer", "ROOT NODE found in arithmetic exp", true); break;
             default:
             return "Its dead, jim";
         }

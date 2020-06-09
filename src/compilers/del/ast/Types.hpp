@@ -33,7 +33,9 @@ namespace DEL
         AND,
         NEGATE,
 
-        RETURN
+        RETURN,
+
+        CALL
 
         /*
             see Analyzer::validate_assignment_ast 
@@ -59,17 +61,25 @@ namespace DEL
         FUNCTION,   // A function declaration
         REQ_CHECK,  // Requires check by analyzer for value type (reassignment)
         NONE        // Nothing
-
         /*
             STRUCT
         */
     };
 
+    // This maybe should move to another location 
     struct FunctionParam
     {
         FunctionParam(ValType t, std::string id) : type(t), id(id) {}
-        ValType type;
-        std::string id;
+        ValType type;   // Type
+        std::string id; // The param name
+    };
+
+    struct CallParam
+    {
+        CallParam(ValType t, std::string id, bool is_raw) : type(t), id(id), is_raw(is_raw) {}
+        ValType type;   // Type
+        std::string id; // The value of the param (name, or raw value)
+        bool is_raw;    // We encode raw values here so we can preserve that information after changing ValType to associated variable type info
     };
 
     static inline std::string ValType_to_string(ValType v)

@@ -1,7 +1,7 @@
 #ifndef DEL_AST_HPP
 #define DEL_AST_HPP
 
-#include "types.hpp"
+#include "Types.hpp"
 #include <vector>
 
 namespace DEL
@@ -94,15 +94,24 @@ namespace DEL
     //
     //  A call 
     //
-    class Call : public Element // , public Node // We need to make this a node for call assignments
+    class Call : public Element, public AST
     {
     public:
-        Call(std::string name, std::vector<FunctionParam> params) : name(name), params(params) {}
+        // Creation for something to use it as an element
+        Call(std::string name, std::vector<CallParam> params) : 
+            AST(NodeType::CALL, nullptr, nullptr), 
+            name(name), params(params) {}
 
+        // Creation for something to use it as part of an AST
+        Call(std::string name, std::vector<CallParam> params, AST * lhs, AST * rhs) : 
+            AST(NodeType::CALL, lhs, rhs, ValType::REQ_CHECK, name),
+            name(name), params(params){}
+
+        // Let the visitor visit us
         virtual void visit(Visitor &visit) override;
 
         std::string name;
-        std::vector<FunctionParam> params;
+        std::vector<CallParam> params;
     };
 
     //

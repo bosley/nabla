@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 
-#include "del/delutil/types.hpp"
+#include "del/ast/Types.hpp"
 #include "del/del_driver.hpp"
 #include "del/del_scanner.hpp"
 

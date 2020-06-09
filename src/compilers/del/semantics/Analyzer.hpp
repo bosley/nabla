@@ -6,6 +6,7 @@
 #include "SymbolTable.hpp"
 #include "Codegen.hpp"
 #include "Intermediate.hpp"
+#include "EnDecode.hpp"
 
 namespace DEL
 {
@@ -51,6 +52,7 @@ namespace DEL
         SymbolTable & symbol_table;     // Symbol table
         Codegen & code_gen;             // Code generator
         Memory & memory_man;            // Memory manager
+        EnDecode endecoder;
 
         Intermediate intermediate_rep;
 

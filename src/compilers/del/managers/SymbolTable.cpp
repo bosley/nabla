@@ -203,7 +203,7 @@ namespace DEL
         case ValType::CHAR:          mem_request = (memory == 0) ? 1 : memory; break;   // We only request one, but memory guy will probrably round up to 8
         case ValType::FUNCTION:      error_man.report_custom("SymbolTable", " FUNCTION given to symbol table", true);
         case ValType::REQ_CHECK:     error_man.report_custom("SymbolTable", " REQ CHECK given to symbol table", true);
-        case ValType::NONE:          mem_request = 0; break;
+        case ValType::NONE:          return;
         case ValType::STRING:
         {
             // Strings and structs need to have a size given to us

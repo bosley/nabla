@@ -1,7 +1,7 @@
 #ifndef DEL_FUNCTION_REPRESENTATION
 #define DEL_FUNCTION_REPRESENTATION
 
-#include "types.hpp"
+#include "Types.hpp"
 #include <string>
 #include <vector>
 

@@ -18,6 +18,7 @@
       class Element;
       class Function;
       struct FunctionParam;
+      struct CallParam;
    }
 
 # ifndef YY_NULLPTR
@@ -41,12 +42,12 @@
    #include <vector>
 
    #include "Ast.hpp"
-   #include "types.hpp"
+   #include "Types.hpp"
    
    #include "del_driver.hpp"
 
    std::vector<DEL::FunctionParam> r_params;
-   std::vector<DEL::FunctionParam> c_params;
+   std::vector<DEL::CallParam> c_params;
 
 #undef yylex
 #define yylex scanner.yylex
@@ -62,12 +63,13 @@
 %type<DEL::Element*> assignment;
 %type<DEL::Element*> reassignment;
 %type<DEL::Element*> return_stmt;
-%type<DEL::Element*> function_call;
+%type<DEL::Element*> direct_function_call;
 %type<DEL::Function*> function_stmt;
 %type<std::string> identifiers;
-%type<DEL::FunctionParam*> call_item;
+%type<DEL::CallParam*> call_item;
 
-%type<DEL::AST*>  expression;
+%type<DEL::AST*> expr_function_call;
+%type<DEL::AST*> expression;
 %type<DEL::AST*> term;
 %type<DEL::AST*> factor;
 %type<DEL::AST*> primary;
@@ -126,9 +128,15 @@ term
 
 factor
    : primary                     { $$ = $1; }
+   | expr_function_call          { $$ = $1; }
    | '(' expression ')'          { $$ = $2; }
    | BW_NOT factor               { $$ = new DEL::AST(DEL::NodeType::BW_NOT, $2, nullptr);}
    | NEGATE factor               { $$ = new DEL::AST(DEL::NodeType::NEGATE, $2, nullptr);}
+   ;
+
+expr_function_call
+   : identifiers '(' ')'             { $$ = new DEL::Call($1, c_params, nullptr, nullptr); }
+   | identifiers '(' call_params ')' { $$ = new DEL::Call($1, c_params, nullptr, nullptr); c_params.clear(); }
    ;
 
 primary
@@ -171,7 +179,7 @@ stmt
    : assignment    { $$ = $1; }
    | reassignment  { $$ = $1; }
    | return_stmt   { $$ = $1; }
-   | function_call { $$ = $1;}
+   | direct_function_call { $$ = $1;}
    ;
 
 multiple_statements
@@ -190,10 +198,10 @@ recv_params
    ;
 
 call_item
-   : IDENTIFIER   { $$ = new DEL::FunctionParam(DEL::ValType::REQ_CHECK, $1); }
-   | INT_LITERAL  { $$ = new DEL::FunctionParam(DEL::ValType::INTEGER,   $1); }
-   | REAL_LITERAL { $$ = new DEL::FunctionParam(DEL::ValType::REAL,      $1); }
-   | CHAR_LITERAL { $$ = new DEL::FunctionParam(DEL::ValType::CHAR,      $1); }
+   : IDENTIFIER   { $$ = new DEL::CallParam(DEL::ValType::REQ_CHECK, $1, false); }
+   | INT_LITERAL  { $$ = new DEL::CallParam(DEL::ValType::INTEGER,   $1, true);  }
+   | REAL_LITERAL { $$ = new DEL::CallParam(DEL::ValType::REAL,      $1, true);  }
+   | CHAR_LITERAL { $$ = new DEL::CallParam(DEL::ValType::CHAR,      $1, true);  }
    ;
 
 call_params
@@ -213,10 +221,12 @@ function_stmt
    | DEF identifiers '(' recv_params ')' ARROW value_types block { $$ = new DEL::Function($2, r_params, static_cast<DEL::ValType>($7), $8); r_params.clear(); }
    ;
 
-function_call
+direct_function_call
    : identifiers '(' ')' SEMI             { $$ = new DEL::Call($1, c_params); }
    | identifiers '(' call_params ')' SEMI { $$ = new DEL::Call($1, c_params); c_params.clear(); }
    ;
+
+
 
 %%
 

@@ -46,9 +46,6 @@ namespace DEL
         //! \brief Create a special return that doesn't return a value
         void null_return();
 
-        //! \brief Create a function call not part of an assignment
-        void create_call(Intermediate::Call call);
-
     private:
         Errors & error_man;         // Error manager
         SymbolTable & symbol_table; // Symbol table

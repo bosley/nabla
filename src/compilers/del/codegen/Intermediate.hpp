@@ -6,7 +6,7 @@
 #include <vector>
 #include "Memory.hpp"
 #include "SymbolTable.hpp"
-#include "types.hpp"
+#include "Types.hpp"
 
 namespace DEL
 {
@@ -95,16 +95,11 @@ namespace DEL
         //! \param expression The expression to be generated into an assignment
         Intermediate::Assignment encode_postfix_assignment_expression(Memory::MemAlloc memory_info, AssignmentClassifier classification, std::string expression);
     
-        //! \brief Create a function call instruction for code gen
-        //! \param params The parameters to convert
-        Intermediate::Call  create_call(std::string callee, std::vector<FunctionParam> params);
 
     private:
 
         SymbolTable & symbol_table;
         Memory & memory_man;
-
-        std::vector<AddressedFunctionParam> convert_call_params(std::vector<FunctionParam> params);
 
         void build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token, uint64_t byte_len);
 

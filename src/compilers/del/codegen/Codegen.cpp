@@ -611,32 +611,4 @@ namespace DEL
         current_function->build_return(false);
     }
 
-    // ----------------------------------------------------------
-    //
-    // ----------------------------------------------------------
-
-    void Codegen::create_call(Intermediate::Call call)
-    {
-        current_function->instructions.push_back("\n\t; <<< CALL >>> \n");
-
-        uint16_t idx = 0;
-        for(auto & p : call.params)
-        {
-            std::string r = std::to_string(idx++);
-
-            if(p.is_address)
-            {
-                current_function->instructions.push_back("\n\tldw r8 $0(ls) \t; Initial stack offset\n");
-                current_function->instructions.push_back("\tmov r" + r + " $" + std::to_string(p.value) + " \t ; Load relative address of [" + p.id + "]\n");
-                current_function->instructions.push_back("\tadd r" + r + " r" + r + " r8 \t ; Add stack frame location to relative address\n");
-            }
-            else
-            {
-                error_man.report_custom("CodeGen", " Raw value loading for function call not yet complete", true);
-            }
-        }
-
-        current_function->instructions.push_back("\n\tcall " + call.destination + "\n");
-    }
-
 }
