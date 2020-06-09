@@ -5,8 +5,10 @@
 #include <string>
 #include <vector>
 #include "Memory.hpp"
+#include "Codegen.hpp"
 #include "SymbolTable.hpp"
 #include "Types.hpp"
+#include "IntermediateTypes.hpp"
 
 namespace DEL
 {
@@ -17,109 +19,38 @@ namespace DEL
     {
     public:
         //! \brief Create the Intermediate 
-        Intermediate(SymbolTable & symbol_table, Memory & memory_man);
+        Intermediate(SymbolTable & symbol_table, Memory & memory_man, Codegen & code_gen);
 
         //! \brief Destruct the Intermediate
         ~Intermediate();
 
-        //! \brief Classification of an assignment (what it should result in)
-        enum class AssignmentClassifier
-        {
-            INTEGER, DOUBLE, CHAR //, STRUCT, STRING
-        };
 
-        //! \brief A set of instructions for the code generator to use in the processing of tokens
-        enum class InstructionSet
-        {
-            // Arithmatic
-            ADD, SUB, DIV, 
-            MUL, RSH, LSH, 
-            
-            BW_OR, BW_NOT, BW_XOR, BW_AND,
+        void issue_start_function(std::string name, std::vector<FunctionParam> params);
 
-            // Comparison
-            LTE, LT, GTE, GT, EQ, NE, OR, AND, NEGATE, 
+        void issue_end_function();
 
-            // Built-in
-            POW,
+        void issue_null_return();
 
-            MOD,
-
-            // Load / Store
-            LOAD_BYTE,
-            STORE_BYTE,
-            LOAD_WORD,
-            STORE_WORD,
-
-            CALL,
-            LOAD_PARAM,
-
-            RETURN,
-
-            USE_RAW        // Use the given value (int or str val)
-
-        };
-
-        enum class DirectiveType
-        {
-            ID, CALL
-        };
-
-        struct DirectiveAllocation
-        {
-            uint64_t start_pos;
-            uint64_t end_pos;
-        };
-
-        struct Directive
-        {
-            DirectiveType type;
-            std::vector<DirectiveAllocation> allocation;
-        };
-
-        struct ParamInfo
-        {
-            uint64_t start_pos;
-            uint64_t end_pos;
-            uint16_t param_number;
-        };
-
-        //! \brief An instruction / value pair
-        struct AssignemntInstruction
-        {
-            Intermediate::InstructionSet instruction;
-            std::string value;
-
-            // If the instruction is a parameter, we need to encode some extra information
-            //ParamInfo p_info;
-        };
-        
-        //! \brief An assignment representation for the codegen to create an assignment
-        struct Assignment
-        {
-            std::string id;
-            Memory::MemAlloc memory_info;
-            AssignmentClassifier assignment_classifier;
-            std::vector<AssignemntInstruction> instructions;
-        };
-
-        //! \brief Take a postfix (RPN) instruction and create an Intermediate::Assignment 
+        //! \brief Issue an assignment command to the code generator
+        //! \param id The id being assigned
         //! \param memory_info The memory information for the resulting assignment
         //! \param classification The classification of the assignment
-        //! \param expression The expression to be generated into an assignment
-        Intermediate::Assignment encode_postfix_assignment_expression(Memory::MemAlloc memory_info, AssignmentClassifier classification, std::string expression);
-    
+        //! \param expression The expression to be computed
+        void issue_assignment(std::string id, Memory::MemAlloc memory_info, INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string postfix_expression);
 
     private:
 
+        INTERMEDIATE::TYPES::Assignment encode_postfix_assignment_expression(Memory::MemAlloc memory_info, INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string expression);
+    
         SymbolTable & symbol_table;
         Memory & memory_man;
+        Codegen & code_gen;
 
-        void build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token, uint64_t byte_len);
+        void build_assignment_directive(INTERMEDIATE::TYPES::Assignment & assignment, std::string directive_token, uint64_t byte_len);
 
-        Assignment build_assignment(std::vector<std::string> & tokens, uint64_t byte_len);
+        INTERMEDIATE::TYPES::Assignment build_assignment(std::vector<std::string> & tokens, uint64_t byte_len);
 
-        InstructionSet get_operation(std::string token);
+        INTERMEDIATE::TYPES::InstructionSet get_operation(std::string token);
     };
 }
 

@@ -13,10 +13,9 @@ namespace DEL
     Analyzer::Analyzer(Errors & err, SymbolTable & symbolTable, Codegen & code_gen, Memory & memory) : 
                                                                         error_man(err), 
                                                                         symbol_table(symbolTable),
-                                                                        code_gen(code_gen),
                                                                         memory_man(memory),
                                                                         endecoder(memory_man),
-                                                                        intermediate_rep(symbolTable, memory)
+                                                                        intermediate_layer(symbolTable, memory, code_gen)
     {
 
     }
@@ -130,8 +129,8 @@ namespace DEL
         // Add return type to the context
         symbol_table.add_return_type_to_current_context(function->return_type);
 
-        // Tell code generator to start function with given parametrs
-        code_gen.begin_function(function->name, function->params);
+        // Tell intermediate layer to start function with given parametrs
+        intermediate_layer.issue_start_function(function->name, function->params);
 
         // So elements can access function information as we visit them
         current_function = function;
@@ -151,8 +150,8 @@ namespace DEL
             delete el;
         }
 
-        // Tell code generator that we are done constructin the current function
-        code_gen.end_function();
+        // Tell intermediate layer that we are done constructin the current function
+        intermediate_layer.issue_end_function();
 
         // Clear the symbol table for the given function so elements cant be accessed externally
         // We dont delete the context though, that way can confirm existence later
@@ -217,7 +216,7 @@ namespace DEL
             that the resulting operation would be
         */
 
-        Intermediate::AssignmentClassifier classification = Intermediate::AssignmentClassifier::INTEGER; // Assume int 
+        INTERMEDIATE::TYPES::AssignmentClassifier classification = INTERMEDIATE::TYPES::AssignmentClassifier::INTEGER; // Assume int 
         
         std::string postfix_expression = validate_assignment_ast(stmt.rhs, classification, stmt.data_type, stmt.lhs);
 
@@ -239,13 +238,7 @@ namespace DEL
             memory_info = memory_man.get_mem_info(stmt.lhs);
         }
 
-        // Generate the instructions for code generation
-        Intermediate::Assignment assignment_command = intermediate_rep.encode_postfix_assignment_expression(memory_info, classification, postfix_expression);
-
-        assignment_command.id = stmt.lhs;
-
-        // Call into code generation to create assignment ASM
-        code_gen.assignment(assignment_command);
+        intermediate_layer.issue_assignment(stmt.lhs, memory_info, classification, postfix_expression);
     }
 
     // ----------------------------------------------------------
@@ -262,7 +255,7 @@ namespace DEL
         // Handle NIL / NONE Return
         if(stmt.data_type == ValType::NONE)
         {
-            code_gen.null_return();
+            intermediate_layer.issue_null_return();
             return;
         }
 
@@ -380,7 +373,7 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    void Analyzer::check_value_is_valid_for_assignment(ValType type_to_check, Intermediate::AssignmentClassifier & c, ValType & et, std::string & id)
+    void Analyzer::check_value_is_valid_for_assignment(ValType type_to_check, INTERMEDIATE::TYPES::AssignmentClassifier & c, ValType & et, std::string & id)
     {
         switch(type_to_check)
         {
@@ -391,7 +384,7 @@ namespace DEL
             case ValType::REAL     : 
             {
                 // Promote to Double if any double is present
-                c = Intermediate::AssignmentClassifier::DOUBLE;
+                c = INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE;
 
                 if((et != ValType::REAL) && (et != ValType::REAL)) 
                 {
@@ -417,7 +410,7 @@ namespace DEL
             case ValType::CHAR     :
             {
                 
-                c = Intermediate::AssignmentClassifier::CHAR;
+                c = INTERMEDIATE::TYPES::AssignmentClassifier::CHAR;
 
                 if(et != ValType::CHAR)   { error_man.report_unallowed_type(id, true); } // If Assignee isn't a char, we need to die
                 break;
@@ -429,7 +422,7 @@ namespace DEL
     // Assignee's expected type abbreviated to 'et' 
     // ----------------------------------------------------------
 
-    std::string Analyzer::validate_assignment_ast(AST * ast, Intermediate::AssignmentClassifier & c, ValType & et, std::string & id)
+    std::string Analyzer::validate_assignment_ast(AST * ast, INTERMEDIATE::TYPES::AssignmentClassifier & c, ValType & et, std::string & id)
     {
         switch(ast->node_type)
         {

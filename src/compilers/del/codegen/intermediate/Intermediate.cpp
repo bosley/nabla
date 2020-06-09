@@ -54,7 +54,8 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Intermediate::Intermediate(SymbolTable & symbol_table, Memory & memory_man) : symbol_table(symbol_table), memory_man(memory_man)
+    Intermediate::Intermediate(SymbolTable & symbol_table, Memory & memory_man, Codegen & code_gen) : 
+            symbol_table(symbol_table), memory_man(memory_man), code_gen(code_gen)
     {
 
     }
@@ -72,7 +73,48 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Intermediate::Assignment Intermediate::encode_postfix_assignment_expression(Memory::MemAlloc memory_info,  AssignmentClassifier classification, std::string expression)
+    void Intermediate::issue_start_function(std::string name, std::vector<FunctionParam> params)
+    {
+        code_gen.begin_function(name, params);
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Intermediate::issue_end_function()
+    {
+        code_gen.end_function();
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Intermediate::issue_null_return()
+    {
+        code_gen.null_return();
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Intermediate::issue_assignment(std::string id, Memory::MemAlloc memory_info, INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string postfix_expression)
+    {
+        // Build the instruction set
+        INTERMEDIATE::TYPES::Assignment assignment = encode_postfix_assignment_expression(memory_info, classification, postfix_expression);
+        assignment.id = id;
+
+        // Issue the command
+        code_gen.assignment(assignment);
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    INTERMEDIATE::TYPES::Assignment Intermediate::encode_postfix_assignment_expression(Memory::MemAlloc memory_info,  INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string expression)
     {
         // Build the expression into a string vector
         std::istringstream buf(expression);
@@ -80,10 +122,10 @@ namespace DEL
         std::vector<std::string> tokens(beg, end);
 
         // Build instructions for assignment
-        Assignment assignment;
+        INTERMEDIATE::TYPES::Assignment assignment;
 
         // We want to be particular about chars
-        if(classification == AssignmentClassifier::CHAR)
+        if(classification == INTERMEDIATE::TYPES::AssignmentClassifier::CHAR)
         {
             assignment = build_assignment(tokens, 1);
         }
@@ -106,19 +148,20 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    void Intermediate::build_assignment_directive(Intermediate::Assignment & assignment, std::string directive_token, uint64_t byte_len)
+    void Intermediate::build_assignment_directive(INTERMEDIATE::TYPES::Assignment & assignment, std::string directive_token, uint64_t byte_len)
     {
         EnDecode endecode(memory_man);
 
-        Intermediate::Directive directive = endecode.decode_directive(directive_token);
+        INTERMEDIATE::TYPES::Directive directive = endecode.decode_directive(directive_token);
 
+        // Figure out what type the directive is directing us to do
         switch(directive.type)
         {
             // Handle an ID
-            case Intermediate::DirectiveType::ID:
+            case INTERMEDIATE::TYPES::DirectiveType::ID:
             {
                 // If the item is only 1 byte, call load byte on the start position
-                if(byte_len == 1){  assignment.instructions.push_back( { InstructionSet::LOAD_BYTE, std::to_string(directive.allocation[0].start_pos) }); }
+                if(byte_len == 1){  assignment.instructions.push_back( { INTERMEDIATE::TYPES::InstructionSet::LOAD_BYTE, std::to_string(directive.allocation[0].start_pos) }); }
                 else
                 {
                     // If the item is multiple bytes, then we load words until we've loaded everything
@@ -126,7 +169,7 @@ namespace DEL
                     {
                         assignment.instructions.push_back(
                             {
-                                InstructionSet::LOAD_WORD,
+                                INTERMEDIATE::TYPES::InstructionSet::LOAD_WORD,
                                 std::to_string(directive.allocation[0].start_pos)
                             }
                         );
@@ -137,7 +180,7 @@ namespace DEL
             }
 
             // Handle a call
-            case Intermediate::DirectiveType::CALL:
+            case INTERMEDIATE::TYPES::DirectiveType::CALL:
             {
                 std::cerr << "GOT THE CALL - NOT DONE YET";
                 exit(EXIT_FAILURE);
@@ -210,7 +253,7 @@ namespace DEL
         }
         else
         {
-            std::cerr << "Internal developer error in Intermediate::Assignment::build_directive" << std::endl;
+            std::cerr << "Internal developer error in INTERMEDIATE::TYPES::Assignment::build_directive" << std::endl;
             exit(EXIT_FAILURE);
         }
         */
@@ -220,9 +263,9 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Intermediate::Assignment Intermediate::build_assignment(std::vector<std::string> & tokens, uint64_t byte_len)
+    INTERMEDIATE::TYPES::Assignment Intermediate::build_assignment(std::vector<std::string> & tokens, uint64_t byte_len)
     {
-        Intermediate::Assignment assignment;
+        INTERMEDIATE::TYPES::Assignment assignment;
 
         // Check all tokens for what they represent
         for(auto & token : tokens)
@@ -237,7 +280,7 @@ namespace DEL
             {
                 assignment.instructions.push_back(
                     {
-                        InstructionSet::USE_RAW,
+                        INTERMEDIATE::TYPES::InstructionSet::USE_RAW,
                         token
                     }
                 );
@@ -255,12 +298,14 @@ namespace DEL
         }
 
         // If its a return statement, we don't want to add a store command
-        if(assignment.instructions.back().instruction == Intermediate::InstructionSet::RETURN)
+        if(assignment.instructions.back().instruction == INTERMEDIATE::TYPES::InstructionSet::RETURN)
         {
             return assignment;
         }
 
-        Intermediate::InstructionSet final = (byte_len < 8) ? Intermediate::InstructionSet::STORE_BYTE : Intermediate::InstructionSet::STORE_WORD;
+        INTERMEDIATE::TYPES::InstructionSet final = (byte_len < 8) ? 
+            INTERMEDIATE::TYPES::InstructionSet::STORE_BYTE : 
+            INTERMEDIATE::TYPES::InstructionSet::STORE_WORD;
 
         // End of assignment trigger storage of result
         assignment.instructions.push_back(
@@ -276,30 +321,30 @@ namespace DEL
     // There HAS TO BE A BETTER WAY TO DO THIS
     // ----------------------------------------------------------
 
-    Intermediate::InstructionSet Intermediate::get_operation(std::string token)
+    INTERMEDIATE::TYPES::InstructionSet Intermediate::get_operation(std::string token)
     {
-        if(token == "ADD"   ) { return Intermediate::InstructionSet::ADD;    }
-        if(token == "SUB"   ) { return Intermediate::InstructionSet::SUB;    }
-        if(token == "MUL"   ) { return Intermediate::InstructionSet::MUL;    }
-        if(token == "DIV"   ) { return Intermediate::InstructionSet::DIV;    }
-        if(token == "MOD"   ) { return Intermediate::InstructionSet::MOD;    }
-        if(token == "POW"   ) { return Intermediate::InstructionSet::POW;    }
-        if(token == "LTE"   ) { return Intermediate::InstructionSet::LTE;    }
-        if(token == "LT"    ) { return Intermediate::InstructionSet::LT;     }
-        if(token == "GTE"   ) { return Intermediate::InstructionSet::GTE;    }
-        if(token == "GT"    ) { return Intermediate::InstructionSet::GT;     }
-        if(token == "EQ"    ) { return Intermediate::InstructionSet::EQ;     }
-        if(token == "NE"    ) { return Intermediate::InstructionSet::NE;     }
-        if(token == "LSH"   ) { return Intermediate::InstructionSet::LSH;    }
-        if(token == "RSH"   ) { return Intermediate::InstructionSet::RSH;    }
-        if(token == "NEGATE") { return Intermediate::InstructionSet::NEGATE; }
-        if(token == "OR"    ) { return Intermediate::InstructionSet::OR;     }
-        if(token == "AND"   ) { return Intermediate::InstructionSet::AND;    }
-        if(token == "BW_OR" ) { return Intermediate::InstructionSet::BW_OR;  }
-        if(token == "BW_XOR") { return Intermediate::InstructionSet::BW_XOR; }
-        if(token == "BW_AND") { return Intermediate::InstructionSet::BW_AND; }
-        if(token == "BW_NOT") { return Intermediate::InstructionSet::BW_NOT; }
-        if(token == "RETURN") { return Intermediate::InstructionSet::RETURN; }
+        if(token == "ADD"   ) { return INTERMEDIATE::TYPES::InstructionSet::ADD;    }
+        if(token == "SUB"   ) { return INTERMEDIATE::TYPES::InstructionSet::SUB;    }
+        if(token == "MUL"   ) { return INTERMEDIATE::TYPES::InstructionSet::MUL;    }
+        if(token == "DIV"   ) { return INTERMEDIATE::TYPES::InstructionSet::DIV;    }
+        if(token == "MOD"   ) { return INTERMEDIATE::TYPES::InstructionSet::MOD;    }
+        if(token == "POW"   ) { return INTERMEDIATE::TYPES::InstructionSet::POW;    }
+        if(token == "LTE"   ) { return INTERMEDIATE::TYPES::InstructionSet::LTE;    }
+        if(token == "LT"    ) { return INTERMEDIATE::TYPES::InstructionSet::LT;     }
+        if(token == "GTE"   ) { return INTERMEDIATE::TYPES::InstructionSet::GTE;    }
+        if(token == "GT"    ) { return INTERMEDIATE::TYPES::InstructionSet::GT;     }
+        if(token == "EQ"    ) { return INTERMEDIATE::TYPES::InstructionSet::EQ;     }
+        if(token == "NE"    ) { return INTERMEDIATE::TYPES::InstructionSet::NE;     }
+        if(token == "LSH"   ) { return INTERMEDIATE::TYPES::InstructionSet::LSH;    }
+        if(token == "RSH"   ) { return INTERMEDIATE::TYPES::InstructionSet::RSH;    }
+        if(token == "NEGATE") { return INTERMEDIATE::TYPES::InstructionSet::NEGATE; }
+        if(token == "OR"    ) { return INTERMEDIATE::TYPES::InstructionSet::OR;     }
+        if(token == "AND"   ) { return INTERMEDIATE::TYPES::InstructionSet::AND;    }
+        if(token == "BW_OR" ) { return INTERMEDIATE::TYPES::InstructionSet::BW_OR;  }
+        if(token == "BW_XOR") { return INTERMEDIATE::TYPES::InstructionSet::BW_XOR; }
+        if(token == "BW_AND") { return INTERMEDIATE::TYPES::InstructionSet::BW_AND; }
+        if(token == "BW_NOT") { return INTERMEDIATE::TYPES::InstructionSet::BW_NOT; }
+        if(token == "RETURN") { return INTERMEDIATE::TYPES::InstructionSet::RETURN; }
         std::cerr << "Developer error : Intermediate::InstructionSet Intermediate::get_integer_operation(std::string token)" << std::endl;
         exit(EXIT_FAILURE);
     }

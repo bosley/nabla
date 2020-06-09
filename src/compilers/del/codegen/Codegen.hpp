@@ -8,6 +8,7 @@
 #include "Intermediate.hpp"
 #include "AsmSupport.hpp"
 
+#include "IntermediateTypes.hpp"
 #include "FunctionRepresentation.hpp"
 
 namespace DEL
@@ -41,7 +42,7 @@ namespace DEL
 
         //! \brief Generate an assignment
         //! \param assignment The instructions used to build an assignment
-        void assignment(Intermediate::Assignment assignment);
+        void assignment(INTERMEDIATE::TYPES::Assignment assignment);
 
         //! \brief Create a special return that doesn't return a value
         void null_return();

@@ -82,9 +82,9 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Intermediate::Directive EnDecode::decode_directive(std::string directive)
+    INTERMEDIATE::TYPES::Directive EnDecode::decode_directive(std::string directive)
     {
-        Intermediate::Directive result_directive;
+        INTERMEDIATE::TYPES::Directive result_directive;
 
         directive = directive.substr(1, directive.size());
 
@@ -101,8 +101,8 @@ namespace DEL
             );
         }
 
-        if(d_list[0] == "ID")        { result_directive.type = Intermediate::DirectiveType::ID;   }
-        else if(d_list[0] == "CALL") { result_directive.type = Intermediate::DirectiveType::CALL; }
+        if(d_list[0] == "ID")        { result_directive.type = INTERMEDIATE::TYPES::DirectiveType::ID;   }
+        else if(d_list[0] == "CALL") { result_directive.type = INTERMEDIATE::TYPES::DirectiveType::CALL; }
         else
         {
             std::cerr << "Developer Error >>> EnDecoder was handed a directive it didn't understand : "
@@ -126,14 +126,14 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Intermediate::DirectiveAllocation EnDecode::decode_allocation(std::string allocation)
+    INTERMEDIATE::TYPES::DirectiveAllocation EnDecode::decode_allocation(std::string allocation)
     {
         std::vector<std::string> alloc_tokens = split(allocation, '|');
 
         uint64_t start_pos = std::stoull(alloc_tokens[0]);
         uint64_t end_pos   = start_pos + std::stoull(alloc_tokens[1]);
 
-        return Intermediate::DirectiveAllocation{ 
+        return INTERMEDIATE::TYPES::DirectiveAllocation{ 
             start_pos,
             end_pos
         };

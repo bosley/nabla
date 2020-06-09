@@ -172,7 +172,7 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    void Codegen::assignment(Intermediate::Assignment assignment)
+    void Codegen::assignment(INTERMEDIATE::TYPES::Assignment assignment)
     {
         /*
             assignment.id                    -> The name of the thing we are assigning for comments
@@ -199,134 +199,134 @@ namespace DEL
 
        std::string calculate_unary = "r8 r8 \t ; Perform unary operation, store in r8\n\tpushw ls r8 \t ; Put result into ls\n";
 
-       bool is_double_variant = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE);
+       bool is_double_variant = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE);
 
        for(auto & ins : assignment.instructions)
        {
            switch(ins.instruction)
            {
-               case Intermediate::InstructionSet::ADD:     
+               case INTERMEDIATE::TYPES::InstructionSet::ADD:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< ADDITION >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ((is_double_variant) ? "\tadd.d " : "\tadd ") + calculation_chunk);
                     break;                                          
                 }
-                case Intermediate::InstructionSet::SUB:     
+                case INTERMEDIATE::TYPES::InstructionSet::SUB:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< SUBTRACTION >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ((is_double_variant) ? "\tsub.d " : "\tsub ") + calculation_chunk);
                     break;                                          
                 }
-                case Intermediate::InstructionSet::DIV:     
+                case INTERMEDIATE::TYPES::InstructionSet::DIV:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< DIVISION >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ((is_double_variant) ? "\tdiv.d " : "\tdiv ") + calculation_chunk);
                     break;                                          
                 }
-                case Intermediate::InstructionSet::MUL:     
+                case INTERMEDIATE::TYPES::InstructionSet::MUL:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< MULTIPLICATION >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ((is_double_variant) ? "\tmul.d " : "\tmul ") + calculation_chunk);
                     break;                                          
                 }
-                case Intermediate::InstructionSet::RSH:     
+                case INTERMEDIATE::TYPES::InstructionSet::RSH:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< RIGHT SHIFT >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\tlsh " + calculation_chunk));
                     break;                                          
                 }
-                case Intermediate::InstructionSet::LSH:     
+                case INTERMEDIATE::TYPES::InstructionSet::LSH:     
                 { 
                     current_function->instructions.push_back("\n\t; <<< LEFT SHIFT >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\trsh " + calculation_chunk));
                     break;                                          
                 }
-                case Intermediate::InstructionSet::BW_OR:   
+                case INTERMEDIATE::TYPES::InstructionSet::BW_OR:   
                 { 
                     current_function->instructions.push_back("\n\t; <<< BITWISE OR >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\tor " + calculation_chunk ));
                     break;                                          
                 }
-                case Intermediate::InstructionSet::BW_NOT:  
+                case INTERMEDIATE::TYPES::InstructionSet::BW_NOT:  
                 { 
                     current_function->instructions.push_back("\n\t; <<< BITWISE NOT >>> \n");
                     current_function->instructions.push_back(remove_single_word_for_calc + ( "\tnot " + calculate_unary));
                     break;                                          
                 }
-                case Intermediate::InstructionSet::BW_XOR:  
+                case INTERMEDIATE::TYPES::InstructionSet::BW_XOR:  
                 { 
                     current_function->instructions.push_back("\n\t; <<< BITWISE XOR >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\txor " + calculation_chunk));
                     break;                                          
                 }
-                case Intermediate::InstructionSet::BW_AND:  
+                case INTERMEDIATE::TYPES::InstructionSet::BW_AND:  
                 { 
                     current_function->instructions.push_back("\n\t; <<< BITWISE AND >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc + ( "\tand " + calculation_chunk));
                     break;                                          
                 }
-                case Intermediate::InstructionSet::LTE:        
+                case INTERMEDIATE::TYPES::InstructionSet::LTE:        
                 {
                     current_function->instructions.push_back("\n\t; <<< LTE >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tblte.d r8 r9 " : "\tblte r8 r9 ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tblte.d r8 r9 " : "\tblte r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::LT:  
+                case INTERMEDIATE::TYPES::InstructionSet::LT:  
                 {
                     current_function->instructions.push_back("\n\t; <<< LT >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tblt.d r8 r9 " : "\tblt r8 r9 ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tblt.d r8 r9 " : "\tblt r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::GTE: 
+                case INTERMEDIATE::TYPES::InstructionSet::GTE: 
                 {
                     current_function->instructions.push_back("\n\t; <<< GTE >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tbgte.d r8 r9 " : "\tbgte r8 r9 ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbgte.d r8 r9 " : "\tbgte r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::GT:  
+                case INTERMEDIATE::TYPES::InstructionSet::GT:  
                 {
                     current_function->instructions.push_back("\n\t; <<< GT >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tbgt.d r8 r9 " : "\tbgt r8 r9 ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbgt.d r8 r9 " : "\tbgt r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::EQ:  
+                case INTERMEDIATE::TYPES::InstructionSet::EQ:  
                 {
                     current_function->instructions.push_back("\n\t; <<< EQ >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tbeq.d r8 r9 " : "\tbeq r8 r9 ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbeq.d r8 r9 " : "\tbeq r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::NE:  
+                case INTERMEDIATE::TYPES::InstructionSet::NE:  
                 {
                     current_function->instructions.push_back("\n\t; <<< NE >>> \n");
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "\tbne.d r8 r9 " : "\tbne r8 r9 ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "\tbne.d r8 r9 " : "\tbne r8 r9 ";
                     std::vector<std::string> c = setup_check(label_id, comparison, remove_words_for_calc);
                     current_function->instructions.insert(current_function->instructions.end(), c.begin(), c.end());
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::OR:
+                case INTERMEDIATE::TYPES::InstructionSet::OR:
                 {
                     current_function->instructions.push_back("\n\t; <<< OR >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc);
                     current_function->instructions.push_back("\n\tmov r7 $0\t; Comparison value");
                     std::string true_label = "OR_is_true_"    + std::to_string(label_id);
                     std::string complete   = "OR_is_complete_" + std::to_string(label_id);
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
                     current_function->instructions.push_back("\n\n\t" + comparison + "r8 r7 " + true_label);
                     current_function->instructions.push_back("\n\t" + comparison + "r9 r7 " + true_label);
                     current_function->instructions.push_back("\n\n\tmov r8 $0 ; False");
@@ -338,7 +338,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::AND:
+                case INTERMEDIATE::TYPES::InstructionSet::AND:
                 {
                     current_function->instructions.push_back("\n\t; <<< AND >>> \n");
                     current_function->instructions.push_back(remove_words_for_calc);
@@ -346,7 +346,7 @@ namespace DEL
                     std::string first_true  = "AND_first_true_" + std::to_string(label_id);
                     std::string second_true = "AND_second_true_" + std::to_string(label_id);
                     std::string complete    = "AND_complete_" + std::to_string(label_id);
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
                     current_function->instructions.push_back("\t" + comparison + "r8 r7 " + first_true + "\n\n");
                     current_function->instructions.push_back("\tmov r8 $0\t; False\n\n");
                     current_function->instructions.push_back("\tjmp " + complete + "\n\n");
@@ -361,12 +361,12 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::NEGATE:     
+                case INTERMEDIATE::TYPES::InstructionSet::NEGATE:     
                 {
                     current_function->instructions.push_back("\n\t; <<< NEGATE >>> \n");
                     current_function->instructions.push_back(remove_single_word_for_calc);
                     current_function->instructions.push_back("\n\tmov r7 $0\t; Comparison\n\n");
-                    std::string comparison = (assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
+                    std::string comparison = (assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE) ? "bgt.d " : "bgt ";
                     std::string set_zero = "NEGATE_set_zero_" + std::to_string(label_id);
                     std::string set_comp = "NEGATE_complete_" + std::to_string(label_id);
                     current_function->instructions.push_back("\t" + comparison + " r8 r7 " + set_zero + "\n\n");
@@ -376,7 +376,7 @@ namespace DEL
                     label_id++;
                     break;
                 }
-                case Intermediate::InstructionSet::LOAD_BYTE:
+                case INTERMEDIATE::TYPES::InstructionSet::LOAD_BYTE:
                 {
                     current_function->instructions.push_back("\n\t; <<< LOAD BYTE >>> \n");
                     uint64_t word_address = std::stoull(ins.value);
@@ -394,7 +394,7 @@ namespace DEL
                     current_function->instructions.push_back("\tpush ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
-                case Intermediate::InstructionSet::LOAD_WORD:
+                case INTERMEDIATE::TYPES::InstructionSet::LOAD_WORD:
                 {
                     current_function->instructions.push_back("\n\t; <<< LOAD WORD >>> \n");
                     uint64_t word_address = std::stoull(ins.value);
@@ -412,7 +412,7 @@ namespace DEL
                     current_function->instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
-                case Intermediate::InstructionSet::STORE_BYTE:
+                case INTERMEDIATE::TYPES::InstructionSet::STORE_BYTE:
                 {
                     current_function->instructions.push_back("\n\t; <<< STORE BYTE >>> \n");
 
@@ -436,7 +436,7 @@ namespace DEL
                     current_function->instructions.push_back("\tstb r0(gs) r8\t ; Store in memory\n");
                     break;
                 }
-                case Intermediate::InstructionSet::STORE_WORD:  
+                case INTERMEDIATE::TYPES::InstructionSet::STORE_WORD:  
                 {
                     current_function->instructions.push_back("\n\t; <<< STORE WORD >>> \n");
 
@@ -460,26 +460,26 @@ namespace DEL
                     current_function->instructions.push_back("\tstw r0(gs) r8\t ; Store in memory\n");
                     break;
                 }
-                case Intermediate::InstructionSet::USE_RAW:
+                case INTERMEDIATE::TYPES::InstructionSet::USE_RAW:
                 {
                     switch(assignment.assignment_classifier)
                     {
-                    case Intermediate::AssignmentClassifier::INTEGER:  setup_integer(assignment.id, ins.value);  break;
-                    case Intermediate::AssignmentClassifier::DOUBLE:   setup_double(assignment.id, ins.value );  break;
-                    case Intermediate::AssignmentClassifier::CHAR:     setup_char(assignment.id, ins.value );    break;
+                    case INTERMEDIATE::TYPES::AssignmentClassifier::INTEGER:  setup_integer(assignment.id, ins.value);  break;
+                    case INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE:   setup_double(assignment.id, ins.value );  break;
+                    case INTERMEDIATE::TYPES::AssignmentClassifier::CHAR:     setup_char(assignment.id, ins.value );    break;
                     default:
                         error_man.report_custom("Codegen", "Developer error: Assignment Classifier switch reached default", true);
                         break;
                     }
                     break;
                 }
-                case Intermediate::InstructionSet::POW:
+                case INTERMEDIATE::TYPES::InstructionSet::POW:
                 {
                     current_function->instructions.push_back("\n\t; <<< POW >>> \n");
                     current_function->instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
 
                     std::string function_name;
-                    if(assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE)
+                    if(assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE)
                     {
                         asm_support.import_math(AsmSupport::Math::POW_D, function_name, program_init);
 
@@ -493,13 +493,13 @@ namespace DEL
                     current_function->instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
-                case Intermediate::InstructionSet::MOD:
+                case INTERMEDIATE::TYPES::InstructionSet::MOD:
                 {
                     current_function->instructions.push_back("\n\t; <<< MOD >>> \n");
                     current_function->instructions.push_back("\n\tpopw r2 ls \t ; Calculation RHS\n\tpopw r1 ls \t ; Calculation LHS\n");
 
                     std::string function_name;
-                    if(assignment.assignment_classifier == Intermediate::AssignmentClassifier::DOUBLE)
+                    if(assignment.assignment_classifier == INTERMEDIATE::TYPES::AssignmentClassifier::DOUBLE)
                     {
                         asm_support.import_math(AsmSupport::Math::MOD_D, function_name, program_init);
                     }
@@ -518,9 +518,9 @@ namespace DEL
                           There may be MANY bytes that come back, so a new method triggered by this one would be ideal
                 
                 */
-                case Intermediate::InstructionSet::CALL:       error_man.report_custom("Codegen", "Developer: CALL not completed"); break;
+                case INTERMEDIATE::TYPES::InstructionSet::CALL:       error_man.report_custom("Codegen", "Developer: CALL not completed"); break;
 
-                case Intermediate::InstructionSet::RETURN:
+                case INTERMEDIATE::TYPES::InstructionSet::RETURN:
                 {
                     current_function->build_return();
                     break;
@@ -610,5 +610,7 @@ namespace DEL
         // Tell the function to return without getting information from the stack
         current_function->build_return(false);
     }
+
+
 
 }

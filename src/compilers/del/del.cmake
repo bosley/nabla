@@ -30,6 +30,7 @@ set(DEL_COMPILER_HEADERS
     ${DEL_COMPILER_DIR}/codegen/asm/AsmMath.hpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmSupport.hpp
     ${DEL_COMPILER_DIR}/codegen/intermediate/Intermediate.hpp
+    ${DEL_COMPILER_DIR}/codegen/intermediate/IntermediateTypes.hpp
     ${DEL_COMPILER_DIR}/codegen/parts/Generators.hpp
     ${DEL_COMPILER_DIR}/codegen/parts/FunctionRepresentation.hpp
 
