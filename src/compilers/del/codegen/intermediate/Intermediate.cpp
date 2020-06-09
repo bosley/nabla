@@ -75,7 +75,21 @@ namespace DEL
 
     void Intermediate::issue_start_function(std::string name, std::vector<FunctionParam> params)
     {
-        code_gen.begin_function(name, params);
+        std::vector<CODEGEN::TYPES::ParamInfo> codegen_params;
+
+        uint16_t gs_param_start = 1;
+        for(auto & p : params)
+        {
+            Memory::MemAlloc mem_info = memory_man.get_mem_info(p.id);
+
+            codegen_params.push_back(CODEGEN::TYPES::ParamInfo{
+                mem_info.start_pos,
+                mem_info.start_pos + mem_info.bytes_alloced,
+                gs_param_start++
+            });
+        }
+
+        code_gen.begin_function(name, codegen_params);
     }
 
     // ----------------------------------------------------------

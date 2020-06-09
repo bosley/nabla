@@ -55,7 +55,7 @@ namespace TYPES
     {
         uint64_t start_pos;
         uint64_t end_pos;
-        uint16_t param_number;
+        uint16_t param_gs_index;
     };
 
     //

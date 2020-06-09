@@ -34,7 +34,7 @@ namespace DEL
         //! \param name The function name
         //! \param params The function's parameters
         //! \post The code generator will be set to start building a function
-        void begin_function(std::string name, std::vector<FunctionParam> params);
+        void begin_function(std::string name, std::vector<CODEGEN::TYPES::ParamInfo> params);
 
         //! \brief End function
         //! \post The code generator will be ready to begin another function

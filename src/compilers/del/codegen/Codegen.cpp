@@ -90,22 +90,34 @@ namespace DEL
         
         asm_support.import_init_start(result);
 
-        uint64_t memory_alloc = memory_man.get_currently_allocated_bytes_amnt();
-
         // Memory manager has reserved some room at the front of GS for information about the program
         // Right now its set to 64 bytes
 
         // 8 bytes
         result.push_back(".int64 __STACK_FRAME_OFFSET__ " + std::to_string(Memory::START_ADDRESS_SPACE) + "\n");
-        result.push_back(".int64 __MEM_ALLOC_COUNTER__ " + std::to_string(memory_alloc) + "\n");
 
-        // These are reserved by the memory manager and need to be populated for correctness, used or not
-        result.push_back(".int64 __PLACE_HOLDER__0__ 0\n");
-        result.push_back(".int64 __PLACE_HOLDER__1__ 0\n");
-        result.push_back(".int64 __PLACE_HOLDER__2__ 0\n");
-        result.push_back(".int64 __PLACE_HOLDER__3__ 0\n");
-        result.push_back(".int64 __PLACE_HOLDER__4__ 0\n");
-        result.push_back(".int64 __PLACE_HOLDER__5__ 0\n");
+        // Places to store parameters as they're passes around to free up registers
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__0__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__1__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__2__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__3__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__4__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__5__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__6__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__7__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__8__ 0\n");
+        result.push_back(".int64 __PARAMETER_PLACE_HOLDER__9__ 0\n");
+
+        // Reserved for future expansion
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__0__ 0\n");
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__1__ 0\n");
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__2__ 0\n");
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__3__ 0\n");
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__4__ 0\n");
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__5__ 0\n");
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__6__ 0\n");
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__7__ 0\n");
+        result.push_back(".int64 __UNUSED_PLACE_HOLDER__8__ 0\n");
 
         // Add the init function - All globals in reserved space must be pushed before this
         asm_support.import_init_func(result);
@@ -127,7 +139,7 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    void Codegen::begin_function(std::string name, std::vector<FunctionParam> params)
+    void Codegen::begin_function(std::string name, std::vector<CODEGEN::TYPES::ParamInfo> params)
     {
         if(building_function)
         {

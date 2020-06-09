@@ -21,7 +21,9 @@ namespace DEL
         static constexpr int MAX_GLOBAL_MEMORY = NABLA::VSYS::NABLA_VSYS_SETTINGS_GLOBAL_MEMORY_BYTES;
 
         //! \brief Address space start so we can pack some info in front at end of compile
-        static constexpr int START_ADDRESS_SPACE = 64;
+        //! \note  If you REALLY want to change this, ensure changes are reflected in the initial
+        //!        generated code from Codegen::indicate_complete() otherwise stack will be wonky
+        static constexpr int START_ADDRESS_SPACE = 160;
 
         //! \brief Create the memory object
         Memory();
