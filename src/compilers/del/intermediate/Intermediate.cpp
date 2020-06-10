@@ -54,8 +54,8 @@ namespace DEL
     //
     // ----------------------------------------------------------
 
-    Intermediate::Intermediate(SymbolTable & symbol_table, Memory & memory_man, Codegen & code_gen) : 
-            symbol_table(symbol_table), memory_man(memory_man), code_gen(code_gen)
+    Intermediate::Intermediate(Memory & memory_man, Codegen & code_gen) : 
+            memory_man(memory_man), code_gen(code_gen)
     {
 
     }

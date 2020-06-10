@@ -1,26 +1,7 @@
 #include "FunctionRepresentation.hpp"
-#include "Generators.hpp"
+#include "Generator.hpp"
 #include <libnabla/endian.hpp>
 #include <iostream>
-#  define N_UNUSED(x) (void)x;
-
-/*
-
-    Parameters are passed by address. 
-
-    Local stack setup
-                                    
-        Word 0          Word 1     Parameters 
-     ________________________________________________
-    |             |              |   |   |   |   |
-    |  GS Offset  |  GS Fn Size  | 0 | . | . | N |
-    |_____________|______________|___|___|___|___|___
-
-    GS Offset   - Offset for GS at the time of function loading
-    GS Fn Size  - The size that the function will take up for variable storage in memory , used to free the global stack on return
-
-*/
-
 namespace DEL
 {
 namespace PARTS
@@ -76,29 +57,11 @@ namespace PARTS
         lines.push_back("\n\tadd r8 r8 r9 \t; Add our size to the gs offset");
         lines.push_back("\n\tstw $0(gs) r8 \t; Increates the stack offset\n");
 
+        Generator gen;
         for(auto & p : params)
         {
-         //   lines.push_back("\tldw r0 $" + std::to_string(p.param_gs_index) + "(gs)\t ; Move address of parameter\n");
-         //   lines.push_back("\tldw r2 $0(ls)\t ; Load this functions stack offset\n");
-
-            std::cerr << ">>>>>>>>> WARNING <<<<<<<<<<< : We need to assemble local representation of "
-                      << " parameters passed in via the addresses stored in the global stack - FunctionRepresentation.cpp"
-                      << std::endl;
-
-            /*
-                    Right here we have p.gs_param_start which will tell us what index of the GS an incomming parameter's 
-                    current address is at (well, once call is written) 
-
-                    We need to take p.start_pos (our copy of the parameter's new address) and add it to the local
-                    stack's reference to the gs start index $0(ls) so we can ldw the address stored in gs for the parameter
-                    into a register and then stw that data in our stack frame where the memory manager assigned it
-
-                    To do this I'd like to utilize the 2-Mov method of loading addresses into a register
-                     - That was just written. But im tired and will do this tomorrow
-            */
-
             // Load our relative address for parameter destination
-            std::vector<std::string> load_rel_addr = PARTS::two_move_64(ENDIAN::conditional_to_le_64(p.start_pos), "Load relative parameter destination");
+            std::vector<std::string> load_rel_addr = gen.load_64_into_r0(ENDIAN::conditional_to_le_64(p.start_pos), "Load relative parameter destination");
            
             lines.insert(lines.end(), load_rel_addr.begin(), load_rel_addr.end());
 

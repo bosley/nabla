@@ -27,9 +27,9 @@ set(DEL_COMPILER_HEADERS
     ${DEL_COMPILER_DIR}/ast/Types.hpp
 
     ${DEL_COMPILER_DIR}/codegen/Codegen.hpp
+    ${DEL_COMPILER_DIR}/codegen/Generator.hpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmMath.hpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmSupport.hpp
-    ${DEL_COMPILER_DIR}/codegen/parts/Generators.hpp
     ${DEL_COMPILER_DIR}/codegen/parts/FunctionRepresentation.hpp
 
     ${DEL_COMPILER_DIR}/intermediate/Intermediate.hpp
@@ -45,12 +45,15 @@ set(DEL_COMPILER_HEADERS
 
     ${DEL_COMPILER_DIR}/del_driver.hpp
     ${DEL_COMPILER_DIR}/del_scanner.hpp
+
+    ${DEL_COMPILER_DIR}/SystemSettings.hpp
 )
 
 set(DEL_COMPILER_SOURCES
     ${DEL_COMPILER_DIR}/ast/Ast.cpp
 
     ${DEL_COMPILER_DIR}/codegen/Codegen.cpp
+    ${DEL_COMPILER_DIR}/codegen/Generator.cpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmSupport.cpp
     ${DEL_COMPILER_DIR}/codegen/parts/FunctionRepresentation.cpp
 

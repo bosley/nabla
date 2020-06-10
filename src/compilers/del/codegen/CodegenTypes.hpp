@@ -130,7 +130,6 @@ namespace TYPES
         Memory::MemAlloc memory_info;
         DataClassification classification;
         std::vector<BaseInstruction*> instructions;
-
     };
 }
 }

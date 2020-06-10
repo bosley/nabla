@@ -6,10 +6,11 @@
 #include "SymbolTable.hpp"
 #include "Memory.hpp"
 #include "Intermediate.hpp"
-#include "AsmSupport.hpp"
 
 #include "CodegenTypes.hpp"
 #include "FunctionRepresentation.hpp"
+
+#include "Generator.hpp"
 
 namespace DEL
 {
@@ -21,7 +22,7 @@ namespace DEL
         //! \brief Construct a code generator
         //! \param err The error manager
         //! \param symbolTable The program symbol table
-        Codegen(Errors & err, SymbolTable & symbolTable, Memory & memory);
+        Codegen(Errors & err, SymbolTable & symbolTable);
 
         //! \brief Deconstrut the code generator
         ~Codegen();
@@ -47,15 +48,14 @@ namespace DEL
         //! \brief Create a special return that doesn't return a value
         void null_return();
 
-
     private:
         Errors & error_man;         // Error manager
         SymbolTable & symbol_table; // Symbol table
-        Memory & memory_man;        // Memory manager
         bool building_function;
-        AsmSupport asm_support;
 
         uint64_t label_id;
+
+        Generator generator;
 
         std::vector<std::string> program_init;
         std::vector<std::string> program_instructions;

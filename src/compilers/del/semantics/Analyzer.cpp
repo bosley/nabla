@@ -15,7 +15,7 @@ namespace DEL
                                                                         symbol_table(symbolTable),
                                                                         memory_man(memory),
                                                                         endecoder(memory_man),
-                                                                        intermediate_layer(symbolTable, memory, code_gen)
+                                                                        intermediate_layer(memory, code_gen)
     {
 
     }
@@ -99,8 +99,6 @@ namespace DEL
 
     void Analyzer::build_function(Function *function)
     {
-        std::cout << "Analyzer >> Building function : " << function->name << std::endl;
-
         // Ensure function is unique
         if(symbol_table.does_context_exist(function->name))
         {
@@ -215,12 +213,9 @@ namespace DEL
             code generator while analyzing the data to ensure that all variables exist and to pull the type
             that the resulting operation would be
         */
-
         INTERMEDIATE::TYPES::AssignmentClassifier classification = INTERMEDIATE::TYPES::AssignmentClassifier::INTEGER; // Assume int 
         
         std::string postfix_expression = validate_assignment_ast(stmt.rhs, classification, stmt.data_type, stmt.lhs);
-
-        std::cout << "Resulting eq: " << stmt.lhs << " = " << postfix_expression << std::endl;
 
         // The unique value doesn't exist yet and needs some memory allocated and 
         // needs to be added to the symbol table

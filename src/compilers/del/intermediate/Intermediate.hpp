@@ -20,7 +20,7 @@ namespace DEL
     {
     public:
         //! \brief Create the Intermediate 
-        Intermediate(SymbolTable & symbol_table, Memory & memory_man, Codegen & code_gen);
+        Intermediate(Memory & memory_man, Codegen & code_gen);
 
         //! \brief Destruct the Intermediate
         ~Intermediate();
@@ -45,7 +45,6 @@ namespace DEL
 
         CODEGEN::TYPES::Command encode_postfix_assignment_expression(Memory::MemAlloc memory_info, INTERMEDIATE::TYPES::AssignmentClassifier classification, std::string expression);
     
-        SymbolTable & symbol_table;
         Memory & memory_man;
         Codegen & code_gen;
 

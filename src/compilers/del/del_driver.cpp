@@ -11,7 +11,7 @@ namespace DEL
    DEL_Driver::DEL_Driver() : 
                               error_man(tracker), 
                               symbol_table(error_man, memory_man),
-                              code_gen(error_man, symbol_table, memory_man),
+                              code_gen(error_man, symbol_table),
                               analyzer(error_man, symbol_table, code_gen, memory_man)
    {
       symbol_table.new_context("global");
@@ -127,7 +127,8 @@ namespace DEL
       
       */
 
-      bool assemble_verbose = true;
+      bool assemble_verbose = false;
+
       std::string asm_output_file = DEFAULT_ASM_OUT;
       std::string bin_output_file = DEFAULT_BIN_OUT;
 
@@ -146,14 +147,13 @@ namespace DEL
          asm_out.close();
          ASM.clear();
       }
-/*
+
       std::vector<uint8_t> binary_data;
 
       if(!ASSEMBLER::ParseAsm(asm_output_file, binary_data, assemble_verbose))
       {
          error_man.report_custom("DEL::Driver", "Developer Error : Generated ASM code would not assemble", true);
       }
-      std::cout << " complete" << std::endl;
 
       // output BYTE CODE
       {
@@ -170,7 +170,11 @@ namespace DEL
          bin_out.close();
          binary_data.clear();
       }
-*/
+
+      // Keep this until we allow configuration of output names / etc
+      std::cout << ">>> Complete <<<" << std::endl 
+                << "Binary output file : " << DEFAULT_BIN_OUT << std::endl 
+                << "Nabla ASM file     : " << DEFAULT_ASM_OUT << std::endl;
    }
 
    // ----------------------------------------------------------

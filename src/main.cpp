@@ -4,9 +4,7 @@
 #include <vector>
 
 #include "CompilerFramework.hpp"
-#include "LibManifest.hpp"
 
-#include <libnabla/projectfs.hpp>
 #include <libnabla/VSysLoadableMachine.hpp>
 
 /*
@@ -26,8 +24,6 @@ namespace
     std::vector<Args> NablaArguments;
 
     constexpr double SECONDS_BETWEEN_GC_CYCLES = 30.0;
-
-    constexpr char LIB_LOCATION[] = "libs";
 }
 
 int handle_bin_exec(std::string file);
@@ -54,7 +50,7 @@ int main(int argc, char ** argv)
 
         { "-h", "--nabla-help", "Display help message."},
         { "-v", "--version",    "Display the version of Nabla." },
-        { "-c", "--compile",    "Compile a nabla HLL project."}
+        { "-c", "--compile",    "Compile a DEL file."}
     };
     
     std::vector<std::string> args(argv, argv + argc);
@@ -77,13 +73,13 @@ int main(int argc, char ** argv)
             return 0;
         }
 
-        // Compile a nabla HLL project
+        // Compile DEL
         //
         if(args[i] == "-c" || args[i] == "--compile")
         {
             if(i == argc - 1)
             {
-                std::cout << "Error: Project directory not given" << std::endl;
+                std::cout << "Error: No file given" << std::endl;
                 return 1;
             }
 
@@ -91,71 +87,19 @@ int main(int argc, char ** argv)
         }
     }
 
-    // No arguments handled, but there is at least one argument so try to execute it as a HLL project
-
+    // No arguments handled, but there is at least one argument so try to execute it 
     return handle_bin_exec(args[1]);
-}
-
-// --------------------------------------------
-// Load a project
-// --------------------------------------------
-
-bool load_project(std::string project_dir, NABLA::ProjectFS & project)
-{
-    switch(project.load(project_dir))
-    {
-        case NABLA::ProjectFS::LoadResultCodes::OKAY:
-            std::cout << "[" << project_dir << "] loaded!" << std::endl;
-            return true;
-
-        case NABLA::ProjectFS::LoadResultCodes::ERROR_GIVEN_PATH_NOT_DIRECTORY:
-            std::cerr << "[" << project_dir << "] Is not a directory" << std::endl;
-            return false;
-
-        case NABLA::ProjectFS::LoadResultCodes::ERROR_FAILED_TO_OPEN_CONFIG:
-            std::cerr << "Unable to open config.json" << std::endl;
-            return false;
-
-        case NABLA::ProjectFS::LoadResultCodes::ERROR_FAILED_TO_LOAD_CONFIG:
-            std::cerr << "Unable to load config.json" << std::endl;
-            return false;
-    }
-    return false;
 }
 
 // --------------------------------------------
 // Compile Nabla HLL
 // --------------------------------------------
     
-int handle_compilation(std::string project_dir)
+int handle_compilation(std::string file)
 {
-    std::cout << " ∇ Nabla ∇ " << NABLA_VERSION_INFO     << std::endl 
-              << "Platform: "  << TARGET_PLATFORM_STRING << std::endl
-              << "------------------------------------"  << std::endl; 
+    NABLA::CompilerFramework cfw;
 
-    NABLA::LibManifest lib_manifest;
-/*
-    // Load the system library manifest. Errors reported by method call
-    if(!lib_manifest.load_manifest(LIB_LOCATION))
-    {
-        return 1;
-    }
-
-    NABLA::ProjectFS project;
-
-    if(!load_project(project_dir, project))
-    {
-        return 1;
-    }
-
-    NABLA::CompilerFramework cfw(lib_manifest);
-
-    return cfw.compile_project(project);
-*/
-
-    NABLA::CompilerFramework cfw(lib_manifest);
-    return cfw.compile_file(project_dir); // Really just a file rn
-
+    return cfw.compile(file);
 }
 
 // --------------------------------------------
