@@ -88,7 +88,7 @@ namespace PARTS
                     into a register and then stw that data in our stack frame where the memory manager assigned it
 
                     To do this I'd like to utilize the 2-Mov method of loading addresses into a register
-                    but that isn't written. 
+                     - That was just written. But im tired and will do this tomorrow
             */
 
            std::cout << "Current address of parameter to be passed in   : " << (int)p.param_gs_index << std::endl;

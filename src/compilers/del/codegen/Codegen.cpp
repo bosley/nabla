@@ -1,22 +1,9 @@
 /*
-    This file is getting large, so I think its a good idea to write a comment up top to describe somethings that still need to be done and what is done. 
-
-    What is done now :  int / char / double expressions are all complete
-        Those two things need to have some functions generated to support them. 
-        Other than that : - + * / || && ! xor and not or lsh rsh LT LTE GT GTE EQ NE have been fleshed out
-        They have been mostly hand tested. Once the remainind 'command.' operations have been completed, we will need to setup a test mechanism to ensure
-        that all of these compile into things that actually work. 
-
-        Getting values from function calls has not yet been completed. That is below and will trigger the error manager to laugh at us if we attempt
-        to use a function call anywhere in an expression. At this point I'm pretty sure the grammer doesn't even let us do that, but once it does we will 
-        DEFINITELY be laughed at by the code generator. 
+    
+    
+    For the next step I would like to break out each part of code generation into a series of objects that manage commonalities 
 
 
-    Future:
-
-        So this is my first time doing this. I HATE the mashing of asm into strings and vectors. I want to bang out this POC and then create some other classes that 
-        are used to represent individual actions and have an understanding of the ASM that we can call into from here to generate the code. That way if the ASM changes later
-        (god I hope not) we can then just change the syntax setup in a singular place and BOOM everything will be updated
 */
 
 #include "Codegen.hpp"

@@ -9,6 +9,24 @@ namespace DEL
 {
 namespace PARTS
 {
+    static std::vector<std::string> two_move_64(uint64_t le_64, std::string comment)
+    {
+        std::vector<std::string> result;
+
+        uint32_t top = (le_64 & 0xFFFFFFFF00000000) >> 32;
+        uint32_t bot = (le_64 & 0x00000000FFFFFFFF) >> 0;
+
+        result.push_back("\n\t; Move address halves into place\n\n");
+
+        result.push_back("mov r0 $" + std::to_string(top) + "\t ; Top\n");
+        result.push_back("mov r1 $" + std::to_string(bot) + "\t ; Bottom\n");
+        result.push_back("lsh r0 r0 $32\t ; Left shift top over\n");
+        result.push_back("or  r0 r0 r1 \t ; Or parts together to create address\n\n");
+
+        return result;
+    }
+
+
      /*
         TODO : 
 

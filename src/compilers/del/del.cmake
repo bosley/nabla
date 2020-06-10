@@ -14,8 +14,8 @@ set(DEL_INCLUDE_DIRS
     ${DEL_COMPILER_DIR}/ast
     ${DEL_COMPILER_DIR}/codegen
     ${DEL_COMPILER_DIR}/codegen/asm
-    ${DEL_COMPILER_DIR}/codegen/intermediate
     ${DEL_COMPILER_DIR}/codegen/parts
+    ${DEL_COMPILER_DIR}/intermediate
     ${DEL_COMPILER_DIR}/managers
     ${DEL_COMPILER_DIR}/semantics
     ${FLEX_INCLUDE_DIRS}
@@ -29,10 +29,11 @@ set(DEL_COMPILER_HEADERS
     ${DEL_COMPILER_DIR}/codegen/Codegen.hpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmMath.hpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmSupport.hpp
-    ${DEL_COMPILER_DIR}/codegen/intermediate/Intermediate.hpp
-    ${DEL_COMPILER_DIR}/codegen/intermediate/IntermediateTypes.hpp
     ${DEL_COMPILER_DIR}/codegen/parts/Generators.hpp
     ${DEL_COMPILER_DIR}/codegen/parts/FunctionRepresentation.hpp
+
+    ${DEL_COMPILER_DIR}/intermediate/Intermediate.hpp
+    ${DEL_COMPILER_DIR}/intermediate/IntermediateTypes.hpp
 
     ${DEL_COMPILER_DIR}/managers/Errors.hpp
     ${DEL_COMPILER_DIR}/managers/Memory.hpp
@@ -51,8 +52,9 @@ set(DEL_COMPILER_SOURCES
 
     ${DEL_COMPILER_DIR}/codegen/Codegen.cpp
     ${DEL_COMPILER_DIR}/codegen/asm/AsmSupport.cpp
-    ${DEL_COMPILER_DIR}/codegen/intermediate/Intermediate.cpp
     ${DEL_COMPILER_DIR}/codegen/parts/FunctionRepresentation.cpp
+
+    ${DEL_COMPILER_DIR}/intermediate/Intermediate.cpp
 
     ${DEL_COMPILER_DIR}/managers/Errors.cpp
     ${DEL_COMPILER_DIR}/managers/SymbolTable.cpp
