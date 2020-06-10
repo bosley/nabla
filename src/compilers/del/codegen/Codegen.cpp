@@ -158,7 +158,7 @@ namespace DEL
         building_function = false;
         label_id = 0;
 
-        std::cout << "Codegen >>> end_function()" << std::endl;
+        std::cout << "Codegen >>> end_function() - Bytes reauired : " << current_function->bytes_required << std::endl;
 
         std::vector<std::string> final_function_instructions = current_function->building_complete();
 
@@ -383,7 +383,7 @@ namespace DEL
                     uint64_t word_address = avins->value;
 
                     // Generate a register with the address for the destination
-                    std::vector<std::string> store_ins = PARTS::generate_store_64(8, word_address, "Address of thing in expression");
+                    std::vector<std::string> store_ins = PARTS::two_move_64(word_address, "Address of thing in expression");
                     current_function->instructions.insert(current_function->instructions.end(), store_ins.begin(), store_ins.end());
 
                     // Add the relative address of the item to the start position of the function in memory to acquire the actual destination
@@ -403,7 +403,7 @@ namespace DEL
                     uint64_t word_address = avins->value;
 
                     // Generate a register with the address for the destination
-                    std::vector<std::string> store_ins = PARTS::generate_store_64(8, word_address, "Address of thing in expression");
+                    std::vector<std::string> store_ins = PARTS::two_move_64(word_address, "Address of thing in expression");
                     current_function->instructions.insert(current_function->instructions.end(), store_ins.begin(), store_ins.end());
 
                     // Add the relative address of the item to the start position of the function in memory to acquire the actual destination
@@ -423,7 +423,7 @@ namespace DEL
                     uint64_t mem_start = ENDIAN::conditional_to_le_64(command.memory_info.start_pos);
                 
                     // Generate a register with the address for the destination
-                    std::vector<std::string> store_ins = PARTS::generate_store_64(8, mem_start, ("Address for [" + command.id + "]"));
+                    std::vector<std::string> store_ins = PARTS::two_move_64(mem_start, ("Address for [" + command.id + "]"));
                     current_function->instructions.insert(current_function->instructions.end(), store_ins.begin(), store_ins.end());
 
                     // Add the relative address of the item to the start position of the function in memory to acquire the actual destination
@@ -447,7 +447,7 @@ namespace DEL
                     uint64_t mem_start = ENDIAN::conditional_to_le_64(command.memory_info.start_pos);
                 
                     // Generate a register with the address for the destination
-                    std::vector<std::string> store_ins = PARTS::generate_store_64(8, mem_start, ("Address for [" + command.id + "]"));
+                    std::vector<std::string> store_ins = PARTS::two_move_64(mem_start, ("Address for [" + command.id + "]"));
                     current_function->instructions.insert(current_function->instructions.end(), store_ins.begin(), store_ins.end());
 
                     // Add the relative address of the item to the start position of the function in memory to acquire the actual destination
@@ -517,14 +517,32 @@ namespace DEL
                     current_function->instructions.push_back("\tpushw ls r0\t; Push value to local stack for calculation\n");
                     break;
                 }
+                case CODEGEN::TYPES::InstructionSet::MOVE_ADDRESS:
+                {
+                    current_function->instructions.push_back("\n\t; <<< MOVE ADDRESS >>> \n");
+                    CODEGEN::TYPES::MoveInstruction * mins = static_cast<CODEGEN::TYPES::MoveInstruction*>(ins);
+                    current_function->instructions.push_back("\n\tldw r0 $0(ls)\n");
+                    std::vector<std::string> mov = PARTS::two_move_64(ENDIAN::conditional_to_le_64(mins->source), "Local index of variable for move");
+                    current_function->instructions.insert(current_function->instructions.end(), mov.begin(), mov.end());
+                    current_function->instructions.push_back("\tldw r1 $0(ls) \t; Move offset\n");
+                    current_function->instructions.push_back("\tadd r0 r0 r1 \t ; Get absolute address for variable \n");
+                    current_function->instructions.push_back("\tstw $" + std::to_string(mins->destination) + "(gs) r0 \t ; Store address in gs destination\n");
+                    break;
+                }
+                case CODEGEN::TYPES::InstructionSet::CALL:      
+                {
+                    current_function->instructions.push_back("\n\t; <<< CALL >>> \n");
 
-                /*
-                    TODO: Once grammar allows us to include function calls in expressions, this will need to be filled out!
-                          There may be MANY bytes that come back, so a new method triggered by this one would be ideal
-                
-                */
-                case CODEGEN::TYPES::InstructionSet::CALL:       error_man.report_custom("Codegen", "Developer: CALL not completed"); break;
+                    CODEGEN::TYPES::CallInstruction * cins = static_cast<CODEGEN::TYPES::CallInstruction*>(ins);
+                    
+                    current_function->instructions.push_back("\n\tcall " + cins->function_name + "\t ; Call function\n\n");
 
+                    if(cins->expect_return_value)
+                    {
+                        current_function->instructions.push_back("\tpushw ls r0\t; Push return value to local stack for calculation\n");
+                    }
+                    break;
+                }
                 case CODEGEN::TYPES::InstructionSet::RETURN:
                 {
                     current_function->build_return();
@@ -551,13 +569,13 @@ namespace DEL
         // Conditionally little-endian the thing and convert it to an unsigned value
         uint64_t unsigned_value = ENDIAN::conditional_to_le_64(static_cast<uint64_t>(i_value));
 
-        uint8_t bytes = 8;
-        if(i_value < std::numeric_limits<int8_t>::max() && i_value > std::numeric_limits<int8_t>::min()){          bytes = 1; }
-        else if (i_value < std::numeric_limits<int16_t>::max() && i_value > std::numeric_limits<int16_t>::min()){  bytes = 2; }
-        else if(i_value < std::numeric_limits<int32_t>::max() && i_value > std::numeric_limits<int32_t>::min()) {  bytes = 4; }
+     //   uint8_t bytes = 8;
+     //   if(i_value < std::numeric_limits<int8_t>::max() && i_value > std::numeric_limits<int8_t>::min()){          bytes = 1; }
+     //   else if (i_value < std::numeric_limits<int16_t>::max() && i_value > std::numeric_limits<int16_t>::min()){  bytes = 2; }
+     //   else if(i_value < std::numeric_limits<int32_t>::max() && i_value > std::numeric_limits<int32_t>::min()) {  bytes = 4; }
 
         // Generate the store for 64 bit
-        std::vector<std::string> store_ins = PARTS::generate_store_64(bytes, unsigned_value, id);
+        std::vector<std::string> store_ins = PARTS::two_move_64(unsigned_value, id);
 
         // Merge store instructions into program init
         current_function->instructions.insert(current_function->instructions.end(), store_ins.begin(), store_ins.end());
@@ -580,7 +598,7 @@ namespace DEL
                                 );
         
         // Generate the store the real
-        std::vector<std::string> store_ins = PARTS::generate_store_64(8, unsigned_value, id);
+        std::vector<std::string> store_ins = PARTS::two_move_64(unsigned_value, id);
 
         // Merge store instructions into program init
         current_function->instructions.insert(current_function->instructions.end(), store_ins.begin(), store_ins.end());

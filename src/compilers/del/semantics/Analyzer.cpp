@@ -282,7 +282,10 @@ namespace DEL
             error_man.report_calls_return_value_unhandled(current_function->name, stmt.name);
         }
 
-        //code_gen.create_call(intermediate_rep.create_call(stmt.name, stmt.params));
+        // We endocde it to leverage the same functionality that is required by an expression-based call
+        intermediate_layer.issue_direct_call(
+            endecoder.encode_call(&stmt)
+        );
     }
 
     // -----------------------------------------------------------------------------------------

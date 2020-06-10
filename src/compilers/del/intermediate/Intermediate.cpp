@@ -77,7 +77,8 @@ namespace DEL
     {
         std::vector<CODEGEN::TYPES::ParamInfo> codegen_params;
 
-        uint16_t gs_param_start = 1;
+        // Its important to start at 8. THE GS is byte-wise, we are operating word-wise
+        uint16_t gs_param_start = 8;
         for(auto & p : params)
         {
             Memory::MemAlloc mem_info = memory_man.get_mem_info(p.id);
@@ -85,8 +86,9 @@ namespace DEL
             codegen_params.push_back(CODEGEN::TYPES::ParamInfo{
                 mem_info.start_pos,
                 mem_info.start_pos + mem_info.bytes_alloced,
-                gs_param_start++
+                gs_param_start
             });
+            gs_param_start += 8;
         }
 
         code_gen.begin_function(name, codegen_params);
@@ -108,6 +110,29 @@ namespace DEL
     void Intermediate::issue_null_return()
     {
         code_gen.null_return();
+    }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Intermediate::issue_direct_call(std::string encoded_call)
+    {
+        // Create the command
+        CODEGEN::TYPES::Command command;
+
+        // We know its a call directive, so we pass it to build directive
+        build_assignment_directive(command, encoded_call, 1);
+
+        // Because the standard case is to expect a return value, we need to edit the command before
+        // We send it off
+        CODEGEN::TYPES::CallInstruction * c = static_cast<CODEGEN::TYPES::CallInstruction *>(command.instructions.back());
+
+        // We don't expect return values from direct calls
+        c->expect_return_value = false;
+
+        // Execute the call command
+        code_gen.execute_command(command);
     }
 
     // ----------------------------------------------------------
@@ -217,9 +242,23 @@ namespace DEL
             {
                 // Go through call and create CODEGEN::TYPES::MoveInstructions to move
                 // local variables to the parameter passing zone
+                uint64_t param_gs_slot = 8;
+                for(auto & d : directive.allocation)
+                {
+                    command.instructions.push_back(
+                        new CODEGEN::TYPES::MoveInstruction(CODEGEN::TYPES::InstructionSet::MOVE_ADDRESS,
+                            param_gs_slot,
+                            d.start_pos,
+                            d.end_pos - d.start_pos
+                        )
+                    );
+                    param_gs_slot += 8;
+                }
 
-                std::cerr << "GOT THE CALL - NOT DONE YET";
-                exit(EXIT_FAILURE);
+                // Call the function
+                command.instructions.push_back(
+                    new CODEGEN::TYPES::CallInstruction(CODEGEN::TYPES::InstructionSet::CALL, directive.data)
+                );
                 break;
             }
 
@@ -283,7 +322,7 @@ namespace DEL
     }
 
     // ----------------------------------------------------------
-    // There HAS TO BE A BETTER WAY TO DO THIS
+    // 
     // ----------------------------------------------------------
 
     CODEGEN::TYPES::InstructionSet Intermediate::get_operation(std::string token)
@@ -313,8 +352,4 @@ namespace DEL
         std::cerr << "Developer error : Intermediate::InstructionSet Intermediate::get_integer_operation(std::string token)" << std::endl;
         exit(EXIT_FAILURE);
     }
-
-
-
-
 }

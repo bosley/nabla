@@ -49,6 +49,13 @@ namespace PARTS
     {
         std::vector<std::string> lines;
 
+        // Putting this limit in place while we get thigns working
+        if(bytes_required >= 4294967290)
+        {
+            std::cerr << "Codegen::FunctionRepresentation >>> Function size is currently limited to ~ 2^32 bytes" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
         lines.push_back("<" + name + ":\n\n");
 
         lines.push_back("\tldw r8 $0(gs)\t ; Load the current stack offset\n");
@@ -65,10 +72,9 @@ namespace PARTS
         lines.push_back("\tpushw gs r2\n");
         lines.push_back("\n\tblt r1 r9 function_alloc_gs\n"); // Keep pushing words until we've taken on the stack frame
 
+        lines.push_back("\tmov r9 $" + std::to_string(ENDIAN::conditional_to_le_64(bytes_required)) + "\t ; Bytes required for function (" + name + ")\n" );
         lines.push_back("\n\tadd r8 r8 r9 \t; Add our size to the gs offset");
         lines.push_back("\n\tstw $0(gs) r8 \t; Increates the stack offset\n");
-
-        lines.push_back("\n; --- Copy Parameters into function space --- \n\n");
 
         for(auto & p : params)
         {
@@ -91,8 +97,30 @@ namespace PARTS
                      - That was just written. But im tired and will do this tomorrow
             */
 
-           std::cout << "Current address of parameter to be passed in   : " << (int)p.param_gs_index << std::endl;
-           std::cout << "Our address for it sans the stack frame offset : " << p.start_pos << std::endl;
+            // Load our relative address for parameter destination
+            std::vector<std::string> load_rel_addr = PARTS::two_move_64(ENDIAN::conditional_to_le_64(p.start_pos), "Load relative parameter destination");
+           
+            lines.insert(lines.end(), load_rel_addr.begin(), load_rel_addr.end());
+
+            // Resulting address in r0
+
+            lines.push_back("\tldw r1 $0(ls)\t ; Load local stack offset \n");
+            lines.push_back("\tadd r0 r0 r1 \t ; Get absolute address for parameter copying \n");
+
+            std::cout << "PARAM GS INDEX: " << p.param_gs_index << std::endl;
+            
+            lines.push_back("\tldw r1 $" + std::to_string(p.param_gs_index) + "(gs) \t; Load the params current address to r1\n");
+
+            if(p.start_pos == p.end_pos - 1)
+            {
+               lines.push_back("\tldb r1 r1(gs) \t ; Load the params value into r1\n");
+               lines.push_back("\tstb r0(gs) r1 \t ; Store the param into the local frame stack\n");
+            }
+            else
+            {
+               lines.push_back("\tldw r1 r1(gs) \t ; Load the params value into r1\n");
+               lines.push_back("\tstw r0(gs) r1 \t ; Store the param into the local frame stack\n");
+            }
         }
         
 
@@ -108,7 +136,7 @@ namespace PARTS
         instructions.push_back("\n\t; <<< RETURN >>> \n");
 
         instructions.push_back("\n\tldw r8 $0(ls) \t; Initial stack offset");
-        instructions.push_back("\n\tldw r9 $8(ls) \t; Our size");
+        instructions.push_back("\n\tldw r9 $8(ls) \t; Our size (in words) ");
         instructions.push_back("\n\tstw $0(gs) r8 \t; Reset stack offset\n");
 
         instructions.push_back("\n\t; Shrink GS to clean up the current function instance\n");

@@ -47,6 +47,7 @@ namespace DEL
         //! \brief Create a special return that doesn't return a value
         void null_return();
 
+
     private:
         Errors & error_man;         // Error manager
         SymbolTable & symbol_table; // Symbol table

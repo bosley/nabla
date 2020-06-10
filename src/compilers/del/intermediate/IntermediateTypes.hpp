@@ -32,6 +32,7 @@ namespace TYPES
     {
         DirectiveType type;
         std::vector<DirectiveAllocation> allocation;
+        std::string data;
     };
 
     struct ParamInfo

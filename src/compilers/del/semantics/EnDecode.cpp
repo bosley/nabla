@@ -60,7 +60,7 @@ namespace DEL
 
     std::string EnDecode::encode_call(Call * function_call)
     {
-        std::string result = encode_token("CALL");
+        std::string result = encode_token("CALL:" + function_call->name);
 
         for(uint64_t i = 0; i < function_call->params.size(); i++)
         {
@@ -91,23 +91,32 @@ namespace DEL
         // Get the directive tokens
         std::vector<std::string> d_list = split(directive, ':');
 
+        int8_t alloc_location = 1;
+        if(d_list[0] == "ID")        
+        { 
+            result_directive.type = INTERMEDIATE::TYPES::DirectiveType::ID;   
+        }
+        else if(d_list[0] == "CALL") 
+        { 
+            alloc_location = 2;
+            result_directive.data = d_list[1];
+            result_directive.type = INTERMEDIATE::TYPES::DirectiveType::CALL; 
+        }
+        else
+        {
+            std::cerr << "Developer Error >>> EnDecoder was handed a directive it didn't understand : "
+                      << d_list[0] << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
         // Get the allocation tokens
-        std::vector<std::string> a_list = split(d_list[1], ',');
+        std::vector<std::string> a_list = split(d_list[alloc_location], ',');
 
         for(auto & i : a_list)
         {
             result_directive.allocation.push_back(
                 decode_allocation(i)
             );
-        }
-
-        if(d_list[0] == "ID")        { result_directive.type = INTERMEDIATE::TYPES::DirectiveType::ID;   }
-        else if(d_list[0] == "CALL") { result_directive.type = INTERMEDIATE::TYPES::DirectiveType::CALL; }
-        else
-        {
-            std::cerr << "Developer Error >>> EnDecoder was handed a directive it didn't understand : "
-                      << d_list[0] << std::endl;
-            exit(EXIT_FAILURE);
         }
 
         return result_directive;
@@ -130,12 +139,25 @@ namespace DEL
     {
         std::vector<std::string> alloc_tokens = split(allocation, '|');
 
-        uint64_t start_pos = std::stoull(alloc_tokens[0]);
-        uint64_t end_pos   = start_pos + std::stoull(alloc_tokens[1]);
+        // We but a try here because there is an edge case where the tokens aren't anything and can sometimes cause issues.
+        // Instead of checking for them in every possible case, we try catch. If the edge case is present, they expected 0,0
+        // anyway, so everyone but me is happy
+        try
+        {
+            uint64_t start_pos = std::stoull(alloc_tokens[0]);
+            uint64_t end_pos   = start_pos + std::stoull(alloc_tokens[1]);
 
-        return INTERMEDIATE::TYPES::DirectiveAllocation{ 
-            start_pos,
-            end_pos
-        };
+            return INTERMEDIATE::TYPES::DirectiveAllocation{ 
+                start_pos,
+                end_pos
+            };
+        }
+        catch(...)
+        {
+            return INTERMEDIATE::TYPES::DirectiveAllocation{ 
+                0,
+                0
+            };
+        }
     }
 }

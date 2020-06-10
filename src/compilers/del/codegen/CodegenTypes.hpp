@@ -44,7 +44,7 @@ namespace TYPES
         STORE_WORD,
 
         CALL, // Call a function
-        MOVE, // Move data 
+        MOVE_ADDRESS, // Move data 
 
         RETURN,
 
@@ -79,6 +79,19 @@ namespace TYPES
             BaseInstruction(instruction), value(value){}
 
         std::string value;
+    };
+
+    //
+    //  An instructon specifically for a function call
+    //
+    class CallInstruction : public BaseInstruction
+    {
+    public:
+        CallInstruction(InstructionSet instruction, std::string name, bool expect_return_value = true) : 
+            BaseInstruction(instruction), function_name(name), expect_return_value(expect_return_value){}
+
+        std::string function_name;
+        bool expect_return_value;
     };
 
     //

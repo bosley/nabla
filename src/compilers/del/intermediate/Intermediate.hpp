@@ -32,6 +32,8 @@ namespace DEL
 
         void issue_null_return();
 
+        void issue_direct_call(std::string encoded_call);
+
         //! \brief Issue an assignment command to the code generator
         //! \param id The id being assigned
         //! \param memory_info The memory information for the resulting assignment
