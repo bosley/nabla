@@ -4,6 +4,8 @@
 #include <regex>
 #include <sstream>
 
+#include "SystemSettings.hpp"
+
 namespace DEL
 {
     // ----------------------------------------------------------
@@ -106,9 +108,12 @@ namespace DEL
             error_man.report_previously_declared(function->name);
         }
 
-        if(function->params.size() > 7)
+        // Check for passign the hard-set limit on parameters
+        if(function->params.size() > SETTINGS::GS_FUNC_PARAM_RESERVE)
         {
-            error_man.report_custom("Analyzer::build_function", " Given function exceeds current limit of '7' parameters", true);
+            std::string error = " Given function exceeds current limit of '" + std::to_string(SETTINGS::GS_FUNC_PARAM_RESERVE) + "' parameters";
+
+            error_man.report_custom("Analyzer::build_function", error, true);
         }
 
         // Create function context

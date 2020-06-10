@@ -5,6 +5,10 @@
 #include <iostream>
 namespace DEL
 {
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
     AsmSupport::AsmSupport()
     {
         init_import = AsmSupport::InitImport{ false, false };
@@ -14,10 +18,18 @@ namespace DEL
         math_imports[AsmSupport::Math::POW_I] = AsmSupport::ImportInfo{ false, BUILT_IN::ASM_POW_FUNCTION_NAME  , BUILT_IN::ASM_POW    };
     }
 
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
     AsmSupport::~AsmSupport()
     {
         math_imports.clear();
     }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
 
     void AsmSupport::import_init_start(std::vector<std::string> & destination)
     {
@@ -28,6 +40,10 @@ namespace DEL
         init_import.start = true;
     }
 
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
     void AsmSupport::import_init_func(std::vector<std::string> & destination)
     {
         if(init_import.func){ return; }
@@ -36,6 +52,10 @@ namespace DEL
 
         init_import.func = true;
     }
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
 
     void AsmSupport::import_math(AsmSupport::Math math_import, std::string & function_name_out, std::vector<std::string> & destination)
     {

@@ -1,12 +1,17 @@
-#include "FunctionRepresentation.hpp"
+#include "Function.hpp"
 #include "Generator.hpp"
 #include <libnabla/endian.hpp>
 #include <iostream>
 namespace DEL
 {
-namespace PARTS
+namespace CODEGEN
 {
-    FunctionRepresentation::FunctionRepresentation(std::string name, std::vector<CODEGEN::TYPES::ParamInfo> params) : 
+
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    Function::Function(std::string name, std::vector<CODEGEN::TYPES::ParamInfo> params) : 
                                                                                                           name(name), 
                                                                                                           params(params), 
                                                                                                           bytes_required(0)
@@ -21,19 +26,27 @@ namespace PARTS
         }
     }
 
-    FunctionRepresentation::~FunctionRepresentation()
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    Function::~Function()
     {
         instructions.clear();
     }
 
-    std::vector<std::string> FunctionRepresentation::building_complete()
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    std::vector<std::string> Function::building_complete()
     {
         std::vector<std::string> lines;
 
-        // Putting this limit in place while we get thigns working
+        // Putting this limit in place while we get things working
         if(bytes_required >= 4294967290)
         {
-            std::cerr << "Codegen::FunctionRepresentation >>> Function size is currently limited to ~ 2^32 bytes" << std::endl;
+            std::cerr << "Codegen::Function >>> Function size is currently limited to ~ 2^32 bytes" << std::endl;
             exit(EXIT_FAILURE);
         }
 
@@ -66,11 +79,8 @@ namespace PARTS
             lines.insert(lines.end(), load_rel_addr.begin(), load_rel_addr.end());
 
             // Resulting address in r0
-
             lines.push_back("\tldw r1 $0(ls)\t ; Load local stack offset \n");
             lines.push_back("\tadd r0 r0 r1 \t ; Get absolute address for parameter copying \n");
-
-            std::cout << "PARAM GS INDEX: " << p.param_gs_index << std::endl;
             
             lines.push_back("\tldw r1 $" + std::to_string(p.param_gs_index) + "(gs) \t; Load the params current address to r1\n");
 
@@ -86,14 +96,17 @@ namespace PARTS
             }
         }
         
-
         lines.insert(lines.end(), instructions.begin(), instructions.end());
 
         lines.push_back("\n>\n");
         return lines;
     }
 
-    void FunctionRepresentation::build_return(bool return_item)
+    // ----------------------------------------------------------
+    //
+    // ----------------------------------------------------------
+
+    void Function::build_return(bool return_item)
     {
         // The expression of the return should be on the local stack now, so all we have to do is pop it off into r0
         instructions.push_back("\n\t; <<< RETURN >>> \n");

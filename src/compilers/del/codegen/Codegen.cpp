@@ -141,7 +141,7 @@ namespace DEL
 
         building_function = true;
 
-        current_function = new PARTS::FunctionRepresentation(name, params);
+        current_function = new CODEGEN::Function(name, params);
     }
 
     // ----------------------------------------------------------

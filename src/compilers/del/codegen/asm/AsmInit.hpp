@@ -2,6 +2,12 @@
 #define DEL_ASM_INIT_SUPPORT_HPP
 
 
+/*
+
+    Note : This information should not be directly used by anyone except for the AsmSupport class
+
+*/
+
 namespace DEL
 {
 namespace BUILT_IN

@@ -1,6 +1,14 @@
 #ifndef DEL_ASM_MATH_SUPPORT_HPP
 #define DEL_ASM_MATH_SUPPORT_HPP
 
+/*
+
+    Note : This information should not be directly used by anyone except for the AsmSupport class, as it handles 
+    multiple import issues and ensures that the correct thing is loaded
+
+*/
+
+
 #include <string>
 
 namespace DEL

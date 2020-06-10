@@ -8,6 +8,7 @@
 #include <libnabla/util.hpp>
 #include "CodegenTypes.hpp"
 #include "EnDecode.hpp"
+#include "SystemSettings.hpp"
 
 #define N_UNUSED(x) (void)x;
 
@@ -78,7 +79,8 @@ namespace DEL
         std::vector<CODEGEN::TYPES::ParamInfo> codegen_params;
 
         // Its important to start at 8. THE GS is byte-wise, we are operating word-wise
-        uint16_t gs_param_start = 8;
+        uint16_t gs_param_start = SETTINGS::GS_FRAME_OFFSET_RESERVE * SETTINGS::SYSTEM_WORD_SIZE_BYTES;
+
         for(auto & p : params)
         {
             Memory::MemAlloc mem_info = memory_man.get_mem_info(p.id);
@@ -88,7 +90,7 @@ namespace DEL
                 mem_info.start_pos + mem_info.bytes_alloced,
                 gs_param_start
             });
-            gs_param_start += 8;
+            gs_param_start += SETTINGS::SYSTEM_WORD_SIZE_BYTES;
         }
 
         code_gen.begin_function(name, codegen_params);
@@ -231,7 +233,7 @@ namespace DEL
                                 directive.allocation[0].start_pos
                             )
                         );
-                        directive.allocation[0].start_pos += 8; // Inc by word
+                        directive.allocation[0].start_pos += SETTINGS::SYSTEM_WORD_SIZE_BYTES; // Inc by word
                     }
                 }
                 break;
@@ -242,7 +244,7 @@ namespace DEL
             {
                 // Go through call and create CODEGEN::TYPES::MoveInstructions to move
                 // local variables to the parameter passing zone
-                uint64_t param_gs_slot = 8;
+                uint64_t param_gs_slot = SETTINGS::GS_FRAME_OFFSET_RESERVE * SETTINGS::SYSTEM_WORD_SIZE_BYTES;
                 for(auto & d : directive.allocation)
                 {
                     command.instructions.push_back(
@@ -252,7 +254,7 @@ namespace DEL
                             d.end_pos - d.start_pos
                         )
                     );
-                    param_gs_slot += 8;
+                    param_gs_slot += SETTINGS::SYSTEM_WORD_SIZE_BYTES;
                 }
 
                 // Call the function
@@ -310,7 +312,7 @@ namespace DEL
             return command;
         }
 
-        CODEGEN::TYPES::InstructionSet final = (byte_len < 8) ? 
+        CODEGEN::TYPES::InstructionSet final = (byte_len < SETTINGS::SYSTEM_WORD_SIZE_BYTES) ? 
             CODEGEN::TYPES::InstructionSet::STORE_BYTE : 
             CODEGEN::TYPES::InstructionSet::STORE_WORD;
 
